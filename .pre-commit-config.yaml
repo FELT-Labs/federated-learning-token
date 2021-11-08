@@ -1,0 +1,13 @@
+repos:
+  - repo: https://github.com/psf/black
+    rev: 21.10b0
+    hooks:
+      - id: black
+        language_version: python3.9
+  - repo: https://github.com/timothycrosley/isort
+    rev: 5.10.0
+    hooks:
+      - id: isort
+        language_version: python3.9
+        additional_dependencies: ["toml"]
+

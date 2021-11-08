@@ -1,0 +1,9 @@
+eth-brownie
+python-dotenv
+
+# Linting and code style
+black==21.10b0
+flake8
+isort==5.10.0
+pre-commit
+pylint
