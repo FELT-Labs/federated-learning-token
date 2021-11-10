@@ -11,16 +11,8 @@ def setup(fn_isolation):
 
 
 @pytest.fixture(scope="module")
-def vyper_storage(accounts, VyperStorage):
-    """
-    Yield a `Contract` object for the VyperStorage contract.
-    """
-    yield accounts[0].deploy(VyperStorage)
-
-
-@pytest.fixture(scope="module")
-def solidity_storage(accounts, SolidityStorage):
+def solidity_storage(accounts, FEToken):
     """
     Yield a `Contract` object for the SolidityStorage contract.
     """
-    yield accounts[0].deploy(SolidityStorage)
+    yield accounts[0].deploy(FEToken)
