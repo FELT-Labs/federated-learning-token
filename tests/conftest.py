@@ -11,8 +11,8 @@ def setup(fn_isolation):
 
 
 @pytest.fixture(scope="module")
-def solidity_storage(accounts, FEToken):
+def token(accounts, FEToken):
     """
-    Yield a `Contract` object for the SolidityStorage contract.
+    Yield a `Contract` object for the FEToken contract.
     """
-    yield accounts[0].deploy(FEToken)
+    yield FEToken.deploy(1000, {"from": accounts[0]})
