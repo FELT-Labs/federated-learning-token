@@ -1,11 +1,11 @@
-def test_solidity_storage_deploy(token):
+def test_fetoken_deploy(token):
     """
     Test if the contract is correctly deployed.
     """
     assert token.symbol() == "FET"
 
 
-def test_solidity_storage_set(accounts, token):
+def test_fetoken_balance(accounts, token):
     """
     Test if the storage variable can be changed.
     """
