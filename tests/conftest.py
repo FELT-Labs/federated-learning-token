@@ -11,8 +11,8 @@ def setup(fn_isolation):
 
 
 @pytest.fixture(scope="module")
-def token(accounts, FEToken):
+def token(accounts, FELToken):
     """
-    Yield a `Contract` object for the FEToken contract.
+    Yield a `Contract` object for the FELToken contract.
     """
-    yield FEToken.deploy(1000, {"from": accounts[0]})
+    yield FELToken.deploy(1000, {"from": accounts[0]})

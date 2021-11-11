@@ -1,4 +1,4 @@
-.PHONY: help install lint clean
+.PHONY: help install lint clean client
 
 # You can specify exact version of python3 or venv name as environment variable
 PYTHON_VERSION?=python3.9
@@ -29,10 +29,10 @@ install:
 
 # Runs when the file changes
 venv: $(VENV_NAME)/bin/activate
-$(VENV_NAME)/bin/activate: requirements.txt
+$(VENV_NAME)/bin/activate: requirements.txt requirements-lib.txt
 	test -d $(VENV_NAME) || $(PYTHON_VERSION) -m virtualenv -p $(PYTHON_VERSION) $(VENV_NAME)
 	${PYTHON} -m pip install -U pip
-	${PYTHON} -m pip install -r requirements.txt
+	${PYTHON} -m pip install -r requirements.txt -r requirements-lib.txt
 	touch $(VENV_NAME)/bin/activate
 
 clean:
@@ -42,3 +42,7 @@ clean:
 lint: venv
 	${PYTHON} -m pylint src scripts tests
 	${PYTHON} -m flake8 src scripts tests
+
+# For running library
+client:
+	${PYTHON} src/client/app.py

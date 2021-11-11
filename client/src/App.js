@@ -10,12 +10,9 @@ class App extends Component {
         web3: null,
         accounts: null,
         chainid: null,
-        vyperStorage: null,
-        vyperValue: 0,
-        vyperInput: 0,
-        solidityStorage: null,
-        solidityValue: 0,
-        solidityInput: 0,
+        tokenContract: null,
+        tokenName: "",
+        value: 0,
     }
 
     componentDidMount = async () => {
@@ -63,21 +60,17 @@ class App extends Component {
             _chainID = "dev"
         }
         console.log(_chainID)
-        const vyperStorage = await this.loadContract(_chainID,"VyperStorage")
-        const solidityStorage = await this.loadContract(_chainID,"SolidityStorage")
+        const tokenContract = await this.loadContract(_chainID, "FELToken")
 
-        if (!vyperStorage || !solidityStorage) {
+        if (!tokenContract) {
             return
         }
 
-        const vyperValue = await vyperStorage.methods.get().call()
-        const solidityValue = await solidityStorage.methods.get().call()
+        const tokenName = await tokenContract.methods.name().call()
 
         this.setState({
-            vyperStorage,
-            vyperValue,
-            solidityStorage,
-            solidityValue,
+            tokenContract,
+            tokenName,
         })
     }
 
@@ -106,22 +99,6 @@ class App extends Component {
         return new web3.eth.Contract(contractArtifact.abi, address)
     }
 
-    changeVyper = async (e) => {
-        const {accounts, vyperStorage, vyperInput} = this.state
-        e.preventDefault()
-        const value = parseInt(vyperInput)
-        if (isNaN(value)) {
-            alert("invalid value")
-            return
-        }
-        await vyperStorage.methods.set(value).send({from: accounts[0]})
-            .on('receipt', async () => {
-                this.setState({
-                    vyperValue: await vyperStorage.methods.get().call()
-                })
-            })
-    }
-
     changeSolidity = async (e) => {
         const {accounts, solidityStorage, solidityInput} = this.state
         e.preventDefault()
@@ -141,8 +118,7 @@ class App extends Component {
     render() {
         const {
             web3, accounts, chainid,
-            vyperStorage, vyperValue, vyperInput,
-            solidityStorage, solidityValue, solidityInput
+            tokenContract, tokenName, value
         } = this.state
 
         if (!web3) {
@@ -154,7 +130,7 @@ class App extends Component {
             return <div>Wrong Network! Switch to your local RPC "Localhost: 8545" in your Web3 provider (e.g. Metamask)</div>
         }
 
-        if (!vyperStorage || !solidityStorage) {
+        if (!tokenContract) {
             return <div>Could not find a deployed contract. Check console for details.</div>
         }
 
@@ -173,27 +149,9 @@ class App extends Component {
                     </p>
                     : null
             }
-            <h2>Vyper Storage Contract</h2>
-
-            <div>The stored value is: {vyperValue}</div>
-            <br/>
-            <form onSubmit={(e) => this.changeVyper(e)}>
-                <div>
-                    <label>Change the value to: </label>
-                    <br/>
-                    <input
-                        name="vyperInput"
-                        type="text"
-                        value={vyperInput}
-                        onChange={(e) => this.setState({vyperInput: e.target.value})}
-                    />
-                    <br/>
-                    <button type="submit" disabled={!isAccountsUnlocked}>Submit</button>
-                </div>
-            </form>
 
             <h2>Solidity Storage Contract</h2>
-            <div>The stored value is: {solidityValue}</div>
+            <div>The stored value is: {tokenName}</div>
             <br/>
             <form onSubmit={(e) => this.changeSolidity(e)}>
                 <div>
@@ -202,8 +160,8 @@ class App extends Component {
                     <input
                         name="solidityInput"
                         type="text"
-                        value={solidityInput}
-                        onChange={(e) => this.setState({solidityInput: e.target.value})}
+                        value={value}
+                        onChange={(e) => this.setState({value: e.target.value})}
                     />
                     <br/>
                     <button type="submit" disabled={!isAccountsUnlocked}>Submit</button>
