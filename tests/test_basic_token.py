@@ -2,7 +2,7 @@ def test_feltoken_deploy(token):
     """
     Test if the contract is correctly deployed.
     """
-    assert token.symbol() == "FET"
+    assert token.symbol() == "FELT"
 
 
 def test_feltoken_balance(accounts, token):
