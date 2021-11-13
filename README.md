@@ -1,8 +1,5 @@
-# federeted-learning
-Federated learning on blockchain
-
-
-
+# FELT - Federeted Learning Token
+Federated learning on blockchain.
 
 ## Installation
 2. Setup environment.
@@ -14,7 +11,7 @@ Federated learning on blockchain
 3. Install the React client dependencies.
 
     ```bash
-    cd ./client
+    cd ./webapp
     yarn install
     ```
     or 
