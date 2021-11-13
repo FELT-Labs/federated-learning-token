@@ -1,4 +1,6 @@
-from brownie import FELToken, accounts, network
+from brownie import ContractManager, FELToken, accounts, network
+
+INITIAL_SUPPLY = 1000
 
 
 def main():
@@ -6,9 +8,11 @@ def main():
     if network.show_active() == "development":
         # add these accounts to metamask by importing private key
         owner = accounts[0]
-        FELToken.deploy(1000, {"from": accounts[0]})
+        feltoken = FELToken.deploy(INITIAL_SUPPLY, {"from": accounts[0]})
+        ContractManager.deploy(feltoken, {"from": accounts[0]})
 
     elif network.show_active() == "kovan":
         # add these accounts to metamask by importing private key
         owner = accounts.load("main")
-        FELToken.deploy(1000, {"from": owner})
+        feltoken = FELToken.deploy(INITIAL_SUPPLY, {"from": owner})
+        ContractManager.deploy(feltoken, {"from": owner})
