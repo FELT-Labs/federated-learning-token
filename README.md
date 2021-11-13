@@ -17,7 +17,7 @@ Federated learning on blockchain.
     or 
 
     ```bash
-    cd ./client
+    cd ./webapp
     npm install 
     ```
 
@@ -75,15 +75,6 @@ Federated learning on blockchain.
     ```python
     >>> run("deploy")
     Running 'scripts.deploy.main'...
-    Transaction sent: 0xd1000d04fe99a07db864bcd1095ddf5cb279b43be8e159f94dbff9d4e4809c70
-    Gas price: 0.0 gwei   Gas limit: 6721975
-    SolidityStorage.constructor confirmed - Block: 1   Gas used: 110641 (1.65%)
-    SolidityStorage deployed at: 0xF104A50668c3b1026E8f9B0d9D404faF8E42e642
-
-    Transaction sent: 0xee112392522ed24ac6ab8cc8ba09bfe51c5d699d9d1b39294ba87e5d2a56212c
-    Gas price: 0.0 gwei   Gas limit: 6721975
-    VyperStorage.constructor confirmed - Block: 2   Gas used: 134750 (2.00%)
-    VyperStorage deployed at: 0xB8485421abC325D172652123dBd71D58b8117070
     ```
 
 3. While Brownie is still running, start the React app in a different terminal.
