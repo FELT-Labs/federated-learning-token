@@ -1,5 +1,6 @@
 import React, {Component} from "react";
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+// TODO: User BrowserRouter for server base app
+import { HashRouter as Router, Route, Routes } from "react-router-dom";
 
 import './assets/scss/custome.scss';
 
