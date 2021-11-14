@@ -51,6 +51,7 @@ class SimpleFooter extends React.Component {
                   <a
                     href="https://github.com/Breta01"
                     target="_blank"
+                    rel="noreferrer"
                   >
                     Breta
                   </a>
@@ -61,7 +62,6 @@ class SimpleFooter extends React.Component {
                   <NavItem>
                     <NavLink
                       href="#"
-                      target="_blank"
                     >
                       About Us
                     </NavLink>
