@@ -450,7 +450,7 @@ $input-btn-line-height:       $shape-height-base !default;
 $input-btn-focus-width:       0 !default;
 $input-btn-focus-color:       rgba($component-active-bg, 1);
 //$input-btn-focus-box-shadow:  0 4px 10px 0 rgba(0, 0, 0, 0.04);
-$input-btn-focus-box-shadow:  none !default;
+$input-btn-focus-box-shadow:  null !default;
 
 $input-btn-padding-y-sm:      .25rem !default;
 $input-btn-padding-x-sm:      .5rem !default;
@@ -491,7 +491,7 @@ $btn-focus-box-shadow:        $btn-hover-box-shadow !default;
 $btn-focus-width:             $input-btn-focus-width !default;
 
 
-$btn-active-box-shadow:       none !default;
+$btn-active-box-shadow:       null !default;
 
 
 // Forms
@@ -524,13 +524,13 @@ $input-focus-alternative-box-shadow:    0 4px 6px rgba(50,50,93,.11),0 1px 3px r
 $input-color:                           $gray-600 !default;
 $input-border-color:                    #cad1d7 !default;
 $input-border-width:                    $input-btn-border-width !default;
-$input-box-shadow:                      none !default; // 0 1px 3px 0 $gray-400 !default;
+$input-box-shadow:                      null !default; // 0 1px 3px 0 $gray-400 !default;
 
 $input-focus-bg:                        $white !default;
 $input-focus-border-color:              rgba(50,151,211,.25);
 $input-focus-color:                     $input-color !default;
 $input-focus-width:                     0 !default;
-$input-focus-box-shadow:                none !default; //0 1px 3px 0 $gray-500 !default;
+$input-focus-box-shadow:                null !default; //0 1px 3px 0 $gray-500 !default;
 
 $input-placeholder-color:               $gray-500 !default;
 $input-focus-placeholder-color:         $gray-500 !default;
@@ -560,7 +560,7 @@ $custom-control-indicator-size:         1.25rem !default;
 $custom-control-indicator-bg:                   $input-bg !default;
 $custom-control-indicator-border-width:         1px !default;
 $custom-control-indicator-border-color:         $input-border-color !default;
-$custom-control-indicator-box-shadow:           none !default;
+$custom-control-indicator-box-shadow:           null !default;
 
 $custom-control-indicator-focus-box-shadow:     $custom-control-indicator-box-shadow !default;
 
@@ -738,7 +738,7 @@ $close-bg:                          transparent !default;
 $close-hover-bg:                    transparent !default;
 $close-color:                       rgba(0, 0, 0, .6);
 $close-hover-color:                 rgba(0, 0, 0, .9);
-$close-text-shadow:                 none !default;
+$close-text-shadow:                 null !default;
 
 
 // Popovers
@@ -881,7 +881,7 @@ $datepicker-header-cell-border-radius: $border-radius !default;
 
 $datepicker-active-color: $white !default;
 $datepicker-active-background: $primary !default;
-$datepicker-active-box-shadow:      none !default;
+$datepicker-active-box-shadow:      null !default;
 
 $datepicker-range-background: $primary !default;
 $datepicker-range-cell-focused-background: darken($datepicker-range-background, 5%);
