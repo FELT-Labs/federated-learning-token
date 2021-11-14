@@ -1,0 +1,11 @@
+// change the theme
+$theme-colors: (
+  "primary": #4fabce,
+  "danger": #ff4136
+);
+
+// Import Bootstrap and its default variables
+/*@import '~bootstrap/scss/bootstrap.scss'; */
+
+
+@import './argon-design-system-react.scss';
