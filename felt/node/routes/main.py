@@ -1,6 +1,6 @@
 from starlette.routing import Router
 
-from template import TemplateResponse
+from felt.node.utils.template import TemplateResponse
 
 router = Router()
 

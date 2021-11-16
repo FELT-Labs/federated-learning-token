@@ -7,15 +7,15 @@ from starlette.middleware.httpsredirect import HTTPSRedirectMiddleware
 from starlette.routing import Mount
 from starlette.staticfiles import StaticFiles
 
-from learning import router as learn_router
-from main import router as main_router
+from felt.node.routes.main import router as main_router
+from felt.node.routes.training import router as train_router
 
 main_folder = Path(__file__).parent
 
 # Routes
 routes = [
     Mount("/static", StaticFiles(directory=main_folder / "static"), name="static"),
-    Mount("/learning", routes=learn_router.routes),
+    Mount("/training", routes=train_router.routes),
     Mount("/", routes=main_router.routes),
 ]
 
@@ -46,10 +46,9 @@ async def server_error(request, exc):
     return templates.TemplateResponse(template, context, status_code=499)
 
 
-def on_start():
-    # TOOD: Define some executor for training
-    pass
+def main():
+    uvicorn.run(app, host="0.0.0.0", port=8000, loop="asyncio")
 
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000, loop="asyncio")
+    main()
