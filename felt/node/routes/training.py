@@ -19,6 +19,7 @@ async def websocket_endpoint(websocket):
     await websocket.accept()
     async for cmd in websocket.iter_text():
         print(cmd)
+        print(websocket.app.state.W3)
         await websocket.send_text("Res " + cmd)
     await websocket.close()
 

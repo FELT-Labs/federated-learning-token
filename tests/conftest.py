@@ -24,3 +24,11 @@ def manager(accounts, ContractManager, token):
     Yield a `Contract` object for the ContractManager contract.
     """
     yield ContractManager.deploy(token, {"from": accounts[0]})
+
+
+@pytest.fixture(scope="module")
+def project(accounts, ProjectContract):
+    """
+    Yield a `Contract` object for the ProjectContract contract.
+    """
+    yield ProjectContract.deploy(True, {"from": accounts[0]})

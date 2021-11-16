@@ -1,4 +1,9 @@
 // SPDX-License-Identifier: GPL3
+/*
+   Contract for managing individual projects at one place. This helps with
+   activation and referencing of the contract and allowes referencing
+   contracts from the homepage (webapp).
+*/
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/access/Ownable.sol";

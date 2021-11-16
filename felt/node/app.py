@@ -1,3 +1,4 @@
+"""Main app module for starting the ASGI server."""
 from pathlib import Path
 
 import uvicorn
@@ -9,6 +10,7 @@ from starlette.staticfiles import StaticFiles
 
 from felt.node.routes.main import router as main_router
 from felt.node.routes.training import router as train_router
+from felt.node.utils.template import TemplateResponse
 
 main_folder = Path(__file__).parent
 
@@ -23,6 +25,7 @@ middleware = [
     # Middleware(HTTPSRedirectMiddleware)
 ]
 
+
 app = Starlette(debug=True, routes=routes, middleware=middleware)
 
 
@@ -33,7 +36,7 @@ async def not_found(request, exc):
     """
     template = "403.html"
     context = {"request": request}
-    return templates.TemplateResponse(template, context, status_code=403)
+    return TemplateResponse(template, context, status_code=403)
 
 
 @app.exception_handler(499)
@@ -43,7 +46,7 @@ async def server_error(request, exc):
     """
     template = "499.html"
     context = {"request": request}
-    return templates.TemplateResponse(template, context, status_code=499)
+    return TemplateResponse(template, context, status_code=499)
 
 
 def main():
