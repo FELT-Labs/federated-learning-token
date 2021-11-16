@@ -78,6 +78,10 @@ It is a set of contracts that support federated learning projects. Allowing anon
     >>> run("deploy")
     Running 'scripts.deploy.main'...
     ```
+    Or steps 1. and 2. combinde:
+    ```bash
+    brownie run deploy -I
+    ```
 
 3. While Brownie is still running, start the React app in a different terminal.
 

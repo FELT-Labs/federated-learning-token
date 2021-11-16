@@ -5,4 +5,5 @@ uvicorn
 numpy
 numpy-serializer
 httpx
+web3
 websockets
