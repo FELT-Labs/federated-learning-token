@@ -14,5 +14,14 @@ def get_parms(request):
     return Response(data, media_type="application/octet-stream")
 
 
+@router.websocket_route("/ws")
+async def websocket_endpoint(websocket):
+    await websocket.accept()
+    async for cmd in websocket.iter_text():
+        print(cmd)
+        await websocket.send_text("Res " + cmd)
+    await websocket.close()
+
+
 # r = await httpx.get("http://0.0.0.0/8000/learning/get_params")
 # ns.from_bytes(r.content)

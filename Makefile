@@ -1,4 +1,4 @@
-.PHONY: help install lint clean client
+.PHONY: help install install-node lint clean client
 
 # You can specify exact version of python3 or venv name as environment variable
 PYTHON_VERSION?=python3.9
@@ -15,6 +15,8 @@ help:
 	@echo "Make file commands:"
 	@echo "    make install"
 	@echo "        Prepare complete development environment"
+	@echo "    make install-node"
+	@echo "        Prepare environment for running data provider node"
 	@echo "    make lint"
 	@echo "        Run pylint and flake8"
 	@echo "    make clean"
@@ -26,6 +28,18 @@ install:
 	${PYTHON_VERSION} -m pip install virtualenv
 	make venv
 	${VENV_ACTIVATE}; pre-commit install
+
+
+install-node:
+	sudo apt -y install build-essential $(PYTHON_VERSION) $(PYTHON_VERSION)-dev $(PYTHON_VERSION)-distutils
+	${PYTHON_VERSION} -m pip install -U pip
+	${PYTHON_VERSION} -m pip install virtualenv
+	make venv
+	${VENV_ACTIVATE}; pre-commit install
+	${PYTHON} -m pip install -e .
+# Process manager for running the node:
+	npm install pm2 -g
+
 
 # Runs when the file changes
 venv: $(VENV_NAME)/bin/activate
@@ -43,6 +57,10 @@ lint: venv
 	${PYTHON} -m pylint src scripts tests
 	${PYTHON} -m flake8 src scripts tests
 
-# For running library
-client:
-	${PYTHON} src/client/app.py
+# For running node
+# Logs can be viewed as: pm2 logs
+node-start:
+	${VENV_ACTIVATE}; pm2 start node_ecosystem.config.js
+
+node-stop:
+	${VENV_ACTIVATE}; pm2 stop node_ecosystem.config.js

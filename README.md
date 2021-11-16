@@ -1,6 +1,8 @@
 # FELT - Federeted Learning Token
 Federated learning on blockchain.
 
+It is a set of contracts that support federated learning projects. Allowing anonymous participation of data providers and preventing malicious activities. Data providers get rewards for sharing their data and resulting models can be further sold.
+
 ## Installation
 2. Setup environment.
 

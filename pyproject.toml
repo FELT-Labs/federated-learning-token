@@ -4,6 +4,10 @@ title = "Federated Learning Token"
 [owner]
 name = "Břetislav Hájek"
 
+### Build using poetry ###
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
 
 ### Linting and Code Style ###
 
@@ -34,7 +38,7 @@ exclude = '''
 profile = "black"
 multi_line_output = 3
 include_trailing_comma = true
-src_paths = ["src/client"]
+src_paths = ["felt"]
 force_grid_wrap = 0
 use_parentheses = true
 line_length = 88
