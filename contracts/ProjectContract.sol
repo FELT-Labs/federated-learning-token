@@ -13,9 +13,24 @@ contract ProjectContract {
     // Training plan defines instructions for training clients
     struct TrainingPlan {
         // bytes data;
+        address creator;
+        uint reward;
         uint num;
-        uint x;
     }
+
+    // Data provider entity (node)
+    struct Node {
+        address _address;
+    }
+
+    // Plan designer entity (builder)
+    struct Builder {
+        address _address;
+    }
+
+    mapping(address => Builder) builders;
+
+    Node[] public nodes;
 
     TrainingPlan[] public plans;
     TrainingPlan public latestPlan;
@@ -23,9 +38,24 @@ contract ProjectContract {
     bool public isNewPlan = false;
     bool public isPublic;
 
+
     constructor(bool _isPublic) {
         isPublic = _isPublic;
+        builders[msg.sender] = Builder({
+            _address: msg.sender
+        });
     }
+
+
+    modifier onlyBuilder {
+        require(
+            builders[msg.sender]._address != address(0),
+            "Only builders are allowed to execute this."
+        );
+        _;
+    }
+
+
 
     function getPlansLength() public view returns(uint) {
         return plans.length;
@@ -40,21 +70,26 @@ contract ProjectContract {
     // Sponsor
 
     // Create plan
-    function createPlan(uint num) public {
+    function createPlan(uint num) public onlyBuilder {
+        require(!isNewPlan, "Another plan is already being executed");
         isNewPlan = true;
 
+        latestPlan.creator = msg.sender;
         latestPlan.num = num;
-        latestPlan.x = num + 5;
+        latestPlan.reward = num + 5;
         plans.push(latestPlan);
     }
 
     // Abort plan
     function abortPlan() public {
-        // Check that it is plan creator
-
+        require(latestPlan.creator == msg.sender, "Only creator can abort the plan");
+        isNewPlan = false;
     }
 
     // Finish plan
+    function finishPlan() public {
+        isNewPlan = false;
+    }
 
     // Settings public/private (clients always private?)
 
