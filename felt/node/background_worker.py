@@ -10,10 +10,12 @@ URL = "ws://localhost:8000/training/ws"
 ETH_NODE = "http://127.0.0.1:8545"
 
 
-async def producer(project_contract):
+async def get_plan(project_contract):
     await asyncio.sleep(3)
-    print(project_contract)
-    return "p"
+    if project_contract.functions.isNewPlan().call():
+        plan = project_contract.functions.latestPlan().call()
+        return plan
+    return None
 
 
 async def task():
@@ -29,10 +31,13 @@ async def task():
 
     # Infinite reconnect + run infinite connection - lovely :)
     while True:
+        plan = await get_plan(project_contract)
+        if plan is None:
+            continue
+
         async with websockets.connect(URL) as websocket:
             try:
                 while True:
-                    cmd = await producer(project_contract)
                     # Request plan pull
                     await websocket.send(cmd)
                     rec = await websocket.recv()
