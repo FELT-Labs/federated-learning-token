@@ -5,7 +5,11 @@ def test_manager_owner(accounts, project):
     # This: .dict() works only if struct has more than 1 element
     assert project.latestPlan().dict()["num"] == 1
 
+    project.abortPlan({"from": accounts[0]})
+
     project.createPlan(2, {"from": accounts[0]})
+    project.abortPlan({"from": accounts[0]})
+
     project.createPlan(3, {"from": accounts[0]})
     assert project.getPlansLength() == 3
     assert project.plans(0).dict()["num"] == 1
