@@ -1,5 +1,4 @@
 from coincurve import PrivateKey
-from web3.datastructures import T
 
 from felt.core.web3 import (
     decrypt_endpoint,
