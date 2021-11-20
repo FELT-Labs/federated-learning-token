@@ -1,13 +1,11 @@
 import asyncio
 
 import websockets
-from web3 import Web3
 
-from felt.node.utils.contracts import load_contracts
+from felt.core.web3 import get_project_contract, get_web3
 
 # Connect to application running on this server itself and coordinate tasks
 URL = "ws://localhost:8000/training/ws"
-ETH_NODE = "http://127.0.0.1:8545"
 
 
 async def get_plan(project_contract):
@@ -19,10 +17,10 @@ async def get_plan(project_contract):
 
 
 async def task():
-    w3 = Web3(Web3.HTTPProvider(ETH_NODE))
+    w3 = get_web3()
     print("Worker connected to chain id: ", w3.eth.chain_id)
 
-    contracts = load_contracts(w3)
+    contracts = get_project_contract(w3)
     print(contracts)
     project_contract = contracts["ProjectContract"]
     print(project_contract.functions.isNewPlan().call())
