@@ -1,4 +1,5 @@
 aiofiles
+coincurve
 eciespy
 jinja2
 starlette

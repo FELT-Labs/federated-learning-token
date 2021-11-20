@@ -1,6 +1,6 @@
 # change the build directory to be within react's scope
 project_structure:
-    build: felt/node/build
+    build: build
 #     build: webapp/src/artifacts
 
 # exclude SafeMath when calculating test coverage

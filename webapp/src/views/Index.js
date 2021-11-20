@@ -45,7 +45,7 @@ class Index extends Component {
                       </p>
                       <div className="btn-wrapper">
                         <Button
-                          className="btn-icon mb-3 mb-sm-0"
+                          className="btn-icon mb-3 mb-sm-0 text-white"
                           color="info"
                           href="#"
                         >

@@ -1,4 +1,5 @@
 import pytest
+from web3 import Web3
 
 
 @pytest.fixture(autouse=True)
@@ -32,3 +33,8 @@ def project(accounts, ProjectContract):
     Yield a `Contract` object for the ProjectContract contract.
     """
     yield ProjectContract.deploy(True, {"from": accounts[0]})
+
+
+@pytest.fixture(scope="module")
+def w3():
+    return Web3(Web3.HTTPProvider("http://127.0.0.1:8545"))
