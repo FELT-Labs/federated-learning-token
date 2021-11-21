@@ -1,11 +1,17 @@
 import asyncio
+from pathlib import Path
 
+import httpx
 import websockets
 
 from felt.core.web3 import get_project_contract, get_web3
 
 # Connect to application running on this server itself and coordinate tasks
-URL = "ws://localhost:8000/training/ws"
+ENDPOINT = "localhost:8000"
+PROTOCOL = "http://"
+WS = "ws://"
+
+LOGS = Path(__file__).parent / "logs"
 
 
 async def get_plan(project_contract):
@@ -16,16 +22,34 @@ async def get_plan(project_contract):
     return None
 
 
-async def task():
-    w3 = get_web3()
-    print("Worker connected to chain id: ", w3.eth.chain_id)
+async def send_model(endpoint, model_file, round):
+    async with httpx.AsyncClient() as client:
+        with open(model_file, "rb") as f:
+            res = await client.post(
+                f"{PROTOCOL}{endpoint}/training/upload_model",
+                data={
+                    "client_id": 1,
+                    "hash": "123",
+                    "round": round,
+                },
+                files={"model_file": ("model.joblib", f)},
+            )
 
-    contracts = get_project_contract(w3)
-    print(contracts)
-    project_contract = contracts["ProjectContract"]
-    print(project_contract.functions.isNewPlan().call())
-    print(project_contract.functions.isPublic().call())
-    print(project_contract.functions.latestPlan().call())
+    return res.is_success and res.text == "Received."
+
+
+async def task():
+    # w3 = get_web3()
+    # print("Worker connected to chain id: ", w3.eth.chain_id)
+
+    # contracts = get_project_contract(w3)
+    # print(contracts)
+    # project_contract = contracts["ProjectContract"]
+    # print(project_contract.functions.isNewPlan().call())
+    # print(project_contract.functions.isPublic().call())
+    # print(project_contract.functions.latestPlan().call())
+    res = await send_model(ENDPOINT, "README.md", 1)
+    print("Upload result", res)
 
     # Infinite reconnect + run infinite connection - lovely :)
     while True:
@@ -33,7 +57,7 @@ async def task():
         if plan is None:
             continue
 
-        async with websockets.connect(URL) as websocket:
+        async with websockets.connect(f"{WS}{ENDPOINT}/training/ws") as websocket:
             try:
                 while True:
                     # Request plan pull
@@ -43,6 +67,8 @@ async def task():
 
             except websockets.ConnectionClosed:
                 continue
+
+    await client.aclose()
 
 
 def main():

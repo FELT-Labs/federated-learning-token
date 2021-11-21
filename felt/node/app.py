@@ -13,6 +13,7 @@ from felt.node.routes.training import router as train_router
 from felt.node.utils.template import TemplateResponse
 
 main_folder = Path(__file__).parent
+logs_folder = main_folder / "logs"
 
 # Routes
 routes = [
@@ -26,7 +27,12 @@ middleware = [
 ]
 
 
-app = Starlette(debug=True, routes=routes, middleware=middleware)
+def startup():
+    logs_folder.mkdir(parents=True, exist_ok=True)
+
+
+app = Starlette(debug=True, routes=routes, middleware=middleware, on_startup=[startup])
+app.state.LOGS_FOLDER = logs_folder
 
 
 @app.exception_handler(403)

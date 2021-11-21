@@ -15,10 +15,6 @@ def main():
     if network.show_active() == "development":
         # add these accounts to metamask by importing private key
         owner = accounts[0]
-        print(owner)
-        print((owner))
-        print(accounts)
-        print(dir(accounts))
         feltoken = FELToken.deploy(INITIAL_SUPPLY, {"from": owner})
         ContractManager.deploy(feltoken, {"from": owner})
 
