@@ -3,8 +3,12 @@ from pathlib import Path
 
 import httpx
 import websockets
+from dotenv import load_dotenv
 
 from felt.core.web3 import get_project_contract, get_web3
+
+# Load dotenv at the beginning of the program
+load_dotenv()
 
 # Connect to application running on this server itself and coordinate tasks
 ENDPOINT = "localhost:8000"
@@ -67,8 +71,6 @@ async def task():
 
             except websockets.ConnectionClosed:
                 continue
-
-    await client.aclose()
 
 
 def main():

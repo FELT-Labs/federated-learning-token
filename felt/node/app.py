@@ -2,6 +2,7 @@
 from pathlib import Path
 
 import uvicorn
+from dotenv import load_dotenv
 from starlette.applications import Starlette
 from starlette.middleware import Middleware
 from starlette.middleware.httpsredirect import HTTPSRedirectMiddleware
@@ -11,6 +12,10 @@ from starlette.staticfiles import StaticFiles
 from felt.node.routes.main import router as main_router
 from felt.node.routes.training import router as train_router
 from felt.node.utils.template import TemplateResponse
+
+# Load dotenv at the beginning of the program
+load_dotenv()
+
 
 main_folder = Path(__file__).parent
 logs_folder = main_folder / "logs"

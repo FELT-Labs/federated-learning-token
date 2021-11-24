@@ -3,14 +3,30 @@ Federated learning on blockchain.
 
 It is a set of contracts that support federated learning projects. Allowing anonymous participation of data providers and preventing malicious activities. Data providers get rewards for sharing their data and resulting models can be further sold.
 
+This repository contains 3 main components:
+1. **Smart contracts**
+    Smart contracts are the main building part of this project. We are using [Brownie library](https://eth-brownie.readthedocs.io/en/stable/) for building, testing and deploying.
+
+2. **Felt package**
+    [Felt](./felt) is build as a python package which provides tools for nodes and builder. For nodes it provides code which runs server, watches for new training plans and execute them.
+
+    For builders it provide tools for creating new plan.
+
+3. **Web application**
+    Web application located at folder [`webapp`](./webapp) is intended as main page landing page of the token.
+
+## Installation - contracts
+## Installation - felt library (nodes, builders)
+## Installation - web application
+
 ## Installation
-2. Setup environment.
+1. Setup environment.
 
     ```bash
     make install
     ```
 
-3. Install the React client dependencies.
+2. Install the React client dependencies.
 
     ```bash
     cd ./webapp
@@ -22,6 +38,20 @@ It is a set of contracts that support federated learning projects. Allowing anon
     cd ./webapp
     npm install 
     ```
+
+3. Obtain [web3.storage](https://web3.storage) token and place it into `.env` file.
+
+    You can use the .env_example in this repo 
+    as a template, just fill in the values and rename it to '.env'. 
+
+    Here is what your .env should look like:
+
+    ```bash
+    export WEB3_STORAGE_TOKEN='ab...'
+    ...
+    ```
+
+
 
 4. If you want to be able to deploy to testnets, do the following.
 
