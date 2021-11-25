@@ -84,11 +84,11 @@ def decrypt_secret(ciphertext, parity, private_key):
     return decrypt(private_key, ciphertext_full)
 
 
-def encrypt_endpoint(endpoint, secret):
-    """Encrypt endpoint address for storing in contract."""
-    return aes_encrypt(secret, endpoint)
+def encrypt_bytes(bytes, secret):
+    """Encrypt bytes (model) for storing in contract/IPFS."""
+    return aes_encrypt(secret, bytes)
 
 
-def decrypt_endpoint(ciphertext, secret):
-    """Decrypt endpoint stored in contract."""
+def decrypt_bytes(ciphertext, secret):
+    """Decrypt bytes (model) stored in contract/IPFS."""
     return aes_decrypt(secret, ciphertext)

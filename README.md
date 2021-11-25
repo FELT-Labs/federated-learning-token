@@ -5,14 +5,17 @@ It is a set of contracts that support federated learning projects. Allowing anon
 
 This repository contains 3 main components:
 1. **Smart contracts**
+
     Smart contracts are the main building part of this project. We are using [Brownie library](https://eth-brownie.readthedocs.io/en/stable/) for building, testing and deploying.
 
 2. **Felt package**
+
     [Felt](./felt) is build as a python package which provides tools for nodes and builder. For nodes it provides code which runs server, watches for new training plans and execute them.
 
     For builders it provide tools for creating new plan.
 
 3. **Web application**
+
     Web application located at folder [`webapp`](./webapp) is intended as main page landing page of the token.
 
 ## Installation - contracts
