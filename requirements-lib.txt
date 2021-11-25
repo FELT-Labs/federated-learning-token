@@ -3,6 +3,7 @@ coincurve
 eciespy
 httpx
 jinja2
+joblib==1.1.0
 python-multipart
 numpy==1.19.4
 numpy-serializer==0.1.3

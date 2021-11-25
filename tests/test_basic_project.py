@@ -1,9 +1,9 @@
 from coincurve import PrivateKey
 
 from felt.core.web3 import (
-    decrypt_endpoint,
+    decrypt_bytes,
     decrypt_secret,
-    encrypt_endpoint,
+    encrypt_bytes,
     encrypt_secret,
     export_public_key,
 )
@@ -11,22 +11,22 @@ from felt.core.web3 import (
 
 def test_project_creation(accounts, project):
     """Test creating dummy project."""
-    project.createPlan(1, {"from": accounts[0]})
+    project.createPlan("testCID1", {"from": accounts[0]})
     assert project.getPlansLength() == 1
     # This: .dict() works only if struct has more than 1 element
-    assert project.latestPlan().dict()["num"] == 1
+    assert project.latestPlan().dict()["baseModelCID"] == "testCID1"
 
     project.abortPlan({"from": accounts[0]})
 
-    project.createPlan(2, {"from": accounts[0]})
+    project.createPlan("testCID2", {"from": accounts[0]})
     project.abortPlan({"from": accounts[0]})
 
-    project.createPlan(3, {"from": accounts[0]})
+    project.createPlan("testCID3", {"from": accounts[0]})
     assert project.getPlansLength() == 3
-    assert project.plans(0).dict()["num"] == 1
-    assert project.plans(1).dict()["num"] == 2
-    assert project.plans(2).dict()["num"] == 3
-    assert project.latestPlan().dict()["num"] == 3
+    assert project.plans(0).dict()["baseModelCID"] == "testCID1"
+    assert project.plans(1).dict()["baseModelCID"] == "testCID2"
+    assert project.plans(2).dict()["baseModelCID"] == "testCID3"
+    assert project.latestPlan().dict()["baseModelCID"] == "testCID3"
 
 
 def test_encryption_mechanism(accounts, project, w3):
@@ -53,7 +53,7 @@ def test_encryption_mechanism(accounts, project, w3):
     #  1. Node gets index by address
     #  2. Access node values by index
     #  3. Decrypt secrets from node values using private key
-    #  4. Use secret to encrypt it's own endpoint
+    #  4. Use secret to encrypt models
     index = project.nodes(request["_address"])
     assert index == 4
 
@@ -62,15 +62,10 @@ def test_encryption_mechanism(accounts, project, w3):
     final_secret = decrypt_secret(ct, node["parity"], test_key.to_hex())
     assert final_secret == secret
 
-    # Node encrypts endpoint and activates itself
-    endpoint = b"127.0.0.1:8000/test"
-    endpoint_ct = encrypt_endpoint(endpoint, final_secret)
-    project.activateNode(endpoint_ct, {"from": accounts[1]})
-    assert endpoint != endpoint_ct
+    # Node encrypts message (model) for others
+    msg = b"1337 test"
+    msg_ct = encrypt_bytes(msg, final_secret)
+    assert msg != msg_ct
 
-    # Check the endpoint and decrypt it
-    node = project.nodesArray(index - 3).dict()
-    assert bytes(node["endpoint"]) == endpoint_ct
-
-    final_endpoint = decrypt_endpoint(node["endpoint"], final_secret)
-    assert final_endpoint == endpoint
+    final_msg = decrypt_bytes(msg_ct, final_secret)
+    assert final_msg == msg

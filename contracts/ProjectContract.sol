@@ -10,12 +10,38 @@
 pragma solidity ^0.8.0;
 
 contract ProjectContract {
+    struct Round {
+        bool complete;
+        string[] modelsCID;
+    }
+
     // Training plan defines instructions for training clients
     struct TrainingPlan {
         // bytes data;
         address creator;
-        uint reward;
-        uint num;
+        address finalNode;
+
+        // Base model uploaded by builder
+        string baseModelCID;
+        // Final model uploaded by finalNode
+        string finalModelCID;
+
+        // Secret for sharing with creator
+        // TODO: maybe change to single array of 97 bytes
+        bool parity;
+        bytes32 secret0;
+        bytes32 secret1;
+        bytes32 secret2;
+
+        // Training params
+        uint32 numRounds;
+
+        // Number of clients and rewards in training
+        uint numClinets;
+        uint totalReward;
+
+        // Array of rounds
+        Round[] rounds;
     }
 
     // Data provider entity (node)
@@ -28,8 +54,6 @@ contract ProjectContract {
         bytes32 secret0;
         bytes32 secret1;
         bytes32 secret2;
-        // Encrypted node endpoint
-        bytes endpoint;
     }
 
     struct NodeJoinRequest {
@@ -76,8 +100,7 @@ contract ProjectContract {
             parity: false, 
             secret0: 0,
             secret1: 0,
-            secret2: 0,
-            endpoint: ""
+            secret2: 0
         }));
     }
 
@@ -141,12 +164,11 @@ contract ProjectContract {
 
         nodesArray.push(Node({
             _address: nodeRequests[nodeRequests.length - 1]._address,
-            activated: false,
+            activated: true,
             parity: parity,
             secret0: secret0,
             secret1: secret1,
-            secret2: secret2,
-            endpoint: ""
+            secret2: secret2
         }));
         nodeRequests.pop();
     }
@@ -158,12 +180,12 @@ contract ProjectContract {
         nodeRequests.pop();
     }
 
-
-    /** Node has to send data to activate itself (or update endpoint) */
-    function activateNode(bytes memory endpoint) public onlyNode {
-        nodesArray[nodes[msg.sender] - 3].activated = true;
-        nodesArray[nodes[msg.sender] - 3].endpoint = endpoint;
+    /** Function node can become active/inactive */
+    function changeNodeStatus(bool status) public onlyNode {
+        nodesArray[nodes[msg.sender] - 3].activated = status;
     }
+
+
 
     // Request join builder
 
@@ -172,13 +194,12 @@ contract ProjectContract {
     // Sponsor
 
     // Create plan
-    function createPlan(uint num) public onlyBuilder {
+    function createPlan(string memory modelCID) public onlyBuilder {
         require(!isNewPlan, "Another plan is already being executed");
         isNewPlan = true;
 
         latestPlan.creator = msg.sender;
-        latestPlan.num = num;
-        latestPlan.reward = num + 5;
+        latestPlan.baseModelCID = modelCID;
         plans.push(latestPlan);
     }
 
