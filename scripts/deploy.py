@@ -7,7 +7,7 @@ INITIAL_SUPPLY = 100000000000 * (10 ** 18)
 def deploy_project():
     """Deploy test project contract."""
     project = ProjectContract.deploy(True, {"from": accounts[0]})
-    project.createPlan(1, {"from": accounts[0]})
+    project.createPlan("xxx", {"from": accounts[0]})
 
 
 def main():
