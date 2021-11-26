@@ -22,25 +22,10 @@ LOGS = Path(__file__).parent / "logs"
 
 async def get_plan(project_contract):
     if project_contract.functions.isNewPlan().call():
-        plan = project_contract.functions.latestPlan().call()
+        length = project_contract.functions.getPlansLength()
+        plan = project_contract.plans(length - 1).call()
         return plan
     return None
-
-
-async def send_model(endpoint, model_file, round):
-    async with httpx.AsyncClient() as client:
-        with open(model_file, "rb") as f:
-            res = await client.post(
-                f"{PROTOCOL}{endpoint}/training/upload_model",
-                data={
-                    "client_id": 1,
-                    "hash": "123",
-                    "round": round,
-                },
-                files={"model_file": ("model.joblib", f)},
-            )
-
-    return res.is_success and res.text == "Received."
 
 
 async def task():
@@ -73,6 +58,9 @@ async def task():
             await asyncio.sleep(3)
             continue
 
+        print(plan)
+        continue
+
         # Creat directory for storing plan
         plan_index = project_contract.functions.getPlansLength().call()
         plan_dir = LOGS / f"plan_{plan_index}"
@@ -100,6 +88,7 @@ async def task():
             cid = res.json()["cid"]
 
             # TODO: upload model CID to contract
+            project_contract.functions.submitModel(cid).call()
 
             # 4. Start donwloading models from other nodes for this round
 

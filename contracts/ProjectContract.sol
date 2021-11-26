@@ -11,8 +11,9 @@ pragma solidity ^0.8.0;
 
 contract ProjectContract {
     struct Round {
-        bool complete;
-        string[] modelsCID;
+        bool completed;
+        uint numSubmitted;
+        mapping(address => string) modelsCID;
     }
 
     // Training plan defines instructions for training clients
@@ -37,11 +38,11 @@ contract ProjectContract {
         uint32 numRounds;
 
         // Number of clients and rewards in training
-        uint numClinets;
-        uint totalReward;
+        uint numNodes;
+        uint nodeReward;
 
-        // Array of rounds
-        Round[] rounds;
+        // mapping (acting as array) of rounds
+        mapping(uint => Round) rounds;
     }
 
     // Data provider entity (node)
@@ -78,11 +79,15 @@ contract ProjectContract {
     Node[] public nodesArray;
     // Request are treated as a stack (for simplicity)
     NodeJoinRequest[] public nodeRequests;
+    uint public activeNodes = 0;
 
-    TrainingPlan[] public plans;
-    TrainingPlan public latestPlan;
+    mapping(uint => TrainingPlan) public plans;
+    uint numPlans = 0;
 
     bool public isNewPlan = false;
+    bool public isPlanRunning = false;
+    uint public currentRound = 0;
+    // Settings public/private - possible to join for new nodes/builders
     bool public isPublic;
 
 
@@ -123,11 +128,20 @@ contract ProjectContract {
     }
 
 
-    function getPlansLength() public view returns(uint) {
-        return plans.length;
+    modifier onlyActiveNode {
+        require(
+            nodes[msg.sender] >= 3 && nodesArray[nodes[msg.sender] - 3].activated,
+            "Only nodes that are active are allowed to execute this."
+        );
+        _;
     }
 
-    /* BLOCK: Functions related to node join */
+
+    function getPlansLength() public view returns(uint) {
+        return numPlans;
+    }
+
+    /*** BLOCK: Functions related to node join ***/
 
     function getNodeRequestsLength() public view returns(uint) {
         return nodeRequests.length;
@@ -152,6 +166,9 @@ contract ProjectContract {
         @param secret0 sharing encrypted common secret for nodes
         @param secret1 sharing encrypted common secret for nodes
         @param secret2 sharing encrypted common secret for nodes
+
+        TODO: Secret should be updated as hash of previous secret
+              So that the node doesn't have access to previous models
     */
     function acceptNode(
             bool parity,
@@ -170,6 +187,7 @@ contract ProjectContract {
             secret1: secret1,
             secret2: secret2
         }));
+        activeNodes += 1;
         nodeRequests.pop();
     }
 
@@ -182,30 +200,48 @@ contract ProjectContract {
 
     /** Function node can become active/inactive */
     function changeNodeStatus(bool status) public onlyNode {
+        require(!isNewPlan, "Node can't change status while plan running.");
+        if (nodesArray[nodes[msg.sender] - 3].activated != status) {
+            activeNodes = (status) ? activeNodes + 1 : activeNodes - 1;
+        }
         nodesArray[nodes[msg.sender] - 3].activated = status;
     }
 
 
+    /*** BLOCK: Functions for training plan execution ***/
+    function submitModel(string memory modelCID) public onlyNode {
+        Round storage round = plans[numPlans - 1].rounds[currentRound];
+        require(
+            bytes(round.modelsCID[msg.sender]).length == 0,
+            "Model already sent for this round"
+        );
 
-    // Request join builder
+        round.modelsCID[msg.sender] = modelCID;
+        round.numSubmitted += 1;
+        if (round.numSubmitted >= activeNodes) {
+            round.completed = true;
+            currentRound += 1;
+        }
+    }
 
-    // Deposit
-
-    // Sponsor
+    /*** BLOCK: Plan managment ***/
 
     // Create plan
     function createPlan(string memory modelCID) public onlyBuilder {
         require(!isNewPlan, "Another plan is already being executed");
         isNewPlan = true;
 
-        latestPlan.creator = msg.sender;
-        latestPlan.baseModelCID = modelCID;
-        plans.push(latestPlan);
+        TrainingPlan storage plan = plans[numPlans++];
+        plan.creator = msg.sender;
+        plan.baseModelCID = modelCID;
     }
 
     // Abort plan
     function abortPlan() public {
-        require(latestPlan.creator == msg.sender, "Only creator can abort the plan");
+        require(
+            numPlans > 0 && plans[numPlans - 1].creator == msg.sender,
+            "Only creator can abort the plan"
+        );
         isNewPlan = false;
     }
 
@@ -214,9 +250,16 @@ contract ProjectContract {
         isNewPlan = false;
     }
 
-    // Settings public/private (clients always private?)
+
+    // Request join builder
+
+    // Deposit
+
+    // Sponsor
+
 
     // Validation
 
-    // Vote for fake client
+    // Vote for removing fake node
+    // Also must reestablish the secret
 }

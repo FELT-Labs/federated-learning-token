@@ -14,7 +14,7 @@ def test_project_creation(accounts, project):
     project.createPlan("testCID1", {"from": accounts[0]})
     assert project.getPlansLength() == 1
     # This: .dict() works only if struct has more than 1 element
-    assert project.latestPlan().dict()["baseModelCID"] == "testCID1"
+    assert project.plans(0).dict()["baseModelCID"] == "testCID1"
 
     project.abortPlan({"from": accounts[0]})
 
@@ -26,7 +26,6 @@ def test_project_creation(accounts, project):
     assert project.plans(0).dict()["baseModelCID"] == "testCID1"
     assert project.plans(1).dict()["baseModelCID"] == "testCID2"
     assert project.plans(2).dict()["baseModelCID"] == "testCID3"
-    assert project.latestPlan().dict()["baseModelCID"] == "testCID3"
 
 
 def test_encryption_mechanism(accounts, project, w3):
