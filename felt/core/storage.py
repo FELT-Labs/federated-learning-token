@@ -5,7 +5,7 @@ import aiofiles
 import httpx
 
 
-async def upload_file(file):
+async def ipfs_upload_file(file):
     """Upload file to IPFS using web3.storage.
 
     Args:
@@ -24,7 +24,7 @@ async def upload_file(file):
     return res
 
 
-async def download_file(cid, output_path=None):
+async def ipfs_download_file(cid, output_path=None):
     """Download file stored in IPFS.
 
     Args:
