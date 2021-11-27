@@ -9,7 +9,12 @@
 */
 pragma solidity ^0.8.0;
 
+import "./Token.sol";
+
+
 contract ProjectContract {
+    FELToken private token;
+
     struct Round {
         bool completed;
         uint numSubmitted;
@@ -39,6 +44,7 @@ contract ProjectContract {
 
         // Number of clients and rewards in training
         uint numNodes;
+        uint totalReward;
         uint nodeReward;
 
         // mapping (acting as array) of rounds
@@ -90,9 +96,10 @@ contract ProjectContract {
     // Settings public/private - possible to join for new nodes/builders
     bool public isPublic;
 
-
-    constructor(bool _isPublic) {
+    constructor(FELToken _token, bool _isPublic) {
+        token = _token;
         isPublic = _isPublic;
+
         // Set creator both as builder and node, might be changed in future
         builders[msg.sender] = Builder({
             _address: msg.sender
@@ -217,6 +224,10 @@ contract ProjectContract {
             "Model already sent for this round"
         );
 
+        // Send reward to node
+        token.transfer(msg.sender, plans[numPlans - 1].nodeReward);
+        plans[numPlans - 1].totalReward -= plans[numPlans - 1].nodeReward;
+        // Store model CID and finish in case it is last
         round.modelsCID[msg.sender] = modelCID;
         round.numSubmitted += 1;
         if (round.numSubmitted >= activeNodes) {
@@ -228,13 +239,22 @@ contract ProjectContract {
     /*** BLOCK: Plan managment ***/
 
     // Create plan
-    function createPlan(string memory modelCID) public onlyBuilder {
+    function createPlan(string memory modelCID, uint32 rounds, uint reward) public onlyBuilder {
         require(!isNewPlan, "Another plan is already being executed");
+        require(activeNodes > 0, "No active nodes to execute the plan");
         isNewPlan = true;
+
+        // Builder has to provide the reward
+        uint totalReward = rounds * reward * activeNodes;
+        token.transferFrom(msg.sender, address(this), totalReward);
 
         TrainingPlan storage plan = plans[numPlans++];
         plan.creator = msg.sender;
         plan.baseModelCID = modelCID;
+        plan.nodeReward = reward;
+        plan.totalReward = totalReward;
+        plan.numRounds = rounds;
+        plan.numNodes = activeNodes;
     }
 
     // Abort plan

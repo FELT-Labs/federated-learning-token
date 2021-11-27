@@ -23,8 +23,8 @@ LOGS = Path(__file__).parent / "logs"
 
 async def get_plan(project_contract):
     if project_contract.functions.isNewPlan().call():
-        length = project_contract.functions.getPlansLength()
-        plan = project_contract.plans(length - 1).call()
+        length = project_contract.functions.getPlansLength().call()
+        plan = project_contract.functions.plans(length - 1).call()
         return plan
     return None
 
@@ -83,7 +83,7 @@ async def task():
             # 3. Encrypt the model
             model_path = round_dir / f"node_model.joblib"
             enc_model_path = round_dir / f"enc_node_model.joblib"
-            # TODO: Optimize this part
+            # TODO: Optimize this part, so we don't need to r/w so many times
             joblib.dump(model, model_path)
             with open(model_path, "rb") as f:
                 encrypted_model = encrypt_bytes(f.read(), SECRET)

@@ -9,19 +9,23 @@ from felt.core.web3 import (
 )
 
 
-def test_project_creation(accounts, project):
+def test_project_creation(accounts, project, token):
     """Test creating dummy project."""
-    project.createPlan("testCID1", {"from": accounts[0]})
+    token.increaseAllowance(project.address, 1000, {"from": accounts[0]})
+    project.changeNodeStatus(True, {"from": accounts[0]})
+
+    project.createPlan("testCID1", 10, 10, {"from": accounts[0]})
     assert project.getPlansLength() == 1
+    assert token.balanceOf(project.address) == 100
     # This: .dict() works only if struct has more than 1 element
     assert project.plans(0).dict()["baseModelCID"] == "testCID1"
 
     project.abortPlan({"from": accounts[0]})
 
-    project.createPlan("testCID2", {"from": accounts[0]})
+    project.createPlan("testCID2", 10, 10, {"from": accounts[0]})
     project.abortPlan({"from": accounts[0]})
 
-    project.createPlan("testCID3", {"from": accounts[0]})
+    project.createPlan("testCID3", 10, 10, {"from": accounts[0]})
     assert project.getPlansLength() == 3
     assert project.plans(0).dict()["baseModelCID"] == "testCID1"
     assert project.plans(1).dict()["baseModelCID"] == "testCID2"
