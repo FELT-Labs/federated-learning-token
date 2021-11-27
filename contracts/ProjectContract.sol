@@ -209,6 +209,7 @@ contract ProjectContract {
 
 
     /*** BLOCK: Functions for training plan execution ***/
+    // TODO: Add chainlink keeper to close round if time elapses
     function submitModel(string memory modelCID) public onlyNode {
         Round storage round = plans[numPlans - 1].rounds[currentRound];
         require(

@@ -6,8 +6,9 @@ import joblib
 import websockets
 from dotenv import load_dotenv
 
-from felt.core.storage import download_file, upload_file
-from felt.core.web3 import decrypt_secret, get_project_contract, get_web3
+from felt.core.average import average_models
+from felt.core.storage import ipfs_download_file, ipfs_upload_file
+from felt.core.web3 import decrypt_secret, encrypt_bytes, get_project_contract, get_web3
 
 # Load dotenv at the beginning of the program
 load_dotenv()
@@ -79,31 +80,31 @@ async def task():
             # 2. Execute training
             model.fit(X, y)
 
-            # 3. Upload model to round
+            # 3. Encrypt the model
             model_path = round_dir / f"node_model.joblib"
+            enc_model_path = round_dir / f"enc_node_model.joblib"
+            # TODO: Optimize this part
             joblib.dump(model, model_path)
             with open(model_path, "rb") as f:
-                # TODO: encrypt model first
-                res = await upload_file(f)
+                encrypted_model = encrypt_bytes(f.read(), SECRET)
+
+            with open(enc_model_path, "wb") as f:
+                f.write(encrypted_model)
+
+            # 4. Upload file to IPFS
+            with open(enc_model_path, "rb") as f:
+                res = await ipfs_upload_file(f)
             cid = res.json()["cid"]
 
-            # TODO: upload model CID to contract
+            # 5. Send model to the contract (current round)
             project_contract.functions.submitModel(cid).call()
 
-            # 4. Start donwloading models from other nodes for this round
+            # 6. Download models and wait for round finished
 
-            # 5. Average models
+            # 7. Average models
+            model = average_models(models)
 
-        async with websockets.connect(f"{WS}{ENDPOINT}/training/ws") as websocket:
-            try:
-                while True:
-                    # Request plan pull
-                    await websocket.send(cmd)
-                    rec = await websocket.recv()
-                    print("Received")
-
-            except websockets.ConnectionClosed:
-                continue
+        # 8. Upload final model if coordinator
 
 
 def main():
