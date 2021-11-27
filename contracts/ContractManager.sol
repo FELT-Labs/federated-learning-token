@@ -10,6 +10,8 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 import "./Token.sol";
 
+// TODO: Function for chainlink withdraw
+
 contract ContractManager is Ownable {
     // Referencing active contracts
     FELToken private token;

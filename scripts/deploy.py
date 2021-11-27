@@ -4,10 +4,14 @@ from brownie import ContractManager, FELToken, ProjectContract, accounts, networ
 INITIAL_SUPPLY = 100000000000 * (10 ** 18)
 
 
-def deploy_project():
+def deploy_project(token, owner):
     """Deploy test project contract."""
-    project = ProjectContract.deploy(True, {"from": accounts[0]})
-    project.createPlan("xxx", {"from": accounts[0]})
+    project = ProjectContract.deploy(token, True, {"from": owner})
+
+    project.changeNodeStatus(True, {"from": accounts[0]})
+
+    token.increaseAllowance(project.address, 1000, {"from": owner})
+    project.createPlan("xxx", 10, 10, {"from": owner})
 
 
 def main():
@@ -18,7 +22,7 @@ def main():
         feltoken = FELToken.deploy(INITIAL_SUPPLY, {"from": owner})
         ContractManager.deploy(feltoken, {"from": owner})
 
-        deploy_project()
+        deploy_project(feltoken, owner)
 
     elif network.show_active() == "kovan":
         # add these accounts to metamask by importing private key
