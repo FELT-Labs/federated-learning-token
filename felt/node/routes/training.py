@@ -40,15 +40,5 @@ async def receive_model(request):
     return Response("Received.", media_type="plaintext")
 
 
-@router.websocket_route("/ws")
-async def websocket_endpoint(websocket):
-    await websocket.accept()
-    async for cmd in websocket.iter_text():
-        print(cmd)
-        print(websocket.app.state.W3)
-        await websocket.send_text("Res " + cmd)
-    await websocket.close()
-
-
 # r = await httpx.get("http://0.0.0.0/8000/learning/get_params")
 # ns.from_bytes(r.content)
