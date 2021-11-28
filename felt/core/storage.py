@@ -4,6 +4,8 @@ import os
 import aiofiles
 import httpx
 
+from felt.core.web3 import decrypt_bytes
+
 
 async def ipfs_upload_file(file):
     """Upload file to IPFS using web3.storage.
@@ -24,7 +26,7 @@ async def ipfs_upload_file(file):
     return res
 
 
-async def ipfs_download_file(cid, output_path=None):
+async def ipfs_download_file(cid, output_path=None, secret=None):
     """Download file stored in IPFS.
 
     Args:
@@ -39,8 +41,12 @@ async def ipfs_download_file(cid, output_path=None):
             f"https://{cid}.ipfs.dweb.link/",
         )
 
+    content = res.content
+    if secret is not None:
+        content = decrypt_bytes(res.content, secret)
+
     if output_path is not None:
         async with aiofiles.open(output_path, "wb") as f:
-            await f.write(res.content)
+            await f.write(content)
 
-    return res
+    return content

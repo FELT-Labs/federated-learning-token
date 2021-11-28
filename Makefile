@@ -23,7 +23,7 @@ help:
 	@echo "        Clean repository"
 
 install:
-	sudo apt -y install build-essential $(PYTHON_VERSION) $(PYTHON_VERSION)-dev $(PYTHON_VERSION)-distutils
+#	sudo apt -y install build-essential $(PYTHON_VERSION) $(PYTHON_VERSION)-dev $(PYTHON_VERSION)-distutils
 	${PYTHON_VERSION} -m pip install -U pip
 	${PYTHON_VERSION} -m pip install virtualenv
 	make venv
@@ -31,7 +31,7 @@ install:
 
 
 install-node:
-	sudo apt -y install build-essential $(PYTHON_VERSION) $(PYTHON_VERSION)-dev $(PYTHON_VERSION)-distutils
+#	sudo apt -y install build-essential $(PYTHON_VERSION) $(PYTHON_VERSION)-dev $(PYTHON_VERSION)-distutils
 	${PYTHON_VERSION} -m pip install -U pip
 	${PYTHON_VERSION} -m pip install virtualenv
 	make venv

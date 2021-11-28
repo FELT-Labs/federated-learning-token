@@ -50,10 +50,12 @@ contract ProjectContract is VRFConsumerBase {
         // Training params
         uint32 numRounds;
 
-        // Number of clients and rewards in training
+        // Number of nodes and rewards in training
         uint numNodes;
         uint totalReward;
         uint nodeReward;
+
+        uint keyTurn;
 
         // mapping (acting as array) of rounds
         mapping(uint => Round) rounds;
@@ -69,6 +71,8 @@ contract ProjectContract is VRFConsumerBase {
         bytes32 secret0;
         bytes32 secret1;
         bytes32 secret2;
+        // Entry state represents at which iteration node joined
+        uint entryKeyTurn;
     }
 
     struct NodeJoinRequest {
@@ -80,9 +84,11 @@ contract ProjectContract is VRFConsumerBase {
     // Plan designer entity (builder)
     struct Builder {
         address _address;
+        bool parity;
+        bytes32 publicKey;
     }
 
-    mapping(address => Builder) builders;
+    mapping(address => Builder) public builders;
 
     // Mapping node address to index + 4 extra states:
     // 0 - no request
@@ -92,6 +98,7 @@ contract ProjectContract is VRFConsumerBase {
     mapping(address => uint) public nodes;
     Node[] public nodesArray;
     uint public activeNodes = 0;
+    uint public keyTurn = 0; // Increment on overy node join
 
     // Request are treated as a stack (for simplicity)
     NodeJoinRequest[] public nodeRequests;
@@ -103,10 +110,14 @@ contract ProjectContract is VRFConsumerBase {
     bool public isNewPlan = false;
     bool public isPlanRunning = false;
     uint public currentRound = 0;
-    // TODO: Settings public/private - possible to join for new nodes/builders
+
 
     constructor(
         FELToken _token,
+        // Builder setup
+        bool parity,
+        bytes32 publicKey,
+        // Chainlink setup
         bytes32 _keyhash,
         address _vrfCoordinator,
         address _linkToken,
@@ -125,7 +136,9 @@ contract ProjectContract is VRFConsumerBase {
 
         // Set creator both as builder and node, might be changed in future
         builders[msg.sender] = Builder({
-            _address: msg.sender
+            _address: msg.sender,
+            parity: parity,
+            publicKey: publicKey
         });
 
         nodes[msg.sender] = 3;
@@ -135,7 +148,8 @@ contract ProjectContract is VRFConsumerBase {
             parity: false, 
             secret0: 0,
             secret1: 0,
-            secret2: 0
+            secret2: 0,
+            entryKeyTurn: 0
         }));
     }
 
@@ -169,6 +183,24 @@ contract ProjectContract is VRFConsumerBase {
 
     function getPlansLength() public view returns(uint) {
         return numPlans;
+    }
+
+
+    function getNodesLength() public view returns(uint) {
+        return nodesArray.length;
+    }
+
+
+    /*** BLOCK: Functions related to builders ***/
+
+    /** Builder can update his public key.
+        @param parity based on header value (0x02/0x03 - false/true)
+        @param publicKey compressed public key value
+     */
+    function setBuilderPublickey(bool parity, bytes32 publicKey) public {
+        require(builders[msg.sender]._address == msg.sender, "Builder not set");
+        builders[msg.sender].parity = parity;
+        builders[msg.sender].publicKey = publicKey;
     }
 
     /*** BLOCK: Functions related to node join ***/
@@ -209,13 +241,15 @@ contract ProjectContract is VRFConsumerBase {
         require(nodeRequests.length > 0, "No request to process.");
         nodes[nodeRequests[nodeRequests.length - 1]._address] = nodesArray.length + 3;
 
+        keyTurn += 1;
         nodesArray.push(Node({
             _address: nodeRequests[nodeRequests.length - 1]._address,
             activated: true,
             parity: parity,
             secret0: secret0,
             secret1: secret1,
-            secret2: secret2
+            secret2: secret2,
+            entryKeyTurn: keyTurn
         }));
         activeNodes += 1;
         nodeRequests.pop();
@@ -239,6 +273,7 @@ contract ProjectContract is VRFConsumerBase {
 
 
     /*** BLOCK: Functions for training plan execution ***/
+
     // TODO: Add Chainlink Keeper to close round if time elapses
     function submitModel(string memory modelCID) public onlyNode {
         require(
@@ -264,10 +299,16 @@ contract ProjectContract is VRFConsumerBase {
         }
     }
 
+
+    function getRoundModel(uint roundIdx, address nodeAddress) public view returns(string memory) {
+        require(numPlans > 0, "No training plans created");
+        return plans[numPlans - 1].rounds[roundIdx].modelsCID[nodeAddress];
+    }
+
     /*** BLOCK: Plan managment ***/
 
     // Create plan
-    function createPlan(string memory modelCID, uint32 rounds, uint reward) public onlyBuilder {
+    function createPlan(string memory modelCID, uint32 rounds, uint reward) public onlyBuilder returns(bytes32) {
         require(!isNewPlan, "Another plan is already being executed");
         require(activeNodes > 0, "No active nodes to execute the plan");
 
@@ -285,8 +326,12 @@ contract ProjectContract is VRFConsumerBase {
         plan.numNodes = activeNodes;
         plan.nodeReward = reward;
         plan.totalReward = totalReward;
+        plan.keyTurn = keyTurn;
 
-        requestToPlan[getRandomNumber()] = numPlans - 1;
+        bytes32 requestId = getRandomNumber();
+        requestToPlan[requestId] = numPlans - 1;
+        // Returning requestId mainly for testing porpuses
+        return requestId;
     }
 
     // Abort plan
@@ -327,11 +372,19 @@ contract ProjectContract is VRFConsumerBase {
      *    - Sponsor projects
      *    - Request/Buy model
      *    - Validation
+     *    - Settings public/private
+     *        - possible to join for new nodes/builders
      */
 
 
     // Vote for removing fake node
-    // Also must reestablish the secret
+    //   - Also must reestablish the secret
+    function voteNodeRemove(address _address) public onlyNode {
+        // TODO: check if already voted
+        // Increment vote count of node, kick if vote count above half
+
+
+    }
 
 
     /*** BLOCK: VRF handling ***/

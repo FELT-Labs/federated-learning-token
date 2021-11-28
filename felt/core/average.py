@@ -36,7 +36,7 @@ def set_model_params(model, params):
     Returns:
         (object): scikit-learn model with new values.
     """
-    for param, value in params:
+    for param, value in params.items():
         setattr(model, param, value)
     return model
 
