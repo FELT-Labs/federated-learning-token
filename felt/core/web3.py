@@ -1,4 +1,5 @@
 """Module for managing connection to chain and contracts."""
+import hashlib
 import json
 from pathlib import Path
 
@@ -65,6 +66,8 @@ def encrypt_secret(secret, parity, public_key):
     parity = bool(emph_key[0] - 2)
 
     ciphertext = emph_key[1:] + ciphertext[65:]
+    # Split to 32 bytes blocks
+    ciphertext = [ciphertext[i : i + 32] for i in range(0, len(ciphertext), 32)]
     return (parity, ciphertext)
 
 
@@ -92,3 +95,10 @@ def encrypt_bytes(bytes, secret):
 def decrypt_bytes(ciphertext, secret):
     """Decrypt bytes (model) stored in contract/IPFS."""
     return aes_decrypt(secret, ciphertext)
+
+
+def get_current_secret(secret, entry_key_turn, key_turn):
+    """Calculate shared secret at current state."""
+    for _ in range(entry_key_turn, key_turn):
+        secret = hashlib.sha256(secret).digest()
+    return secret

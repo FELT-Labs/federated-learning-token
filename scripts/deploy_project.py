@@ -1,6 +1,12 @@
 """Module for deploying project contract."""
 from brownie import FELToken, ProjectContract, accounts, config, network
-from scripts.helpful_scripts import get_contract
+from scripts.helpful_scripts import (
+    LOCAL_BLOCKCHAIN_ENVIRONMENTS,
+    get_account,
+    get_contract,
+)
+
+from felt.core.web3 import encrypt_secret, export_public_key, get_current_secret
 
 
 def deploy_project(owner):
@@ -11,16 +17,39 @@ def deploy_project(owner):
     vrf_coordinator = get_contract("vrf_coordinator")
     link_token = get_contract("link_token")
 
+    parity, public_key = export_public_key(owner.private_key[2:])
+
     return ProjectContract.deploy(
-        token, keyhash, vrf_coordinator, link_token, fee, {"from": owner}
+        token,
+        parity,
+        public_key,
+        keyhash,
+        vrf_coordinator,
+        link_token,
+        fee,
+        {"from": owner},
     )
 
 
-def setup_test_project(project, token, owner):
-    project.changeNodeStatus(True, {"from": owner})
+def setup_test_project(project, owner):
 
-    token.increaseAllowance(project.address, 1000, {"from": owner})
-    project.createPlan("xxx", 10, 10, {"from": owner})
+    secret = b"Initial secret must be 32 bytes."
+    assert len(secret) == 32
+
+    # Add two node for testing:
+    for i in [1, 2]:
+        node = accounts.add(config["wallets"][f"node{i}_key"])
+        parity, public_key = export_public_key(node.private_key[2:])
+        project.requestJoinNode(parity, public_key, {"from": node})
+
+        # Accept the request (share secret encrypted by one more than current keyTurn)
+        turn_secret = get_current_secret(secret, 0, project.keyTurn() + 1)
+
+        request = project.nodeRequests(project.getNodeRequestsLength() - 1).dict()
+        parity, ciphertext = encrypt_secret(
+            turn_secret, request["parity"], request["publicKey"]
+        )
+        project.acceptNode(parity, *ciphertext, {"from": owner})
 
 
 def main():

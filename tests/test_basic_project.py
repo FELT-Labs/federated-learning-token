@@ -32,7 +32,7 @@ def test_project_creation(accounts, project, token):
     assert project.plans(2).dict()["baseModelCID"] == "testCID3"
 
 
-def test_encryption_mechanism(accounts, project, w3):
+def test_encryption_mechanism(accounts, project):
     test_key = PrivateKey()
     parity, public_key = export_public_key(test_key.to_hex())
 
@@ -46,10 +46,9 @@ def test_encryption_mechanism(accounts, project, w3):
     assert len(secret) == 32
 
     parity, ciphertext = encrypt_secret(secret, request["parity"], request["publicKey"])
-    assert len(ciphertext) == 3 * 32
+    assert len(ciphertext) == 3 and all(len(ciphertext[i]) == 32 for i in range(3))
 
     # Accpet must be done by node or builder
-    ciphertext = [ciphertext[i : i + 32] for i in range(0, len(ciphertext), 32)]
     project.acceptNode(parity, *ciphertext, {"from": accounts[0]})
 
     # Decryption process:
