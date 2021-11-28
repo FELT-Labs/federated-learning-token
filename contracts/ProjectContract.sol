@@ -9,11 +9,18 @@
 */
 pragma solidity ^0.8.0;
 
+import "@chainlink/contracts/src/v0.8/VRFConsumerBase.sol";
+
 import "./Token.sol";
 
 
-contract ProjectContract {
+contract ProjectContract is VRFConsumerBase {
     FELToken private token;
+
+    // Chainlink VRF
+    bytes32 internal keyHash;
+    uint256 internal fee;
+    uint256 public randomResult;
 
     struct Round {
         bool completed;
@@ -26,6 +33,7 @@ contract ProjectContract {
         // bytes data;
         address creator;
         address finalNode;
+        uint32 randomSeed;
 
         // Base model uploaded by builder
         string baseModelCID;
@@ -83,22 +91,37 @@ contract ProjectContract {
     // 3 <= i  - represents index i in node array as (i - 3)
     mapping(address => uint) public nodes;
     Node[] public nodesArray;
+    uint public activeNodes = 0;
+
     // Request are treated as a stack (for simplicity)
     NodeJoinRequest[] public nodeRequests;
-    uint public activeNodes = 0;
 
     mapping(uint => TrainingPlan) public plans;
     uint numPlans = 0;
 
+    mapping(bytes32 => uint) requestToPlan;
     bool public isNewPlan = false;
     bool public isPlanRunning = false;
     uint public currentRound = 0;
-    // Settings public/private - possible to join for new nodes/builders
-    bool public isPublic;
+    // TODO: Settings public/private - possible to join for new nodes/builders
 
-    constructor(FELToken _token, bool _isPublic) {
+    constructor(
+        FELToken _token,
+        bytes32 _keyhash,
+        address _vrfCoordinator,
+        address _linkToken,
+        uint256 _fee
+    ) 
+        VRFConsumerBase(
+            _vrfCoordinator, // VRF Coordinator
+            _linkToken  // LINK Token
+        )
+    {
         token = _token;
-        isPublic = _isPublic;
+
+        // VRF
+        keyHash = _keyhash;
+        fee = _fee;       
 
         // Set creator both as builder and node, might be changed in future
         builders[msg.sender] = Builder({
@@ -178,11 +201,11 @@ contract ProjectContract {
               So that the node doesn't have access to previous models
     */
     function acceptNode(
-            bool parity,
-            bytes32 secret0,
-            bytes32 secret1,
-            bytes32 secret2
-        ) public onlyNode {
+        bool parity,
+        bytes32 secret0,
+        bytes32 secret1,
+        bytes32 secret2
+    ) public onlyNode {
         require(nodeRequests.length > 0, "No request to process.");
         nodes[nodeRequests[nodeRequests.length - 1]._address] = nodesArray.length + 3;
 
@@ -216,8 +239,13 @@ contract ProjectContract {
 
 
     /*** BLOCK: Functions for training plan execution ***/
-    // TODO: Add chainlink keeper to close round if time elapses
+    // TODO: Add Chainlink Keeper to close round if time elapses
     function submitModel(string memory modelCID) public onlyNode {
+        require(
+            currentRound < plans[numPlans - 1].numRounds,
+            "No more rounds to perform."
+        );
+
         Round storage round = plans[numPlans - 1].rounds[currentRound];
         require(
             bytes(round.modelsCID[msg.sender]).length == 0,
@@ -242,7 +270,9 @@ contract ProjectContract {
     function createPlan(string memory modelCID, uint32 rounds, uint reward) public onlyBuilder {
         require(!isNewPlan, "Another plan is already being executed");
         require(activeNodes > 0, "No active nodes to execute the plan");
+
         isNewPlan = true;
+        currentRound = 0;
 
         // Builder has to provide the reward
         uint totalReward = rounds * reward * activeNodes;
@@ -251,10 +281,12 @@ contract ProjectContract {
         TrainingPlan storage plan = plans[numPlans++];
         plan.creator = msg.sender;
         plan.baseModelCID = modelCID;
-        plan.nodeReward = reward;
-        plan.totalReward = totalReward;
         plan.numRounds = rounds;
         plan.numNodes = activeNodes;
+        plan.nodeReward = reward;
+        plan.totalReward = totalReward;
+
+        requestToPlan[getRandomNumber()] = numPlans - 1;
     }
 
     // Abort plan
@@ -267,20 +299,65 @@ contract ProjectContract {
     }
 
     // Finish plan
-    function finishPlan() public {
+    // IMPORTANT: Use combination of seed and secret to generate builder secret
+    function finishPlan(
+        bool parity,
+        bytes32 secret0,
+        bytes32 secret1,
+        bytes32 secret2,
+        string memory modelCID
+    ) public onlyNode {
+        TrainingPlan storage plan = plans[numPlans - 1];
+        require(plan.finalNode == msg.sender, "Only pre-selected node can finish plan");
+
+        plan.finalModelCID = modelCID;
+
+        plan.parity = parity;
+        plan.secret0 = secret0;
+        plan.secret1 = secret1;
+        plan.secret2 = secret2;
+
         isNewPlan = false;
+        isPlanRunning = false;
     }
 
 
-    // Request join builder
+    /** TODO:
+     *    - Request join from builder
+     *    - Sponsor projects
+     *    - Request/Buy model
+     *    - Validation
+     */
 
-    // Deposit
-
-    // Sponsor
-
-
-    // Validation
 
     // Vote for removing fake node
     // Also must reestablish the secret
+
+
+    /*** BLOCK: VRF handling ***/
+    /** 
+     * Requests randomness
+     */
+    function getRandomNumber() private returns (bytes32 requestId) {
+        require(LINK.balanceOf(address(this)) >= fee, "Not enough LINK - fill contract with faucet");
+        return requestRandomness(keyHash, fee);
+    }
+
+
+    /**
+     * Callback function used by VRF Coordinator
+     */
+    function fulfillRandomness(bytes32 requestId, uint256 randomness) internal override {
+        uint idx = requestToPlan[requestId];
+        if (isNewPlan && idx + 1 == numPlans) {
+            isPlanRunning = true;
+
+            // TODO: Deal better with inactive nodes so it is more fair
+            uint256 i = randomness % nodesArray.length;
+            for (; !nodesArray[i % nodesArray.length].activated; ++i) {}
+
+            plans[idx].finalNode = nodesArray[i % nodesArray.length]._address;
+            plans[idx].randomSeed = uint32(randomness);
+        }
+    }
 }

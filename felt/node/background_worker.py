@@ -1,9 +1,8 @@
 import asyncio
 from pathlib import Path
 
-import httpx
 import joblib
-import websockets
+import numpy as np
 from dotenv import load_dotenv
 
 from felt.core.average import average_models
@@ -59,8 +58,8 @@ async def task():
             await asyncio.sleep(3)
             continue
 
-        print(plan)
-        continue
+        # Use random seed from contract
+        np.random.seed(plan[2])
 
         # Creat directory for storing plan
         plan_index = project_contract.functions.getPlansLength().call()
@@ -69,7 +68,7 @@ async def task():
 
         # 1. Download model by CID
         base_model_path = plan_dir / "base_model.joblib"
-        await download_file(plan, output_path=base_model_path)
+        await ipfs_download_file(plan, output_path=base_model_path)
         model = joblib.load(base_model_path)
 
         num_rounds = plan[9]
