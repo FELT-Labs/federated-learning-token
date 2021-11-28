@@ -41,5 +41,8 @@ jobs:
         pip install -r requirements-lib.txt
         pip install -e .
 
+    - name: Create demo .env file
+      run: touch .env
+
     - name: Run Tests
       run: brownie test
