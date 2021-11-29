@@ -56,13 +56,15 @@ This repository contains 3 main components:
 
     Keep the console running while testing the contracts.
 
-5. Finally you need to run the nodes with the data. The demo deployment registers 2 nodes based on the private keys you have in `.env`. For running a new node open a new terminal (run the `source venv/bin/activate` if neede) and execute:
+5. Finally you need to run the nodes with the data. The current deployment (for local testing) registers 2 nodes based on the private keys you have in `.env`. For running a new node open a new terminal (run the `source venv/bin/activate` if neede) and execute:
     ```bash
     felt-node-worker node1
     # or
     felt-node-worker node2
     ```
-    ***You need to open 2 terminals and run both nodes in order to coplete the training plan.** In other case one node would wait for other forever.
+    **You need to open 2 terminals and run both nodes in order to coplete the training plan.** In other case one node would wait for other forever.
+
+    This executes the `felt/node/background_worker.py`. Right now the nodes are using sample data which are fix typed in the code and you can change it based on your needs. _This will be changed in a near future._
 
 
 
