@@ -1,3 +1,6 @@
+from scripts.helpful_scripts import get_account
+
+
 def test_feltoken_deploy(token):
     """
     Test if the contract is correctly deployed.
@@ -9,12 +12,14 @@ def test_feltoken_balance(accounts, token):
     """
     Test balance of owner.
     """
-    assert token.balanceOf(accounts[0], {"from": accounts[0]}) == 1000
+    owner = get_account()
+    assert token.balanceOf(owner, {"from": owner}) == 1000
 
 
 def test_feltoken_transfer(accounts, token):
     """
     Test transfer to other account.
     """
-    token.transfer(accounts[1], 10, {"from": accounts[0]})
-    assert token.balanceOf(accounts[1], {"from": accounts[0]}) == 10
+    owner = get_account()
+    token.transfer(accounts[1], 10, {"from": owner})
+    assert token.balanceOf(accounts[1], {"from": owner}) == 10

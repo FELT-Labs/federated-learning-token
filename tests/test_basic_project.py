@@ -1,4 +1,5 @@
 from coincurve import PrivateKey
+from scripts.helpful_scripts import get_account
 
 from felt.core.web3 import (
     decrypt_bytes,
@@ -11,21 +12,22 @@ from felt.core.web3 import (
 
 def test_project_creation(accounts, project, token):
     """Test creating dummy project."""
-    token.increaseAllowance(project.address, 1000, {"from": accounts[0]})
-    project.changeNodeStatus(True, {"from": accounts[0]})
+    owner = get_account()
+    token.increaseAllowance(project.address, 1000, {"from": owner})
+    project.changeNodeStatus(True, {"from": owner})
 
-    project.createPlan("testCID1", 10, 10, {"from": accounts[0]})
+    project.createPlan("testCID1", 10, 10, {"from": owner})
     assert project.getPlansLength() == 1
     assert token.balanceOf(project.address) == 100
     # This: .dict() works only if struct has more than 1 element
     assert project.plans(0).dict()["baseModelCID"] == "testCID1"
 
-    project.abortPlan({"from": accounts[0]})
+    project.abortPlan({"from": owner})
 
-    project.createPlan("testCID2", 10, 10, {"from": accounts[0]})
-    project.abortPlan({"from": accounts[0]})
+    project.createPlan("testCID2", 10, 10, {"from": owner})
+    project.abortPlan({"from": owner})
 
-    project.createPlan("testCID3", 10, 10, {"from": accounts[0]})
+    project.createPlan("testCID3", 10, 10, {"from": owner})
     assert project.getPlansLength() == 3
     assert project.plans(0).dict()["baseModelCID"] == "testCID1"
     assert project.plans(1).dict()["baseModelCID"] == "testCID2"
@@ -33,6 +35,8 @@ def test_project_creation(accounts, project, token):
 
 
 def test_encryption_mechanism(accounts, project):
+    onwner = get_account()
+
     test_key = PrivateKey()
     parity, public_key = export_public_key(test_key.to_hex())
 
@@ -49,7 +53,7 @@ def test_encryption_mechanism(accounts, project):
     assert len(ciphertext) == 3 and all(len(ciphertext[i]) == 32 for i in range(3))
 
     # Accpet must be done by node or builder
-    project.acceptNode(parity, *ciphertext, {"from": accounts[0]})
+    project.acceptNode(parity, *ciphertext, {"from": onwner})
 
     # Decryption process:
     #  1. Node gets index by address

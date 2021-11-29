@@ -8,6 +8,8 @@ from scripts.helpful_scripts import (
 )
 from web3 import Web3
 
+from felt.core.web3 import export_public_key
+
 
 @pytest.fixture(autouse=True)
 def setup(fn_isolation):
@@ -54,8 +56,13 @@ def project(ProjectContract, token, get_keyhash, chainlink_fee):
     """
     Yield a `Contract` object for the ProjectContract contract.
     """
+    owner = get_account()
+    parity, public_key = export_public_key(owner.private_key[2:])
+
     project = ProjectContract.deploy(
         token,
+        parity,
+        public_key,
         get_keyhash,
         get_contract("vrf_coordinator").address,
         get_contract("link_token").address,
