@@ -7,8 +7,6 @@ INITIAL_SUPPLY = 100000000000 * (10 ** 18)
 
 def main():
     owner = accounts.add(config["wallets"]["owner_key"])
-    print(accounts[0].balance())
-    print(accounts.add(config["wallets"]["node1_key"]).balance())
     print(f"On network {network.show_active()}")
 
     # requires brownie account to have been created
