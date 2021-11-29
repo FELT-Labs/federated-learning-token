@@ -18,6 +18,54 @@ This repository contains 3 main components:
 
     Web application located at folder [`webapp`](./webapp) is intended as main page landing page of the token.
 
+## Quick Start
+1. Install python, recommended is **3.9** or higher
+
+2. You need to install all dependencies. I recommend using `Makefile` when possible by running:
+    ```bash
+    make install-node
+    # once finished, activate the python environment
+    source venv/bin/activate
+    ```
+
+    Or else you need to install it like this:
+    ```bash
+    pin install -r requirements.txt -r requirements-lib.txt
+    python -m pip install -e .
+    ```
+
+3. Create `.env` file using `.env_example` it should look something like this:
+    ```bash
+    export PRIVATE_KEY='0xc...'
+    export NODE1_PRIVATE_KEY='0xc...'
+    export NODE2_PRIVATE_KEY='0xc...'
+    ### API key for web3 storage
+    export WEB3_STORAGE_TOKEN='ab...'
+    ```
+    Private keys are just standard private keys which you generated. `WEB3_STORAGE_TOKEN` needs to be obtained from [web3.storage](https://web3.storage/).
+
+4. Deploy contracts using brownie
+    ```bash
+    brownie run deploy -I
+    ```
+    This will open interactive console. Once the console is running you can create new plan by typing into console:
+    ```bash
+    run("create_plan")
+    ```
+    You can also make changes to `scripts/create_plan.py` in order to create some different plan.
+
+    Keep the console running while testing the contracts.
+
+5. Finally you need to run the nodes with the data. The demo deployment registers 2 nodes based on the private keys you have in `.env`. For running a new node open a new terminal (run the `source venv/bin/activate` if neede) and execute:
+    ```bash
+    felt-node-worker node1
+    # or
+    felt-node-worker node2
+    ```
+    ***You need to open 2 terminals and run both nodes in order to coplete the training plan.** In other case one node would wait for other forever.
+
+
+
 ## Installation - contracts
 ## Installation - felt library (nodes, builders)
 ## Installation - web application
