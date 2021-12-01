@@ -1,4 +1,5 @@
 """Module for storing and managing data files at IPFS/Filecoin using web3.storage."""
+import asyncio
 import os
 
 import aiofiles
@@ -16,7 +17,7 @@ async def ipfs_upload_file(file):
     Returns:
         Response: httpx response object
     """
-    async with httpx.AsyncClient() as client:
+    async with httpx.AsyncClient(timeout=10.0) as client:
         res = await client.post(
             f"https://api.web3.storage/upload",
             headers={"Authorization": "Bearer " + os.environ["WEB3_STORAGE_TOKEN"]},
@@ -36,10 +37,15 @@ async def ipfs_download_file(cid, output_path=None, secret=None):
     Returns:
         Response: httpx response object
     """
-    async with httpx.AsyncClient() as client:
-        res = await client.get(
-            f"https://{cid}.ipfs.dweb.link/",
-        )
+    async with httpx.AsyncClient(timeout=10.0) as client:
+        for _ in range(5):
+            try:
+                res = await client.get(
+                    f"https://{cid}.ipfs.dweb.link/",
+                )
+            except httpx.ReadTimeout:
+                print("Connection timeout - retry")
+                await asyncio.sleep(5)
 
     content = res.content
     if secret is not None:

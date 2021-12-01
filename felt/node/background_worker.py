@@ -135,7 +135,7 @@ async def execute_rounds(
                 ).call()
                 if len(cid) < 5:
                     continue
-                print(f"CID from node {node_idx}", cid)
+                print(f"Downloading CID from node {node_idx}", cid)
 
                 m_path = round_dir / f"model_node_{node_idx}.joblib"
                 await ipfs_download_file(cid, m_path, secret)
