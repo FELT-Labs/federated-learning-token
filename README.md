@@ -43,12 +43,21 @@ This repository contains 3 main components:
     export WEB3_STORAGE_TOKEN='ab...'
     ```
     Private keys are just standard private keys which you generated. `WEB3_STORAGE_TOKEN` needs to be obtained from [web3.storage](https://web3.storage/).
+    
+5. Install [ganache-cli](https://www.npmjs.com/package/ganache-cli) which is needed for local development.
+    ```bash
+    npm install -g ganache-cli
+    ```
+    or
+    ```bash
+    yarn add global ganache-cli
+    ```
 
-4. Deploy contracts using brownie
+6. Deploy contracts using brownie
     ```bash
     brownie run deploy -I
     ```
-    This will open interactive console. Once the console is running you can create new plan by typing into console:
+    This will start a fresh [Ganache](https://www.trufflesuite.com/ganache) instance in the background and open interactive console. Once the console is running you can create new plan by typing into console:
     ```bash
     run("create_plan")
     ```
@@ -56,7 +65,7 @@ This repository contains 3 main components:
 
     Keep the console running while testing the contracts.
 
-5. Finally you need to run the nodes with the data. The current deployment (for local testing) registers 2 nodes based on the private keys you have in `.env`. For running a new node open a new terminal (run the `source venv/bin/activate` if neede) and execute:
+7. Finally you need to run the nodes with the data. The current deployment (for local testing) registers 2 nodes based on the private keys you have in `.env`. For running a new node open a new terminal (run the `source venv/bin/activate` if neede) and execute:
     ```bash
     felt-node-worker node1
     # or
@@ -67,46 +76,7 @@ This repository contains 3 main components:
     This executes the `felt/node/background_worker.py`. Right now the nodes are using sample data which are fix typed in the code and you can change it based on your needs. _This will be changed in a near future._
 
 
-
-## Installation - contracts
-## Installation - felt library (nodes, builders)
-## Installation - web application
-
-## Installation
-1. Setup environment.
-
-    ```bash
-    make install
-    ```
-
-2. Install the React client dependencies.
-
-    ```bash
-    cd ./webapp
-    yarn install
-    ```
-    or 
-
-    ```bash
-    cd ./webapp
-    npm install 
-    ```
-
-3. Obtain [web3.storage](https://web3.storage) token and place it into `.env` file.
-
-    You can use the .env_example in this repo 
-    as a template, just fill in the values and rename it to '.env'. 
-
-    Here is what your .env should look like:
-
-    ```bash
-    export WEB3_STORAGE_TOKEN='ab...'
-    ...
-    ```
-
-
-
-4. If you want to be able to deploy to testnets, do the following.
+8. If you want to be able to deploy to testnets, do the following.
 
     Set your WEB3_INFURA_PROJECT_ID, and PRIVATE_KEY environment variables.
 
@@ -124,74 +94,24 @@ This repository contains 3 main components:
     export WEB3_INFURA_PROJECT_ID=<PROJECT_ID>
     export PRIVATE_KEY=<PRIVATE_KEY>
     ```
-   
-5. Create brownie account(s) following instructions here:
-       https://eth-brownie.readthedocs.io/en/stable/account-management.html
-
-6. Import the brownie account to MetaMask using their private key(s)
 
 
+## Installation - contracts
+## Installation - felt library (nodes, builders)
+## Installation - web application
 
-## Usage
-
-1. Open the Brownie console. Starting the console launches a fresh [Ganache](https://www.trufflesuite.com/ganache) instance in the background.
+1. Install the React client dependencies.
 
     ```bash
-    $ brownie console
-    Brownie v1.9.0 - Python development framework for Ethereum
-
-    ReactMixProject is the active project.
-    Launching 'ganache-cli'...
-    Brownie environment is ready.
+    cd ./webapp
+    yarn install
     ```
-
-    Alternatively, to run on Kovan, set the network flag to kovan
+    or 
 
     ```bash
-    $ brownie console --network kovan
-    Brownie v1.14.6 - Python development framework for Ethereum
-
-    ReactMixProject is the active project.
-    Brownie environment is ready.
+    cd ./webapp
+    npm install 
     ```
-
-2. Run the [deployment script](scripts/deploy.py) to deploy the project's smart contracts.
-
-    ```python
-    >>> run("deploy")
-    Running 'scripts.deploy.main'...
-    ```
-    Or steps 1. and 2. combinde:
-    ```bash
-    brownie run deploy -I
-    ```
-
-3. While Brownie is still running, start the React app in a different terminal.
-
-    The first time this app is used, the node modules have to be installed in /src.
-    To do this, navigate to ./client/src and run
-
-    ```bash
-    # make sure to use a different terminal, not the brownie console
-    npm install
-    npm audit fix
-    ```
-
-4. Connect Metamask to the local Ganache network. In the upper right corner, click the network dropdown menu. Select `Localhost 8545`, or `Kovan test network`:
-
-
-
-5. Interact with the smart contracts using the web interface or via the Brownie console.
-
-    ```python
-    # get the newest vyper storage contract
-    >>> vyper_storage = VyperStorage[-1]
-
-    # the default sender of the transaction is the contract creator
-    >>> vyper_storage.set(1337)
-    ```
-
-    Any changes to the contracts from the console should show on the website after a refresh, and vice versa.
 
 ## Ending a Session
 
@@ -227,23 +147,5 @@ For contracts deployed on a live network, the deployment information is stored p
 * Manually remove the `client/src/artifacts/` directory
 
 
-## Resources
-
-This mix provides a bare-bones implementation of [Create React App](https://create-react-app.dev/), configured to work with Brownie.
-
-To get started with React and building a front-end for your dApps:
-
-* [Rimble](https://rimble.consensys.design/) is an open-source library of React components and guides to help you make dApps. Along with components they provide guides and tutorials to help you get started.
-* For more in-depth information, read the [Create React App documentation](https://create-react-app.dev/docs/getting-started)
-
-
-To get started with Brownie:
-
-* Check out the other [Brownie mixes](https://github.com/brownie-mix/) that can be used as a starting point for your own contracts. They also provide example code to help you get started.
-* ["Getting Started with Brownie"](https://medium.com/@iamdefinitelyahuman/getting-started-with-brownie-part-1-9b2181f4cb99) is a good tutorial to help you familiarize yourself with Brownie
-* For more in-depth information, read the [Brownie documentation](https://eth-brownie.readthedocs.io/en/stable/)
-
-
-Any questions? Join our [Gitter](https://gitter.im/eth-brownie/community) channel to chat and share with others in the community.
 
 
