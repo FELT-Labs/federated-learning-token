@@ -1,0 +1,288 @@
+.sib-form-message-panel {
+	margin: 0 0 1.25rem 0;
+	width: 100%;
+	padding: 0.4375rem;
+	border: 1px solid;
+	display: none
+}
+
+.sib-form-message-panel--active {
+	display: inline-block
+}
+
+.sib-form-message-panel__text {
+	display: flex;
+	align-items: center;
+	margin: 0;
+	padding: 0.5rem
+}
+
+.sib-form-message-panel__text .sib-icon {
+	contain: strict;
+	display: inline-block;
+	fill: currentColor
+}
+
+.sib-form-message-panel__text .sib-notification__icon {
+	height: 1.5em;
+	width: 1.5em;
+	flex-shrink: 0;
+	margin-right: calc(1rem - 1px)
+}
+
+.sib-loader {
+	display: inline-block;
+	position: relative;
+	width: 64px;
+	height: 64px
+}
+
+.checkbox_tick_positive:before {
+	left: 49%
+}
+
+@media screen and (max-width: 500px) {
+	#sib-container {
+		padding: 32px 9px 32px
+	}
+	.form__label-row--horizontal {
+		flex-direction: column
+	}
+	.form__label-row--horizontal>* {
+		width: 100%
+	}
+}
+
+.entry__choice label p {
+	display: inline
+}
+
+
+@media screen and (max-width: 400px) {
+	#sib-container {
+		padding: 32px 0px 32px
+	}
+}
+
+.progress-indicator {
+	background: transparent
+}
+
+.sib-hide-loader-icon {
+	display: none
+}
+
+.sib-form ::-webkit-input-placeholder {
+	color: #c0ccda;
+	opacity: 1
+}
+
+.sib-form ::-moz-placeholder {
+	color: #c0ccda;
+	opacity: 1
+}
+
+.sib-form :-ms-input-placeholder {
+	color: #c0ccda;
+	opacity: 1
+}
+
+.sib-form ::-ms-input-placeholder {
+	color: #c0ccda;
+	opacity: 1
+}
+
+.sib-form ::placeholder {
+	color: #c0ccda;
+	opacity: 1
+}
+
+.sib-form .sib-form_fieldset {
+	display: table-row-group
+}
+
+.sib-form .fieldset__separator {
+	display: table-row
+}
+
+.sib-form .fieldset__separator:after,
+.sib-form .fieldset__separator:before {
+	background: #c0ccda;
+	background-clip: padding-box;
+	border: solid transparent;
+	border-width: calc(4rem - 1px) 0 4rem;
+	-moz-box-sizing: content-box;
+	box-sizing: content-box;
+	content: "";
+	display: table-cell;
+	height: 1px
+}
+
+.sib-form .form__fieldset {
+	border: 0;
+	display: table-row;
+	padding: 0
+}
+
+.sib-form .form__fieldset:first-child .form__entries,
+.sib-form .form__fieldset:first-child .form__legend {
+	padding-top: 0
+}
+
+.sib-form .form__entries,
+.sib-form .form__legend {
+	display: table-cell;
+	margin: 0;
+	padding-top: 4rem;
+	vertical-align: top
+}
+
+.sib-form .form__legend {
+	font-size: 1.14869835rem;
+	line-height: 1.5rem;
+	font-weight: 700;
+	padding-right: 2.5rem
+}
+
+@media (max-width: 45rem) {
+	.sib-form .fieldset__separator,
+	.sib-form .form__entries,
+	.sib-form .form__fieldset,
+	.sib-form .form__legend,
+	.sib-form .sib-form_fieldset {
+		display: block
+	}
+	.sib-form .form__legend {
+		padding-bottom: .5rem;
+		padding-right: 0
+	}
+	.sib-form .form__entries {
+		padding-top: 0
+	}
+	.sib-form .fieldset__separator {
+		border: 0
+	}
+}
+
+.sib-form .form__entry {
+	border: 0;
+	margin: 0;
+	padding: 0;
+	position: relative
+}
+
+.sib-form .form__entry:not(:first-child) {
+	margin-top: 1.5rem
+}
+
+.sib-form .entry__label+.form__entry {
+	margin-top: 0
+}
+
+.sib-form .entry__label {
+	display: table;
+	font-weight: 700;
+	padding: 0;
+	white-space: normal
+}
+
+.sib-form .form__row {
+	display: -webkit-flex;
+	display: flex;
+	-webkit-flex-wrap: wrap;
+	flex-wrap: wrap;
+	margin: -.25rem -.75rem
+}
+
+.sib-form .form__row:not(:first-child) {
+	margin-top: 1.25rem
+}
+
+.sib-form .entry__label+.form__row {
+	margin-top: -.25rem
+}
+
+.sib-form .form__row>.form__entry {
+	margin: .25rem .75rem
+}
+
+
+.sib-form .entry__error--primary {
+	background-color: $danger;
+}
+
+
+
+
+
+
+
+.sib-form ::-ms-reveal {
+	display: none
+}
+
+.sib-form ::-webkit-inner-spin-button,
+.sib-form ::-webkit-search-decoration {
+	display: none
+}
+
+
+.sib-form .clickable__icon {
+	height: 1.5rem;
+	vertical-align: bottom;
+	width: 1.5rem
+}
+
+.sib-form .clickable__icon:not(.sib-icon_standalone) {
+	margin-right: calc(.7002rem - 1px)
+}
+
+.sib-form .progress-indicator {
+	-webkit-align-items: center;
+	align-items: center;
+	background: rgba(255, 255, 255, 0.9);
+	display: -webkit-flex;
+	display: flex;
+	height: 100%;
+	-webkit-justify-content: center;
+	justify-content: center;
+	width: 100%
+}
+
+.sib-form .progress-indicator .progress-indicator__icon {
+	fill: #0092ff;
+	height: 2rem;
+	width: 2rem
+}
+
+.sib-form .progress-indicator_small .progress-indicator__icon {
+	height: 1rem;
+	width: 1rem
+}
+
+.sib-form .progress-indicator__icon {
+	-webkit-animation: indicator-spin 1.3s cubic-bezier(0.46, 0.35, 0.39, 0.85) infinite;
+	animation: indicator-spin 1.3s cubic-bezier(0.46, 0.35, 0.39, 0.85) infinite
+}
+
+@-webkit-keyframes indicator-spin {
+	0% {
+		-webkit-transform: rotate(0deg);
+		transform: rotate(0deg)
+	}
+	to {
+		-webkit-transform: rotate(1turn);
+		transform: rotate(1turn)
+	}
+}
+
+@keyframes indicator-spin {
+	0% {
+		-webkit-transform: rotate(0deg);
+		transform: rotate(0deg)
+	}
+	to {
+		-webkit-transform: rotate(1turn);
+		transform: rotate(1turn)
+	}
+}
