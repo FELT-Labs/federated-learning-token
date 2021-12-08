@@ -97,7 +97,6 @@ const SimpleFooter = props => {
                           placeholder="Enter your email address"
                           data-required="true"
                           required
-                          invalid
                         />
 
                         <Button
@@ -110,7 +109,7 @@ const SimpleFooter = props => {
                           Subscribe
                         </Button>
                       </InputGroup>
-                      <FormFeedback tooltip className="entry__error entry__error--primary">
+                      <FormFeedback className="entry__error entry__error--primary">
                       </FormFeedback>
                     </FormGroup>
                   </div>
