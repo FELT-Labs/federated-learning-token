@@ -1,4 +1,4 @@
-import React, {Component} from "react";
+import React, { Component } from "react";
 
 // reactstrap components
 import {
@@ -7,6 +7,7 @@ import {
   CardBody,
   FormGroup,
   Form,
+  FormFeedback,
   Input,
   InputGroupText,
   InputGroup,
@@ -14,13 +15,56 @@ import {
   Row,
   Col
 } from "reactstrap";
-import {BookOpen, Search} from "react-feather";
+import { BookOpen, Search } from "react-feather";
 
 // core components
 import MainNavbar from "../components/navbar.js";
 import SimpleFooter from "../components/footer.js";
 
 class Index extends Component {
+  state = {
+    submitted: false,
+    error: "",
+  }
+
+  submitForm = (e) => {
+    e.preventDefault();
+
+    let data = {
+      name: e.target[0].value,
+      email: e.target[1].value,
+      message: e.target[2].value,
+      _url: e.target[3].value
+    };
+
+    fetch("https://usebasin.com/f/e6dddc96a124", {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(data)
+    })
+      .then(async res => {
+        const json = await res.json();
+        if (json.error) {
+          this.setState({
+            submitted: false,
+            error: json.error
+          });
+        }
+        this.setState({
+          submitted: true,
+          error: ""
+        });
+      })
+      .catch(error => this.setState({
+        submitted: false,
+        error: error
+      }));
+  }
+
+
   render() {
     return (
       <>
@@ -41,13 +85,14 @@ class Index extends Component {
                         Federated Learning Token
                       </h2>
                       <p className="lead text-white">
-                        Token for secure and anonymous federated learning. Create new project, become provide data or buy share in an existing project.
+                        Token for secure and anonymous federated learning. Create new project, provide data, develop new models and more.
                       </p>
                       <div className="btn-wrapper">
                         <Button
                           className="btn-icon mb-3 mb-sm-0 text-white"
                           color="info"
                           href="#"
+                          disabled
                         >
                           <span className="btn-inner--icon">
                             <BookOpen />
@@ -58,6 +103,7 @@ class Index extends Component {
                           className="btn-white btn-icon mb-3 mb-sm-0 ml-1"
                           color="default"
                           href="#"
+                          disabled
                         >
                           <span className="btn-inner--icon">
                             <Search />
@@ -100,59 +146,69 @@ class Index extends Component {
                       <p className="mt-0">
                         Your project is very important to us.
                       </p>
-                      <Form>
-                      <FormGroup
-                        className={"mt-5"}
-                      >
-                        <InputGroup className="input-group-alternative">
-                            <InputGroupText>
-                              <i className="ni ni-user-run" />
-                            </InputGroupText>
-                          <Input
-                            placeholder="Your name"
-                            type="text"
-                            onFocus={e => this.setState({ nameFocused: true })}
-                            onBlur={e => this.setState({ nameFocused: false })}
-                          />
-                        </InputGroup>
-                      </FormGroup>
-                      <FormGroup
-                        className={"test"}
-                      >
-                        <InputGroup className="input-group-alternative">
-                            <InputGroupText>
-                              <i className="ni ni-email-83" />
-                            </InputGroupText>
-                          <Input
-                            placeholder="Email address"
-                            type="email"
-                            onFocus={e => this.setState({ emailFocused: true })}
-                            onBlur={e => this.setState({ emailFocused: false })}
-                          />
-                        </InputGroup>
-                      </FormGroup>
-                      <FormGroup className="mb-4">
-                        <Input
-                          className="form-control-alternative"
-                          cols="80"
-                          name="name"
-                          placeholder="Type a message..."
-                          rows="4"
-                          type="textarea"
-                        />
-                      </FormGroup>
-                      <div>
-                        <Button
-                          block
-                          className="btn-round"
-                          color="default"
-                          size="lg"
-                          type="button"
-                        >
-                          Send Message
-                        </Button>
-                      </div>
-                      </Form>
+                      {!this.state.submitted ?
+                        <Form onSubmit={this.submitForm}>
+                          <FormGroup
+                            className={"mt-5"}
+                          >
+                            <InputGroup className="input-group-alternative">
+                              <InputGroupText>
+                                <i className="ni ni-user-run" />
+                              </InputGroupText>
+                              <Input
+                                placeholder="Your name"
+                                type="text"
+                                name="name"
+                              />
+                            </InputGroup>
+                          </FormGroup>
+                          <FormGroup
+                            className={"test"}
+                          >
+                            <InputGroup className="input-group-alternative">
+                              <InputGroupText>
+                                <i className="ni ni-email-83" />
+                              </InputGroupText>
+                              <Input
+                                id="email"
+                                name="email"
+                                placeholder="Email address"
+                                type="email"
+                                required
+                              />
+                            </InputGroup>
+                          </FormGroup>
+                          <FormGroup className="mb-4">
+                            <Input
+                              className="form-control-alternative"
+                              cols="80"
+                              name="message"
+                              placeholder="Type a message..."
+                              rows="4"
+                              type="textarea"
+                              invalid={this.state.error}
+                            />
+                            <FormFeedback>{this.state.error}</FormFeedback>
+                          </FormGroup>
+                          <div>
+                            <input type="textarea" name="url" style={{ display: "none" }} />
+                            <Button
+                              block
+                              className="btn-round"
+                              color="default"
+                              size="lg"
+                              type="submit"
+                            >
+                              Send Message
+                            </Button>
+                          </div>
+                        </Form>
+                        : <div className="text-center">
+                          <h4 className="text-primary font-weight-light mt-5 mb-4">
+                            Thank you for submitting your message.
+                          </h4>
+                        </div>
+                      }
                     </CardBody>
                   </Card>
                 </Col>
