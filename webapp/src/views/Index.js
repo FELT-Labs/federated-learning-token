@@ -218,7 +218,7 @@ class Index extends Component {
 
 
           <section className="section section-lg pt-0 section-contact-us">
-            <Container>
+            <Container className="container-lg">
               <Row className="justify-content-center">
                 <Col lg="4">
                   <h1 className="display-4">
@@ -228,7 +228,7 @@ class Index extends Component {
                     The project started as a part of Chainlink Hackathon. You can watch the presentation of the project submission.
                   </p>
                 </Col>
-                <Col lg="8" className="p-3">
+                <Col lg="8" className="p-3 ps-lg-6">
                   <div className="ratio ratio-16x9">
                     <iframe
                       src="https://www.youtube-nocookie.com/embed/3TFzvjnEDAA"
