@@ -186,7 +186,7 @@ class Index extends Component {
                               placeholder="Type a message..."
                               rows="4"
                               type="textarea"
-                              invalid={this.state.error}
+                              invalid={!!this.state.error}
                             />
                             <FormFeedback>{this.state.error}</FormFeedback>
                           </FormGroup>
@@ -215,6 +215,33 @@ class Index extends Component {
               </Row>
             </Container>
           </section>
+
+
+          <section className="section section-lg pt-0 section-contact-us">
+            <Container>
+              <Row className="justify-content-center">
+                <Col lg="4">
+                  <h1 className="display-4">
+                    Chainlink Hackathon Presentation
+                  </h1>
+                  <p className="lead">
+                    The project started as a part of Chainlink Hackathon. You can watch the presentation of the project submission.
+                  </p>
+                </Col>
+                <Col lg="8" className="p-3">
+                  <div className="ratio ratio-16x9">
+                    <iframe
+                      src="https://www.youtube-nocookie.com/embed/3TFzvjnEDAA"
+                      title="FELT Presentation"
+                      frameBorder="0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen></iframe>
+                  </div>
+                </Col>
+              </Row>
+            </Container>
+          </section>
+
         </main>
         <SimpleFooter />
       </>
