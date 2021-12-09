@@ -1,6 +1,5 @@
 import React from "react";
 import { GitHub, AlertCircle, RefreshCw, CheckCircle } from "react-feather";
-import { Helmet } from "react-helmet";
 import {
   Button,
   NavItem,
@@ -26,9 +25,6 @@ const SimpleFooter = props => {
 
   return (
     <>
-      <Helmet>
-        {/*<link rel="stylesheet" href="https://sibforms.com/forms/end-form/build/sib-styles.css"></link>*/}
-      </Helmet>
       <footer className="footer">
         <Container>
           <Row className="row-grid align-items-center mb-5">
