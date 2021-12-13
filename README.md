@@ -98,7 +98,7 @@ This repository contains 3 main components:
 
 ## Installation - contracts
 ## Installation - felt library (nodes, builders)
-## Installation - web application
+## Installation - web application (dapp)
 
 1. Install the React client dependencies.
 
@@ -112,6 +112,8 @@ This repository contains 3 main components:
     cd ./webapp
     npm install 
     ```
+
+2. The application requires access to contract ABI and deployment address. Make sure that `webapp/src/artifacts` directory has same content as `build` directory. This should be handled by `deploy.py` script, but in some cases these directories can differ and you should copy content from `build` to `webapp/src/artifacts`.
 
 ## Ending a Session
 
