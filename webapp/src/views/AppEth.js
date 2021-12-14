@@ -17,6 +17,7 @@ import {
 } from '../utils/connectors';
 
 import map from "../artifacts/deployments/map.json"
+import Sidebar from "../components/sidebar";
 
 
 const ConnectorNames = {
@@ -84,12 +85,11 @@ function ChainId() {
 async function loadContract(chain, name, library) {
 	let address, contractArtifact;
 	try {
-		address = map[chain][name].at(-1);		
+		address = map[chain][name].at(-1);
 	} catch (e) {
 		console.log(`Couldn't find any deployed contract "${name}" on the chain "${chain}".`)
 		return undefined
 	}
-
 
 	try {
 		contractArtifact = await import(`../artifacts/deployments/${chain}/${address}.json`)
@@ -108,10 +108,14 @@ class ContractName extends React.Component {
 	}
 
 	async componentDidUpdate(prevProps) {
-		const { chainId, library, account } = this.props;
+		const { chainId, library, account, connector } = this.props;
 
 		let contract, balance;
-		if (!this.state.contract || prevProps.chainId !== chainId) {
+		if (prevProps.chainId !== chainId
+			|| prevProps.library !== library
+			|| prevProps.account !== account
+			|| prevProps.connector !== connector
+		) {
 			let _chainId = (chainId === 1337) ? "dev" : chainId;
 			contract = await loadContract(_chainId, "FELToken", library);
 			console.log("Contract", contract);
@@ -121,7 +125,7 @@ class ContractName extends React.Component {
 				balance = await contract.balanceOf(account);
 				console.log("name", tokenName, balance);
 			}
-			this.setState({balance, contract});
+			this.setState({ balance, contract });
 		}
 	}
 
@@ -264,7 +268,7 @@ function Header() {
 				<BlockNumber />
 				<Account />
 				<Balance />
-				<ContractName {...{account, connector, library, chainId}} />
+				<ContractName {...{ account, connector, library, chainId }} />
 			</h3>
 		</>
 	)
@@ -281,6 +285,7 @@ function App() {
 			setActivatingConnector(undefined)
 		}
 
+		// Connect to network by default
 		if (!connector) {
 			setActivatingConnector(connectorsByName[ConnectorNames.Network])
 			activate(connectorsByName[ConnectorNames.Network])
@@ -294,148 +299,151 @@ function App() {
 	useInactiveListener(!triedEager || !!activatingConnector)
 
 	return (
-		<>
-			<Header />
-			<hr style={{ margin: '2rem' }} />
-			<div
-				style={{
-					display: 'grid',
-					gridGap: '1rem',
-					gridTemplateColumns: '1fr 1fr',
-					maxWidth: '20rem',
-					margin: 'auto'
-				}}
-			>
-				{Object.keys(connectorsByName).map(name => {
-					const currentConnector = connectorsByName[name]
-					const activating = currentConnector === activatingConnector
-					const connected = currentConnector === connector
-					const disabled = !triedEager || !!activatingConnector || connected || !!error
+		<div className="d-flex">
+			<Sidebar />
+			<div className="w-100">
+				<Header />
+				<hr style={{ margin: '2rem' }} />
+				<div
+					style={{
+						display: 'grid',
+						gridGap: '1rem',
+						gridTemplateColumns: '1fr 1fr',
+						maxWidth: '20rem',
+						margin: 'auto'
+					}}
+				>
+					{Object.keys(connectorsByName).map(name => {
+						const currentConnector = connectorsByName[name]
+						const activating = currentConnector === activatingConnector
+						const connected = currentConnector === connector
+						const disabled = !triedEager || !!activatingConnector || connected || !!error
 
-					return (
+						return (
+							<button
+								style={{
+									height: '3rem',
+									borderRadius: '1rem',
+									borderColor: activating ? 'orange' : connected ? 'green' : 'unset',
+									cursor: disabled ? 'unset' : 'pointer',
+									position: 'relative'
+								}}
+								disabled={disabled}
+								key={name}
+								onClick={() => {
+									setActivatingConnector(currentConnector)
+									activate(connectorsByName[name])
+								}}
+							>
+								<div
+									style={{
+										position: 'absolute',
+										top: '0',
+										left: '0',
+										height: '100%',
+										display: 'flex',
+										alignItems: 'center',
+										color: 'black',
+										margin: '0 0 0 1rem'
+									}}
+								>
+									{activating && <Spinner />}
+									{connected && (
+										<span role="img" aria-label="check">
+											✅
+										</span>
+									)}
+								</div>
+								{name}
+							</button>
+						)
+					})}
+				</div>
+
+				<div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+					{(active || error) && (
+						<button
+							style={{
+								height: '3rem',
+								marginTop: '2rem',
+								borderRadius: '1rem',
+								borderColor: 'red',
+								cursor: 'pointer'
+							}}
+							onClick={() => {
+								deactivate()
+							}}
+						>
+							Deactivate
+						</button>
+					)}
+
+					{!!error && <h4 style={{ marginTop: '1rem', marginBottom: '0' }}>{getErrorMessage(error)}</h4>}
+				</div>
+
+				<hr style={{ margin: '2rem' }} />
+
+				<div
+					style={{
+						display: 'grid',
+						gridGap: '1rem',
+						gridTemplateColumns: 'fit-content',
+						maxWidth: '20rem',
+						margin: 'auto'
+					}}
+				>
+					{!!(library && account) && (
 						<button
 							style={{
 								height: '3rem',
 								borderRadius: '1rem',
-								borderColor: activating ? 'orange' : connected ? 'green' : 'unset',
-								cursor: disabled ? 'unset' : 'pointer',
-								position: 'relative'
+								cursor: 'pointer'
 							}}
-							disabled={disabled}
-							key={name}
 							onClick={() => {
-								setActivatingConnector(currentConnector)
-								activate(connectorsByName[name])
+								library
+									.getSigner(account)
+									.signMessage('👋')
+									.then((signature) => {
+										window.alert(`Success!\n\n${signature}`)
+									})
+									.catch((error) => {
+										window.alert('Failure!' + (error && error.message ? `\n\n${error.message}` : ''))
+									})
 							}}
 						>
-							<div
-								style={{
-									position: 'absolute',
-									top: '0',
-									left: '0',
-									height: '100%',
-									display: 'flex',
-									alignItems: 'center',
-									color: 'black',
-									margin: '0 0 0 1rem'
-								}}
-							>
-								{activating && <Spinner />}
-								{connected && (
-									<span role="img" aria-label="check">
-										✅
-									</span>
-								)}
-							</div>
-							{name}
+							Sign Message
 						</button>
-					)
-				})}
+					)}
+					{!!(connector === connectorsByName[ConnectorNames.Network] && chainId) && (
+						<button
+							style={{
+								height: '3rem',
+								borderRadius: '1rem',
+								cursor: 'pointer'
+							}}
+							onClick={() => {
+								connector.changeChainId(chainId === 1 ? 4 : 1)
+							}}
+						>
+							Switch Networks
+						</button>
+					)}
+					{connector === connectorsByName[ConnectorNames.WalletConnect] && (
+						<button
+							style={{
+								height: '3rem',
+								borderRadius: '1rem',
+								cursor: 'pointer'
+							}}
+							onClick={() => {
+								connector.close()
+							}}
+						>
+							Kill WalletConnect Session
+						</button>
+					)}
+				</div>
 			</div>
-
-			<div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-				{(active || error) && (
-					<button
-						style={{
-							height: '3rem',
-							marginTop: '2rem',
-							borderRadius: '1rem',
-							borderColor: 'red',
-							cursor: 'pointer'
-						}}
-						onClick={() => {
-							deactivate()
-						}}
-					>
-						Deactivate
-					</button>
-				)}
-
-				{!!error && <h4 style={{ marginTop: '1rem', marginBottom: '0' }}>{getErrorMessage(error)}</h4>}
-			</div>
-
-			<hr style={{ margin: '2rem' }} />
-
-			<div
-				style={{
-					display: 'grid',
-					gridGap: '1rem',
-					gridTemplateColumns: 'fit-content',
-					maxWidth: '20rem',
-					margin: 'auto'
-				}}
-			>
-				{!!(library && account) && (
-					<button
-						style={{
-							height: '3rem',
-							borderRadius: '1rem',
-							cursor: 'pointer'
-						}}
-						onClick={() => {
-							library
-								.getSigner(account)
-								.signMessage('👋')
-								.then((signature) => {
-									window.alert(`Success!\n\n${signature}`)
-								})
-								.catch((error) => {
-									window.alert('Failure!' + (error && error.message ? `\n\n${error.message}` : ''))
-								})
-						}}
-					>
-						Sign Message
-					</button>
-				)}
-				{!!(connector === connectorsByName[ConnectorNames.Network] && chainId) && (
-					<button
-						style={{
-							height: '3rem',
-							borderRadius: '1rem',
-							cursor: 'pointer'
-						}}
-						onClick={() => {
-							connector.changeChainId(chainId === 1 ? 4 : 1)
-						}}
-					>
-						Switch Networks
-					</button>
-				)}
-				{connector === connectorsByName[ConnectorNames.WalletConnect] && (
-					<button
-						style={{
-							height: '3rem',
-							borderRadius: '1rem',
-							cursor: 'pointer'
-						}}
-						onClick={() => {
-							connector.close()
-						}}
-					>
-						Kill WalletConnect Session
-					</button>
-				)}
-			</div>
-		</>
+		</div>
 	)
 }

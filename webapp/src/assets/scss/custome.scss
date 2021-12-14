@@ -6,7 +6,9 @@ $theme-colors: (
 
 // Import Bootstrap and its default variables
 /*@import '~bootstrap/scss/bootstrap.scss'; */
-
-
 @import './argon-design-system-react.scss';
 @import './footer.scss';
+@import './application.scss';
+
+
+
