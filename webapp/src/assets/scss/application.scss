@@ -1,0 +1,16 @@
+.sidebar {
+	width: 50px;
+	background: #7386d5;
+	color: #fff;
+	transition: all 0.5s;
+}
+
+.sidebar.is-open {
+	width: 400px;
+}
+
+.sidebar .toggleButton {
+	display: block;
+	margin: 0.5rem;
+	margin-left: auto;
+}
