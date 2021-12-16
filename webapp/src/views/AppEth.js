@@ -7,7 +7,6 @@ import {
 import { UserRejectedRequestError as UserRejectedRequestErrorWalletConnect } from '@web3-react/walletconnect-connector';
 import { Web3Provider } from '@ethersproject/providers';
 import { Contract } from '@ethersproject/contracts';
-import { Spinner } from 'reactstrap';
 
 import { useEagerConnect, useInactiveListener } from '../utils/hooks';
 import {
@@ -82,6 +81,7 @@ function ChainId() {
 	)
 }
 
+
 async function loadContract(chain, name, library) {
 	let address, contractArtifact;
 	try {
@@ -100,6 +100,7 @@ async function loadContract(chain, name, library) {
 
 	return new Contract(address, contractArtifact.abi, library);
 }
+
 
 class ContractName extends React.Component {
 	state = {
@@ -276,7 +277,7 @@ function Header() {
 
 function App() {
 	const context = useWeb3React()
-	const { connector, library, chainId, account, activate, deactivate, active, error } = context
+	const { connector, library, account, activate, error } = context
 
 	// handle logic to recognize the connector currently being activated
 	const [activatingConnector, setActivatingConnector] = React.useState()
@@ -298,90 +299,21 @@ function App() {
 	// handle logic to connect in reaction to certain events on the injected ethereum provider, if it exists
 	useInactiveListener(!triedEager || !!activatingConnector)
 
+	const activateConnector = (name) => {
+			setActivatingConnector(connectorsByName[name]);
+			activate(connectorsByName[name]);
+	}
+
+	const isActivating = (name) => activatingConnector !== connectorsByName[name];
+
 	return (
 		<div className="d-flex">
-			<Sidebar />
+			<Sidebar {...{isActivating, activateConnector}} />
 			<div className="w-100">
 				<Header />
 				<hr style={{ margin: '2rem' }} />
-				<div
-					style={{
-						display: 'grid',
-						gridGap: '1rem',
-						gridTemplateColumns: '1fr 1fr',
-						maxWidth: '20rem',
-						margin: 'auto'
-					}}
-				>
-					{Object.keys(connectorsByName).map(name => {
-						const currentConnector = connectorsByName[name]
-						const activating = currentConnector === activatingConnector
-						const connected = currentConnector === connector
-						const disabled = !triedEager || !!activatingConnector || connected || !!error
 
-						return (
-							<button
-								style={{
-									height: '3rem',
-									borderRadius: '1rem',
-									borderColor: activating ? 'orange' : connected ? 'green' : 'unset',
-									cursor: disabled ? 'unset' : 'pointer',
-									position: 'relative'
-								}}
-								disabled={disabled}
-								key={name}
-								onClick={() => {
-									setActivatingConnector(currentConnector)
-									activate(connectorsByName[name])
-								}}
-							>
-								<div
-									style={{
-										position: 'absolute',
-										top: '0',
-										left: '0',
-										height: '100%',
-										display: 'flex',
-										alignItems: 'center',
-										color: 'black',
-										margin: '0 0 0 1rem'
-									}}
-								>
-									{activating && <Spinner />}
-									{connected && (
-										<span role="img" aria-label="check">
-											✅
-										</span>
-									)}
-								</div>
-								{name}
-							</button>
-						)
-					})}
-				</div>
-
-				<div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-					{(active || error) && (
-						<button
-							style={{
-								height: '3rem',
-								marginTop: '2rem',
-								borderRadius: '1rem',
-								borderColor: 'red',
-								cursor: 'pointer'
-							}}
-							onClick={() => {
-								deactivate()
-							}}
-						>
-							Deactivate
-						</button>
-					)}
-
-					{!!error && <h4 style={{ marginTop: '1rem', marginBottom: '0' }}>{getErrorMessage(error)}</h4>}
-				</div>
-
-				<hr style={{ margin: '2rem' }} />
+				{!!error && <h4 style={{ marginTop: '1rem', marginBottom: '0' }}>{getErrorMessage(error)}</h4>}
 
 				<div
 					style={{
@@ -414,34 +346,7 @@ function App() {
 							Sign Message
 						</button>
 					)}
-					{!!(connector === connectorsByName[ConnectorNames.Network] && chainId) && (
-						<button
-							style={{
-								height: '3rem',
-								borderRadius: '1rem',
-								cursor: 'pointer'
-							}}
-							onClick={() => {
-								connector.changeChainId(chainId === 1 ? 4 : 1)
-							}}
-						>
-							Switch Networks
-						</button>
-					)}
-					{connector === connectorsByName[ConnectorNames.WalletConnect] && (
-						<button
-							style={{
-								height: '3rem',
-								borderRadius: '1rem',
-								cursor: 'pointer'
-							}}
-							onClick={() => {
-								connector.close()
-							}}
-						>
-							Kill WalletConnect Session
-						</button>
-					)}
+	
 				</div>
 			</div>
 		</div>

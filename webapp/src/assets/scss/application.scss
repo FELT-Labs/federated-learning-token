@@ -3,14 +3,25 @@
 	background: #7386d5;
 	color: #fff;
 	transition: all 0.5s;
+
+	&.is-open {
+		width: 400px;
+	}
+
+	.toggleButton {
+		display: block;
+		margin: 0.5rem;
+		margin-left: auto;
+	}
+
+	.flex-column.nav-pills .nav-item {
+		padding-right: 0;
+		cursor: pointer;
+	}
+
+	.cursor-default {
+		cursor: default;
+	}
 }
 
-.sidebar.is-open {
-	width: 400px;
-}
 
-.sidebar .toggleButton {
-	display: block;
-	margin: 0.5rem;
-	margin-left: auto;
-}
