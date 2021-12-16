@@ -1,3 +1,5 @@
+from distutils.dir_util import copy_tree
+
 from brownie import ContractManager, FELToken, accounts, config, network
 from scripts.deploy_project import deploy_project, setup_test_project
 
@@ -30,3 +32,6 @@ def main():
         # add these accounts to metamask by importing private key
         feltoken = FELToken.deploy(INITIAL_SUPPLY, {"from": owner}, publish_source=True)
         ContractManager.deploy(feltoken, {"from": owner}, publish_source=True)
+
+    # Copy build dir for application
+    copy_tree("build", "webapp/src/artifacts")

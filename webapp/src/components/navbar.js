@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useState } from "react";
+import { NavLink as RouterNavLink } from "react-router-dom";
 import {
   Button,
   NavbarBrand,
@@ -13,55 +14,42 @@ import {
 
 import { GitHub } from 'react-feather';
 
-class MainNavbar extends React.Component {
-  state = {
-    isOpen: false,
-  }
+function MainNavbar({isFull = true}) {
+  const [isOpen, setOpen] = useState(false);
 
-  toggleNavbar = () => {
-    this.setState({
-      isOpen: !this.state.isOpen,
-    });
-  }
-
-  render() {
-    return (
-      <header className="header-global">
-        <Navbar
-          expand="md"
-          container="lg"
-          light
-        >
-          <NavbarBrand href="/">
-            FELT
-          </NavbarBrand>
-          <NavbarToggler onClick={this.toggleNavbar} />
-          <Collapse navbar isOpen={this.state.isOpen}>
-            <Nav
-              className="me-auto"
-              navbar
-            >
-              <NavItem>
-                <NavLink href="#">
-                  Info
-                </NavLink>
-              </NavItem>
-              <NavItem>
-                <NavLink href="#">
-                  Application
-                </NavLink>
-              </NavItem>
-              <NavItem>
-                <NavLink href="#">
-                  Contact us
-                </NavLink>
-              </NavItem>
-            </Nav>
-            <NavbarText>
-              <NavLink href="https://github.com/Breta01/federated-learning-token">
-                <GitHub />
+  return (
+    <header className="header-global">
+      <Navbar
+        expand="md"
+        container="lg"
+        light
+      >
+        <NavbarBrand tag={RouterNavLink} to="/">
+          FELT
+        </NavbarBrand>
+        <NavbarToggler onClick={() => setOpen(!isOpen)} />
+        <Collapse navbar isOpen={isOpen}>
+          <Nav
+            className="me-auto"
+            navbar
+          >
+            <NavItem>
+              <NavLink href="#">
+                Info
               </NavLink>
-            </NavbarText>
+            </NavItem>
+            <NavItem>
+              <NavLink tag={RouterNavLink} to="app">
+                Application
+              </NavLink>
+            </NavItem>
+          </Nav>
+          <NavbarText>
+            <NavLink href="https://github.com/Breta01/federated-learning-token">
+              <GitHub />
+            </NavLink>
+          </NavbarText>
+          {isFull &&
             <Nav>
               <NavItem>
                 <Button
@@ -73,11 +61,12 @@ class MainNavbar extends React.Component {
                 </Button>
               </NavItem>
             </Nav>
-          </Collapse>
-        </Navbar>
-      </header>
-    );
-  }
+          }
+        </Collapse>
+      </Navbar>
+    </header>
+  );
 }
+
 
 export default MainNavbar;
