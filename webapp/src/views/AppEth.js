@@ -6,7 +6,6 @@ import {
 } from '@web3-react/injected-connector';
 import { UserRejectedRequestError as UserRejectedRequestErrorWalletConnect } from '@web3-react/walletconnect-connector';
 import { Web3Provider } from '@ethersproject/providers';
-import { Contract } from '@ethersproject/contracts';
 
 import { useEagerConnect, useInactiveListener } from '../utils/hooks';
 import {
@@ -15,8 +14,9 @@ import {
 	walletconnect,
 } from '../utils/connectors';
 
-import map from "../artifacts/deployments/map.json"
+import Projects from "./Projects";
 import Sidebar from "../components/sidebar";
+import { loadContract } from '../utils/contracts';
 
 
 const ConnectorNames = {
@@ -82,26 +82,7 @@ function ChainId() {
 }
 
 
-async function loadContract(chain, name, library) {
-	let address, contractArtifact;
-	try {
-		address = map[chain][name].at(-1);
-	} catch (e) {
-		console.log(`Couldn't find any deployed contract "${name}" on the chain "${chain}".`)
-		return undefined
-	}
-
-	try {
-		contractArtifact = await import(`../artifacts/deployments/${chain}/${address}.json`)
-	} catch (e) {
-		console.log(`Failed to load contract artifact "./artifacts/deployments/${chain}/${address}.json"`)
-		return undefined
-	}
-
-	return new Contract(address, contractArtifact.abi, library);
-}
-
-
+// TODO: Remove this component
 class ContractName extends React.Component {
 	state = {
 		contract: undefined,
@@ -117,14 +98,18 @@ class ContractName extends React.Component {
 			|| prevProps.account !== account
 			|| prevProps.connector !== connector
 		) {
-			let _chainId = (chainId === 1337) ? "dev" : chainId;
-			contract = await loadContract(_chainId, "FELToken", library);
+			contract = await loadContract(chainId, "FELToken", library);
 			console.log("Contract", contract);
+			
 
 			if (contract) {
-				const tokenName = await contract.name();
-				balance = await contract.balanceOf(account);
-				console.log("name", tokenName, balance);
+				try {
+					const tokenName = await contract.name();
+					balance = await contract.balanceOf(account);
+					console.log("name", tokenName, balance);
+				} catch (e) {
+					console.log(e);
+				}
 			}
 			this.setState({ balance, contract });
 		}
@@ -310,6 +295,7 @@ function App() {
 		<div className="d-flex">
 			<Sidebar {...{isActivating, activateConnector}} />
 			<div className="w-100">
+				<Projects />
 				<Header />
 				<hr style={{ margin: '2rem' }} />
 
