@@ -121,10 +121,11 @@ function Sidebar({ isActivating, activateConnector }) {
 
 			<hr className="m-3" />
 
-			<Nav pills vertical fill justify className="mx-3">
+			<Nav pills vertical fill className="mx-3">
 				{account ?
 					<>
 						<NavItem>
+							{/* TODO: maybe use connector.close() for WalletConnect, see example app */}
 							<NavLink onClick={() => deactivate()}>
 								Disconnect
 							</NavLink>

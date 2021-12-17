@@ -44,11 +44,11 @@ def token(FELToken):
 
 
 @pytest.fixture(scope="module")
-def manager(ContractManager, token):
+def manager(ProjectManager, token):
     """
     Yield a `Contract` object for the ContractManager contract.
     """
-    yield ContractManager.deploy(token, {"from": get_account()})
+    yield ProjectManager.deploy(token, {"from": get_account()})
 
 
 @pytest.fixture(scope="module")
