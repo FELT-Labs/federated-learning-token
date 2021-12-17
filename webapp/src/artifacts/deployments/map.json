@@ -1,0 +1,19 @@
+{
+  "dev": {
+    "ContractManager": [
+      "0x701Ffc0f977422C60B9FA4f124f4A982e61b7D12"
+    ],
+    "FELToken": [
+      "0x3754A94250Fc1a300ba2F36503675a0476CE6A20"
+    ],
+    "LinkToken": [
+      "0x48066c61E640bF4FaA8a7F81ab55FCA59bE4C752"
+    ],
+    "ProjectContract": [
+      "0xd19FC8501C11D7B03448ddf9eA49135Bd9408784"
+    ],
+    "VRFCoordinatorMock": [
+      "0xe9750e1299595D6cF42B03Be9D5d998944488B1f"
+    ]
+  }
+}
