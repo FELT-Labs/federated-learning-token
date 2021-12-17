@@ -228,5 +228,4 @@ Thumbs.db
 __pycache__
 .history
 .hypothesis/
-webapp/src/artifacts
 reports/
