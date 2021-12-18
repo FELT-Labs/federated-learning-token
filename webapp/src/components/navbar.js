@@ -20,6 +20,7 @@ function MainNavbar({isFull = true}) {
   return (
     <header className="header-global">
       <Navbar
+        className="shadow"
         expand="md"
         container="lg"
         light

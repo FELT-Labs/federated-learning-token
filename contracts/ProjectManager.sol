@@ -13,16 +13,23 @@ import "./Token.sol";
 // TODO: Function for chainlink withdraw
 
 contract ProjectManager is Ownable {
+    struct Project {
+        address _address;
+        string name;
+        string description;
+        uint256 creationTime;
+    }
+
     // Referencing active contracts
     FELToken private token;
-    address[] public projects;
-    uint public activationFee = 0;
+    Project[] public projects;
+    uint256 public activationFee = 0;
 
     constructor(FELToken _token) public {
         token = _token;
     }
 
-    function setFee(uint fee) public onlyOwner {
+    function setFee(uint256 fee) public onlyOwner {
         activationFee = fee;
     }
 
@@ -31,13 +38,18 @@ contract ProjectManager is Ownable {
     }
 
     // TODO: Add contract creation function
-    function activateProject(address _contract, uint transferAmount) public returns(bool) {
+    function activateProject(
+        address _contract,
+        string memory name,
+        string memory description,
+        uint256 transferAmount
+    ) public returns(bool) {
         token.transferFrom(msg.sender, address(this), activationFee);
         token.transferFrom(msg.sender, _contract, transferAmount);
 
         // TODO: Transfer link and token to the contract
 
-        projects.push(_contract);
+        projects.push(Project(_contract, name, description, block.timestamp));
 
         return true;
     }
