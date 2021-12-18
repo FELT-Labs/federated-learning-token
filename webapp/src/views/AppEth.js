@@ -6,6 +6,7 @@ import {
 } from '@web3-react/injected-connector';
 import { UserRejectedRequestError as UserRejectedRequestErrorWalletConnect } from '@web3-react/walletconnect-connector';
 import { Web3Provider } from '@ethersproject/providers';
+import { Route, Routes } from "react-router-dom";
 
 import { useEagerConnect, useInactiveListener } from '../utils/hooks';
 import {
@@ -260,7 +261,7 @@ function Header() {
 	)
 }
 
-function App() {
+function App({match}) {
 	const context = useWeb3React()
 	const { connector, library, account, activate, error } = context
 
@@ -294,7 +295,7 @@ function App() {
 	return (
 		<div className="d-flex">
 			<Sidebar {...{isActivating, activateConnector}} />
-			<div className="w-100">
+			<div className="w-100 sidebar-content">
 				<Projects />
 				<Header />
 				<hr style={{ margin: '2rem' }} />

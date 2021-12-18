@@ -31,7 +31,9 @@ def deploy_project(owner):
     )
 
     manager = ProjectManager[-1]
-    manager.activateProject(project.address, 0)
+    manager.activateProject(
+        project.address, "Test Project", "This is great project...", 0
+    )
 
     return project
 
