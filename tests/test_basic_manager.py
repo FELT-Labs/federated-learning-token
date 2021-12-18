@@ -14,7 +14,9 @@ def test_manager_activation(accounts, manager, token):
 
     token.increaseAllowance(manager.address, 500, {"from": owner})
     # Dummy activation (just tranfer to some address)
-    manager.activateProject(accounts[2], activation_amount, {"from": owner})
+    manager.activateProject(
+        accounts[2], "Name", "desc", activation_amount, {"from": owner}
+    )
 
     assert token.balanceOf(owner) == 1000 - (fee + activation_amount)
     assert token.balanceOf(accounts[2]) == activation_amount
