@@ -17,6 +17,8 @@ import {
 
 import Projects from "./Projects";
 import Sidebar from "../components/sidebar";
+import HomeNavbar from "../components/navbar/HomeNavbar";
+import HomeFooter from "../components/footer/HomeFooter";
 import { loadContract } from '../utils/contracts';
 import CreateProject from './CreateProject';
 import Project from './Project';
@@ -70,199 +72,7 @@ function AppEth() {
 export default AppEth;
 
 
-function ChainId() {
-	const { chainId } = useWeb3React()
-
-	return (
-		<>
-			<span>Chain Id</span>
-			<span role="img" aria-label="chain">
-				⛓
-			</span>
-			<span>{chainId ?? ''}</span>
-		</>
-	)
-}
-
-
 // TODO: Remove this component
-class ContractName extends React.Component {
-	state = {
-		contract: undefined,
-		balance: undefined
-	}
-
-	async componentDidUpdate(prevProps) {
-		const { chainId, library, account, connector } = this.props;
-
-		let contract, balance;
-		if (prevProps.chainId !== chainId
-			|| prevProps.library !== library
-			|| prevProps.account !== account
-			|| prevProps.connector !== connector
-		) {
-			contract = await loadContract(chainId, "FELToken", library);
-			console.log("Contract", contract);
-			
-
-			if (contract) {
-				try {
-					const tokenName = await contract.name();
-					balance = await contract.balanceOf(account);
-					console.log("name", tokenName, balance);
-				} catch (e) {
-					console.log(e);
-				}
-			}
-			this.setState({ balance, contract });
-		}
-	}
-
-	render() {
-		console.log(this.props);
-		return (
-			<>
-				<span>Amount of FELToken:</span>
-				<span></span>
-				<span>{this.state.balance ? this.state.balance.toString() : ""}</span>
-			</>
-		)
-	}
-}
-
-
-function BlockNumber() {
-	const { chainId, library } = useWeb3React()
-
-	const [blockNumber, setBlockNumber] = React.useState()
-	React.useEffect(() => {
-		if (!!library) {
-			let stale = false
-
-			library
-				.getBlockNumber()
-				.then((blockNumber) => {
-					if (!stale) {
-						setBlockNumber(blockNumber)
-					}
-				})
-				.catch(() => {
-					if (!stale) {
-						setBlockNumber(null)
-					}
-				})
-
-			const updateBlockNumber = (blockNumber) => {
-				setBlockNumber(blockNumber)
-			}
-			library.on('block', updateBlockNumber)
-
-			return () => {
-				stale = true
-				library.removeListener('block', updateBlockNumber)
-				setBlockNumber(undefined)
-			}
-		}
-	}, [library, chainId]) // ensures refresh if referential identity of library doesn't change across chainIds
-
-	return (
-		<>
-			<span>Block Number</span>
-			<span role="img" aria-label="numbers">
-				🔢
-			</span>
-			<span>{blockNumber === null ? 'Error' : blockNumber ?? ''}</span>
-		</>
-	)
-}
-
-
-function Account() {
-	const { account } = useWeb3React()
-
-	return (
-		<>
-			<span>Account</span>
-			<span role="img" aria-label="robot">
-				🤖
-			</span>
-			<span>
-				{account === null
-					? '-'
-					: account
-						? `${account.substring(0, 6)}...${account.substring(account.length - 4)}`
-						: ''}
-			</span>
-		</>
-	)
-}
-
-
-function Balance() {
-	const { account, library, chainId } = useWeb3React()
-
-	const [balance, setBalance] = React.useState()
-	React.useEffect(() => {
-		if (!!account && !!library) {
-			let stale = false
-
-			library
-				.getBalance(account)
-				.then((balance) => {
-					if (!stale) {
-						setBalance(balance)
-					}
-				})
-				.catch(() => {
-					if (!stale) {
-						setBalance(null)
-					}
-				})
-
-			return () => {
-				stale = true
-				setBalance(undefined)
-			}
-		}
-	}, [account, library, chainId]) // ensures refresh if referential identity of library doesn't change across chainIds
-
-	return (
-		<>
-			<span>Balance</span>
-			<span role="img" aria-label="gold">
-				💰
-			</span>
-			<span>{balance === null ? 'Error' : balance ? `Ξ${balance}` : ''}</span>
-		</>
-	)
-}
-
-function Header() {
-	const { active, error, account, connector, library, chainId } = useWeb3React()
-
-	return (
-		<>
-			<h1 style={{ margin: '1rem', textAlign: 'right' }}>{active ? '🟢' : error ? '🔴' : '🟠'}</h1>
-			<h3
-				style={{
-					display: 'grid',
-					gridGap: '1rem',
-					gridTemplateColumns: '1fr min-content 1fr',
-					maxWidth: '20rem',
-					lineHeight: '2rem',
-					margin: 'auto'
-				}}
-			>
-				<ChainId />
-				<BlockNumber />
-				<Account />
-				<Balance />
-				<ContractName {...{ account, connector, library, chainId }} />
-			</h3>
-		</>
-	)
-}
-
 function App() {
 	const context = useWeb3React()
 	const { connector, library, account, activate, error } = context
@@ -288,60 +98,27 @@ function App() {
 	useInactiveListener(!triedEager || !!activatingConnector)
 
 	const activateConnector = (name) => {
-			setActivatingConnector(connectorsByName[name]);
-			activate(connectorsByName[name]);
+		setActivatingConnector(connectorsByName[name]);
+		activate(connectorsByName[name]);
 	}
 
 	const isActivating = (name) => activatingConnector !== connectorsByName[name];
 
 	return (
-		<div className="d-flex">
-			<Sidebar {...{isActivating, activateConnector}} />
-			<div className="w-100 sidebar-content">
-				<Routes>
-					<Route index element={<Projects />} />
-					<Route path="create-project" element={<CreateProject />} />
-					<Route path="project/:id" element={<Project />} />
-				</Routes>
-				<Header />
-				<hr style={{ margin: '2rem' }} />
-
-				{!!error && <h4 style={{ marginTop: '1rem', marginBottom: '0' }}>{getErrorMessage(error)}</h4>}
-
-				<div
-					style={{
-						display: 'grid',
-						gridGap: '1rem',
-						gridTemplateColumns: 'fit-content',
-						maxWidth: '20rem',
-						margin: 'auto'
-					}}
-				>
-					{!!(library && account) && (
-						<button
-							style={{
-								height: '3rem',
-								borderRadius: '1rem',
-								cursor: 'pointer'
-							}}
-							onClick={() => {
-								library
-									.getSigner(account)
-									.signMessage('👋')
-									.then((signature) => {
-										window.alert(`Success!\n\n${signature}`)
-									})
-									.catch((error) => {
-										window.alert('Failure!' + (error && error.message ? `\n\n${error.message}` : ''))
-									})
-							}}
-						>
-							Sign Message
-						</button>
-					)}
-	
+		<>
+			<HomeNavbar />
+			<div className="d-flex">
+				<Sidebar {...{ isActivating, activateConnector }} />
+				<div className="w-100 sidebar-content">
+					<Routes>
+						<Route index element={<Projects />} />
+						<Route path="create-project" element={<CreateProject />} />
+						<Route path="project/:id" element={<Project />} />
+					</Routes>
+					{!!error && <h4 style={{ marginTop: '1rem', marginBottom: '0' }}>{getErrorMessage(error)}</h4>}
 				</div>
 			</div>
-		</div>
+			<HomeFooter />
+		</>
 	)
 }
