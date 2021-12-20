@@ -42,8 +42,8 @@ function Balance() {
 	return (
 		<>
 			<div id="balanceEther" className="row mb-3 px-3 align-items-center">
-				<DollarSign className="col-sm-2" color="white" />
-				<span className="col-sm-10">
+				<DollarSign className="col-2" color="white" />
+				<span className="col-10">
 					{!!balance && formatEther(balance.toString())}
 				</span>
 				<SimpleTooltip placement="bottom" target="balanceEther" >
@@ -51,8 +51,8 @@ function Balance() {
 				</SimpleTooltip>
 			</div>
 			<div id="balanceToken" className="row mb-3 px-3 align-items-center">
-				<TokenSvg fill="white" className="col-sm-2" width="24" height="24" />
-				<span className="col-sm-10">
+				<TokenSvg fill="white" className="col-2" width="24" height="24" />
+				<span className="col-10">
 					TODO: token balance
 				</span>
 				<SimpleTooltip placement="bottom" target="balanceToken" >
@@ -78,8 +78,8 @@ function Sidebar({ isActivating, activateConnector }) {
 
 			{/* Blockchain display + select */}
 			<div id="chain-input" className="row px-3 mb-3 align-items-center">
-				<Box className="col-sm-2" color="white" />
-				<div className="col-sm-10">
+				<Box className="col-2" color="white" />
+				<div className="col-10">
 					{(connector === network) ?
 						<Input
 							name="select"
@@ -101,13 +101,17 @@ function Sidebar({ isActivating, activateConnector }) {
 
 			{/* User address */}
 			<div id="user" className="row mb-3 px-3 align-items-center">
-				<User className="col-sm-2" color="white" />
-				<span className="col-sm-10">
+				<User className="col-2" color="white" />
+				<span className="col-10">
 					{account
 						? <>
 						{account.substring(0, 8)}...{account.substring(account.length - 4)}
-							{connector === injected && <MetaMaskSvg className="cursor-default mx-2 p-0 btn btn-secondary" height="20" width="20" />}
-							{connector === walletconnect && <WalletConnectSvg className="cursor-default mx-2 p-0 btn btn-secondary" height="20" width="20" />}
+							{connector === injected && <MetaMaskSvg
+								className="cursor-default mx-2 p-0 btn btn-secondary align-text-bottom"
+								height="20" width="20" />}
+							{connector === walletconnect && <WalletConnectSvg
+								className="cursor-default mx-2 p-0 btn btn-secondary align-text-bottom"
+								height="20" width="20" />}
 						</>
 						: 'No account connected'}
 				</span>
@@ -121,10 +125,11 @@ function Sidebar({ isActivating, activateConnector }) {
 
 			<hr className="m-3" />
 
-			<Nav pills vertical fill justify className="mx-3">
+			<Nav pills vertical fill className="mx-3">
 				{account ?
 					<>
 						<NavItem>
+							{/* TODO: maybe use connector.close() for WalletConnect, see example app */}
 							<NavLink onClick={() => deactivate()}>
 								Disconnect
 							</NavLink>

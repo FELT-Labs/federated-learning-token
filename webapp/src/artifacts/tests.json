@@ -1,0 +1,79 @@
+{
+  "contracts": {
+    "FELToken": "0fe4d5c47a86a277295ed766cfa0b2b97e9db5e0",
+    "LinkToken": "49e7bae2df618e81d877632c6ad55872ff2ce801",
+    "OpenZeppelin/openzeppelin-contracts@4.3.2/ERC20": "5c27d7156fdbfe889902cc167df697405a50ad20",
+    "ProjectContract": "4f3e4d1162630fcbb125a8637a01f6630c34d4c0",
+    "ProjectManager": "08852817b8062a4a1f8573b492c7b0aed260ee23",
+    "VRFCoordinatorMock": "a234e721cab3c47e532d8404949512e63f344855",
+    "smartcontractkit/chainlink-brownie-contracts@0.2.2/BasicToken": "92084ac5279a2a3db988d9e01d7e6d3e3a4dab8d",
+    "smartcontractkit/chainlink-brownie-contracts@0.2.2/SafeMathChainlink": "3b4158955f564edb18bd7a8ffdb49859c904f0b7",
+    "smartcontractkit/chainlink-brownie-contracts@0.2.2/StandardToken": "7f21b0e2f1d1fcf89f4466183c9e73bc3cf77276",
+    "smartcontractkit/chainlink-brownie-contracts@0.2.2/VRFRequestIDBase": "73df0a6f5d0123eb2b2db0faf62b602aa77c123a"
+  },
+  "tests": {
+    "tests/test_basic_manager.py": {
+      "coverage": false,
+      "isolated": [
+        "FELToken",
+        "OpenZeppelin/openzeppelin-contracts@4.3.2/ERC20",
+        "ProjectManager"
+      ],
+      "results": "..",
+      "sha1": "c1a8a75e0eb362d7c0a10ab30ffb48b8650930dd",
+      "txhash": [
+        "a327c7776a671bb26428534930d212d027a76087"
+      ]
+    },
+    "tests/test_basic_project.py": {
+      "coverage": false,
+      "isolated": [
+        "FELToken",
+        "LinkToken",
+        "OpenZeppelin/openzeppelin-contracts@4.3.2/ERC20",
+        "ProjectContract",
+        "VRFCoordinatorMock",
+        "smartcontractkit/chainlink-brownie-contracts@0.2.2/BasicToken",
+        "smartcontractkit/chainlink-brownie-contracts@0.2.2/SafeMathChainlink",
+        "smartcontractkit/chainlink-brownie-contracts@0.2.2/StandardToken",
+        "smartcontractkit/chainlink-brownie-contracts@0.2.2/VRFRequestIDBase"
+      ],
+      "results": "..",
+      "sha1": "404b390400e8ea6debe78ab5f347a41c2944ea0a",
+      "txhash": []
+    },
+    "tests/test_basic_token.py": {
+      "coverage": false,
+      "isolated": [
+        "FELToken",
+        "OpenZeppelin/openzeppelin-contracts@4.3.2/ERC20"
+      ],
+      "results": "...",
+      "sha1": "fcbe48ec3f526f06f3b4d266eb849b136c677755",
+      "txhash": []
+    }
+  },
+  "tx": {
+    "a327c7776a671bb26428534930d212d027a76087": {
+      "ProjectManager": {
+        "0": [
+          [],
+          [],
+          []
+        ],
+        "4": [
+          [
+            1
+          ],
+          [],
+          []
+        ],
+        "5": [
+          [],
+          [],
+          []
+        ]
+      }
+    }
+  }
+}

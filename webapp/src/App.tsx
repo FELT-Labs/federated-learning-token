@@ -27,7 +27,7 @@ const App: FC = () => {
         <Routes>
           <Route path="/">
             <Route index element={<Home />} />
-            <Route path="app" element={<AppEth />} />
+            <Route path="app/*" element={<AppEth />} />
             <Route path="*" element={<Home />} />
           </Route>
         </Routes>
