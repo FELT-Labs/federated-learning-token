@@ -18,9 +18,9 @@ const HomeNavbar: FC = () => {
   const [isOpen, setOpen] = useState(false);
 
   return (
-    <Navbar expand="md" container="lg" light>
+    <Navbar expand="md" container="lg" light className="shadow">
       <NavbarBrand tag={RouterNavLink} to="/">
-        <Logo width={50} height={50} />
+        <Logo width={50} height={50} fill="#32325d" />
         FELT
       </NavbarBrand>
       <NavbarToggler onClick={() => setOpen(!isOpen)} />
@@ -35,7 +35,7 @@ const HomeNavbar: FC = () => {
           </NavItem>
 
           <NavItem>
-            <NavLink tag={RouterNavLink} to="app">
+            <NavLink tag={RouterNavLink} to="/app">
               App
             </NavLink>
           </NavItem>
