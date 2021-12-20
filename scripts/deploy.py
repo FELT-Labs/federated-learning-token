@@ -1,6 +1,6 @@
 from distutils.dir_util import copy_tree
 
-from brownie import ContractManager, FELToken, accounts, config, network
+from brownie import FELToken, ProjectManager, accounts, config, network
 from scripts.deploy_project import deploy_project, setup_test_project
 
 # Total supply times decimals
@@ -23,7 +23,7 @@ def main():
 
         # add these accounts to metamask by importing private key
         feltoken = FELToken.deploy(INITIAL_SUPPLY, {"from": owner})
-        ContractManager.deploy(feltoken, {"from": owner})
+        ProjectManager.deploy(feltoken, {"from": owner})
 
         project = deploy_project(owner)
         setup_test_project(project, owner)
@@ -31,7 +31,7 @@ def main():
     elif network.show_active() == "mumbai":
         # add these accounts to metamask by importing private key
         feltoken = FELToken.deploy(INITIAL_SUPPLY, {"from": owner}, publish_source=True)
-        ContractManager.deploy(feltoken, {"from": owner}, publish_source=True)
+        ProjectManager.deploy(feltoken, {"from": owner}, publish_source=True)
 
     # Copy build dir for application
     copy_tree("build", "webapp/src/artifacts")

@@ -1,5 +1,5 @@
 """Module for deploying project contract."""
-from brownie import FELToken, ProjectContract, accounts, config, network
+from brownie import FELToken, ProjectContract, ProjectManager, accounts, config, network
 from scripts.helpful_scripts import (
     LOCAL_BLOCKCHAIN_ENVIRONMENTS,
     get_account,
@@ -19,7 +19,7 @@ def deploy_project(owner):
 
     parity, public_key = export_public_key(owner.private_key[2:])
 
-    return ProjectContract.deploy(
+    project = ProjectContract.deploy(
         token,
         parity,
         public_key,
@@ -29,6 +29,13 @@ def deploy_project(owner):
         fee,
         {"from": owner},
     )
+
+    manager = ProjectManager[-1]
+    manager.activateProject(
+        project.address, "Test Project", "This is great project...", 0
+    )
+
+    return project
 
 
 def setup_test_project(project, owner):
@@ -54,4 +61,4 @@ def setup_test_project(project, owner):
 
 def main():
     owner = accounts.add(config["wallets"]["owner_key"])
-    deploy_project(owner)
+    project = deploy_project(owner)
