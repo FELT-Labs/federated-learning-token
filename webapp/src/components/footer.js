@@ -120,7 +120,7 @@ const SimpleFooter = props => {
 
           <hr />
           <Row className=" align-items-center justify-content-md-between">
-            <Col md="6">
+            <Col xs="3">
               <div className=" copyright">
                 © {new Date().getFullYear()}{" "}
                 <a
@@ -132,7 +132,7 @@ const SimpleFooter = props => {
                 </a>
               </div>
             </Col>
-            <Col md="6">
+            <Col xs="9">
               <Nav className="nav-footer justify-content-end">
                 <NavItem>
                   <NavLink

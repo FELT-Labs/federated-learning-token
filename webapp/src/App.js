@@ -24,7 +24,7 @@ function App() {
 				<Routes>
 					<Route path="/" element={<Layout />}>
 						<Route index element={<Index />} />
-						<Route path="app" element={<AppEth />} />
+						<Route path="app/*" element={<AppEth />} />
 						<Route path="*" element={<Index />} />
 					</Route>
 				</Routes>

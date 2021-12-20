@@ -17,6 +17,9 @@ import { GitHub } from 'react-feather';
 function MainNavbar({isFull = true}) {
   const [isOpen, setOpen] = useState(false);
 
+  const toggle = () => setOpen(!isOpen);
+  const close = () => setOpen(false);
+
   return (
     <header className="header-global">
       <Navbar
@@ -25,22 +28,22 @@ function MainNavbar({isFull = true}) {
         container="lg"
         light
       >
-        <NavbarBrand tag={RouterNavLink} to="/">
+        <NavbarBrand onClick={close} tag={RouterNavLink} to="/">
           FELT
         </NavbarBrand>
-        <NavbarToggler onClick={() => setOpen(!isOpen)} />
+        <NavbarToggler onClick={toggle} />
         <Collapse navbar isOpen={isOpen}>
           <Nav
             className="me-auto"
             navbar
           >
             <NavItem>
-              <NavLink href="#">
+              <NavLink onClick={close} href="#">
                 Info
               </NavLink>
             </NavItem>
             <NavItem>
-              <NavLink tag={RouterNavLink} to="app">
+              <NavLink onClick={close} tag={RouterNavLink} to="app">
                 Application
               </NavLink>
             </NavItem>
@@ -52,7 +55,7 @@ function MainNavbar({isFull = true}) {
           </NavbarText>
           {isFull &&
             <Nav>
-              <NavItem>
+              <NavItem onClick={close}>
                 <Button
                   color="primary"
                   outline
