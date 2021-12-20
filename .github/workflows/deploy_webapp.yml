@@ -28,10 +28,6 @@ jobs:
       working-directory: ./webapp
       run: yarn install --frozen-lockfile
 
-    - name: Test
-      working-directory: ./webapp
-      run: yarn test
-      
     - name: Build 🔧
       working-directory: ./webapp
       run: PUBLIC_URL="." yarn build
