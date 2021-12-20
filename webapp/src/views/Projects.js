@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useWeb3React } from '@web3-react/core';
 import { loadContract } from "../utils/contracts";
-import { Col, Row, Card, CardImg, CardBody, CardTitle, CardSubtitle, CardText, Button } from "reactstrap";
+import { Col, Row, Card, CardBody, CardTitle, CardSubtitle, CardText, Button } from "reactstrap";
 import { Clock } from "react-feather";
+import { Link } from "react-router-dom";
 
 
 function Projects() {
@@ -65,9 +66,11 @@ function Projects() {
                 <CardText>
                   {description}
                 </CardText>
+                <Link to={"project/" + address}>
                 <Button>
                   Details
                 </Button>
+                </Link>
               </CardBody>
             </Card>
           </Col>
