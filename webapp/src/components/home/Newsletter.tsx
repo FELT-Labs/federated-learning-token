@@ -13,6 +13,7 @@ import useScript from '../../utils/useScript.js';
 
 const Newsletter: FC = () => {
   useScript('https://sibforms.com/forms/end-form/build/main.js');
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   window.AUTOHIDE = true;
 
