@@ -18,6 +18,8 @@ import {
 import Projects from "./Projects";
 import Sidebar from "../components/sidebar";
 import { loadContract } from '../utils/contracts';
+import CreateProject from './CreateProject';
+import Project from './Project';
 
 
 const ConnectorNames = {
@@ -261,7 +263,7 @@ function Header() {
 	)
 }
 
-function App({match}) {
+function App() {
 	const context = useWeb3React()
 	const { connector, library, account, activate, error } = context
 
@@ -296,7 +298,11 @@ function App({match}) {
 		<div className="d-flex">
 			<Sidebar {...{isActivating, activateConnector}} />
 			<div className="w-100 sidebar-content">
-				<Projects />
+				<Routes>
+					<Route index element={<Projects />} />
+					<Route path="create-project" element={<CreateProject />} />
+					<Route path="project/:id" element={<Project />} />
+				</Routes>
 				<Header />
 				<hr style={{ margin: '2rem' }} />
 
