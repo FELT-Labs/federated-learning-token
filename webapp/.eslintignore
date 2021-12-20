@@ -1,0 +1,3 @@
+node_modules
+src/artifacts
+src/**/*.js
