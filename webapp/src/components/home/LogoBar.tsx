@@ -11,10 +11,12 @@ const LogoBar: FC = () => {
       <div
         style={{
           display: 'flex',
-          justifyContent: 'center',
+          width: 'fit-content',
+          maxWidth: '100%',
+          margin: 'auto',
           alignItems: 'center',
-          overflowY: 'scroll',
-          gap: 16,
+          overflowX: 'auto',
+          gap: 32,
           marginTop: -60,
           height: 140,
           padding: 24,
