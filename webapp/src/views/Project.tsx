@@ -4,7 +4,7 @@ import { useParams } from 'react-router-dom';
 import { useWeb3React } from '@web3-react/core';
 import { Spinner } from 'reactstrap';
 
-import { getProjectContract } from '../utils/contracts.js';
+import { getProjectContract } from '../utils/contracts';
 
 interface ContractProps {
   contract: Contract;
@@ -45,7 +45,7 @@ const Project: FC = () => {
     let didCancel = false;
 
     async function getContract() {
-      if (library) {
+      if (library && address) {
         const c = await getProjectContract(address, library.getSigner());
 
         if (c && !didCancel) {

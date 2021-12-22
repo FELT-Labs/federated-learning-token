@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 
-const useScript = url => {
+const useScript = (url: string) => {
   useEffect(() => {
     const script = document.createElement('script');
 
@@ -11,7 +11,7 @@ const useScript = url => {
 
     return () => {
       document.body.removeChild(script);
-    }
+    };
   }, [url]);
 };
 

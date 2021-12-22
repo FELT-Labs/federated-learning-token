@@ -1,24 +1,39 @@
-import { Contract, ContractFactory } from 'ethers';
+import { Contract, ContractFactory, Signer, providers } from 'ethers';
 
+import { isKeyof } from './indexGuard';
 import map from '../artifacts/deployments/map.json';
 
-function getChain(chainId) {
-  return chainId === 1337 ? 'dev' : chainId;
+type Provider = providers.Provider;
+
+function getChain(chainId: number): string {
+  return chainId === 1337 ? 'dev' : chainId.toString();
 }
 
-export function getContractAddress(chainId, name) {
+export function getContractAddress(
+  chainId: number,
+  name: string,
+): undefined | string {
   const chain = getChain(chainId);
   try {
-    return map[chain][name].at(-1);
+    if (isKeyof(chain, map)) {
+      if (isKeyof(name, map[chain])) {
+        return map[chain][name].at(-1);
+      }
+    }
   } catch (e) {
     console.log(
       `Couldn't find any deployed contract "${name}" on the chain "${chain}".`,
     );
-    return undefined;
   }
+
+  return undefined;
 }
 
-export async function loadContract(chainId, name, library) {
+export async function loadContract(
+  chainId: number,
+  name: string,
+  library: Signer | Provider,
+): Promise<undefined | Contract> {
   const chain = getChain(chainId);
   const address = getContractAddress(chainId, name);
 
@@ -41,7 +56,10 @@ export async function loadContract(chainId, name, library) {
   return new Contract(address.substr(2), contractArtifact.abi, library);
 }
 
-export async function getContractFactory(name, signer) {
+export async function getContractFactory(
+  name: string,
+  signer: Signer,
+): Promise<undefined | ContractFactory> {
   let contractArtifact;
   try {
     contractArtifact = await import(`../artifacts/contracts/${name}.json`);
@@ -59,7 +77,10 @@ export async function getContractFactory(name, signer) {
   );
 }
 
-export async function getProjectContract(address, library) {
+export async function getProjectContract(
+  address: string,
+  library: Signer | Provider,
+): Promise<undefined | Contract> {
   let contractArtifact;
   try {
     contractArtifact = await import(
