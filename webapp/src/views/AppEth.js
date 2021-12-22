@@ -9,7 +9,7 @@ import {
   UserRejectedRequestError as UserRejectedRequestErrorInjected,
 } from '@web3-react/injected-connector';
 import { UserRejectedRequestError as UserRejectedRequestErrorWalletConnect } from '@web3-react/walletconnect-connector';
-import { Web3Provider } from '@ethersproject/providers';
+import { providers } from 'ethers';
 import { Route, Routes } from 'react-router-dom';
 
 import { useEagerConnect, useInactiveListener } from '../utils/hooks';
@@ -19,7 +19,6 @@ import Projects from './Projects';
 import Sidebar from '../components/sidebar';
 import HomeNavbar from '../components/navbar/HomeNavbar';
 import HomeFooter from '../components/footer/HomeFooter';
-import { loadContract } from '../utils/contracts';
 import CreateProject from './CreateProject';
 import Project from './Project';
 
@@ -52,7 +51,7 @@ function getErrorMessage(error) {
 }
 
 function getLibrary(provider) {
-  const library = new Web3Provider(provider);
+  const library = new providers.Web3Provider(provider);
   library.pollingInterval = 12000;
   return library;
 }
@@ -66,7 +65,6 @@ function AppEth() {
 }
 export default AppEth;
 
-// TODO: Remove this component
 function App() {
   const context = useWeb3React();
   const { connector, library, account, activate, error } = context;
