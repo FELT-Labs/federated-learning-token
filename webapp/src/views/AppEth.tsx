@@ -1,9 +1,10 @@
-import React from 'react';
+import { FC, useState, useEffect } from 'react';
 import {
   Web3ReactProvider,
   useWeb3React,
   UnsupportedChainIdError,
 } from '@web3-react/core';
+import { AbstractConnector } from '@web3-react/abstract-connector';
 import {
   NoEthereumProviderError,
   UserRejectedRequestError as UserRejectedRequestErrorInjected,
@@ -34,44 +35,43 @@ const connectorsByName = {
   [ConnectorNames.WalletConnect]: walletconnect,
 };
 
-function getErrorMessage(error) {
+function getErrorMessage(error: Error) {
   if (error instanceof NoEthereumProviderError) {
     return 'No Ethereum browser extension detected, install MetaMask on desktop or visit from a dApp browser on mobile.';
-  } else if (error instanceof UnsupportedChainIdError) {
+  }
+
+  if (error instanceof UnsupportedChainIdError) {
     return "You're connected to an unsupported network.";
-  } else if (
+  }
+
+  if (
     error instanceof UserRejectedRequestErrorInjected ||
     error instanceof UserRejectedRequestErrorWalletConnect
   ) {
     return 'Please authorize this website to access your Ethereum account.';
-  } else {
-    console.error(error);
-    return 'An unknown error occurred. Check the console for more details.';
   }
+
+  console.error(error);
+  return 'An unknown error occurred. Check the console for more details.';
 }
 
-function getLibrary(provider) {
+function getLibrary(
+  provider: providers.ExternalProvider | providers.JsonRpcFetchFunc,
+) {
   const library = new providers.Web3Provider(provider);
   library.pollingInterval = 12000;
   return library;
 }
 
-function AppEth() {
-  return (
-    <Web3ReactProvider getLibrary={getLibrary}>
-      <App />
-    </Web3ReactProvider>
-  );
-}
-export default AppEth;
-
-function App() {
+const App: FC = () => {
   const context = useWeb3React();
-  const { connector, library, account, activate, error } = context;
+  const { connector, activate, error } = context;
 
   // handle logic to recognize the connector currently being activated
-  const [activatingConnector, setActivatingConnector] = React.useState();
-  React.useEffect(() => {
+  const [activatingConnector, setActivatingConnector] = useState<
+    undefined | AbstractConnector
+  >();
+  useEffect(() => {
     if (activatingConnector && activatingConnector === connector) {
       setActivatingConnector(undefined);
     }
@@ -89,12 +89,13 @@ function App() {
   // handle logic to connect in reaction to certain events on the injected ethereum provider, if it exists
   useInactiveListener(!triedEager || !!activatingConnector);
 
-  const activateConnector = (name) => {
+  const activateConnector = (name: string) => {
     setActivatingConnector(connectorsByName[name]);
     activate(connectorsByName[name]);
   };
 
-  const isActivating = (name) => activatingConnector !== connectorsByName[name];
+  const isActivating = (name: string) =>
+    activatingConnector !== connectorsByName[name];
 
   return (
     <>
@@ -117,4 +118,13 @@ function App() {
       <HomeFooter />
     </>
   );
-}
+};
+
+const AppEth: FC = () => {
+  return (
+    <Web3ReactProvider getLibrary={getLibrary}>
+      <App />
+    </Web3ReactProvider>
+  );
+};
+export default AppEth;
