@@ -1,7 +1,7 @@
 // change the theme
 $theme-colors: (
-  "primary": #4fabce,
-  "danger": #ff4136
+  'primary': #4fabce,
+  'danger': #ff4136,
 );
 
 // Import Bootstrap and its default variables
@@ -9,3 +9,7 @@ $theme-colors: (
 @import './argon-design-system-react.scss';
 @import './footer.scss';
 @import './application.scss';
+
+.cursor-default {
+  cursor: default !important;
+}

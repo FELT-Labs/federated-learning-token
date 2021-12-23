@@ -97,19 +97,19 @@ contract ProjectContract is VRFConsumerBase {
     // 3 <= i  - represents index i in node array as (i - 3)
     mapping(address => uint) public nodes;
     Node[] public nodesArray;
-    uint public activeNodes = 0;
-    uint public keyTurn = 0; // Increment on overy node join
+    uint32 public activeNodes = 0;
+    uint32 public keyTurn = 0; // Increment on every node join
 
     // Request are treated as a stack (for simplicity)
     NodeJoinRequest[] public nodeRequests;
 
     mapping(uint => TrainingPlan) public plans;
-    uint numPlans = 0;
+    uint32 public numPlans = 0;
 
     mapping(bytes32 => uint) requestToPlan;
     bool public isNewPlan = false;
     bool public isPlanRunning = false;
-    uint public currentRound = 0;
+    uint32 public currentRound = 0;
 
 
     constructor(
@@ -178,11 +178,6 @@ contract ProjectContract is VRFConsumerBase {
             "Only nodes that are active are allowed to execute this."
         );
         _;
-    }
-
-
-    function getPlansLength() public view returns(uint) {
-        return numPlans;
     }
 
 
