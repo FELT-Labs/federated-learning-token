@@ -26,16 +26,12 @@ async function deployContract(
     address,
     2,
   ];
-  console.log(deployArgs);
+  // console.log(deployArgs);
   // let manager = await loadContract(chainId, "ProjectManager", signer);
   // await manager.activateProject(address, "xxxx", "description of this super cool thing", 0);
 
   if (factory) {
-    const contract = await factory.deploy(...deployArgs);
-    console.log('Contract', contract);
-    console.log('finished');
-  } else {
-    console.log('Unsuccesfull');
+    await factory.deploy(...deployArgs);
   }
 }
 

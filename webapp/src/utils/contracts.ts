@@ -14,16 +14,10 @@ export function getContractAddress(
   name: string,
 ): undefined | string {
   const chain = getChain(chainId);
-  try {
-    if (isKeyof(chain, map)) {
-      if (isKeyof(name, map[chain])) {
-        return map[chain][name].at(-1);
-      }
+  if (isKeyof(chain, map)) {
+    if (isKeyof(name, map[chain])) {
+      return map[chain][name].at(-1);
     }
-  } catch (e) {
-    console.log(
-      `Couldn't find any deployed contract "${name}" on the chain "${chain}".`,
-    );
   }
 
   return undefined;
@@ -47,9 +41,6 @@ export async function loadContract(
       `../artifacts/deployments/${chain}/${address}.json`
     );
   } catch (e) {
-    console.log(
-      `Failed to load contract artifact "../artifacts/deployments/${chain}/${address}.json"`,
-    );
     return undefined;
   }
 
@@ -64,9 +55,6 @@ export async function getContractFactory(
   try {
     contractArtifact = await import(`../artifacts/contracts/${name}.json`);
   } catch (e) {
-    console.log(
-      `Failed to load contract artifact "../artifacts/contracts/${name}.json"`,
-    );
     return undefined;
   }
 
@@ -87,9 +75,6 @@ export async function getProjectContract(
       `../artifacts/contracts/ProjectContract.json`
     );
   } catch (e) {
-    console.log(
-      `Failed to load contract artifact "../artifacts/contracts/ProjectContract.json"`,
-    );
     return undefined;
   }
 

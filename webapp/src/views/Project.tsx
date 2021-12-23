@@ -38,7 +38,10 @@ const ContractDisplay: FC<ContractProps> = ({ contract }) => {
         r = await contract.isPlanRunning();
         setRunning(r);
       } catch (e) {
-        console.log(e);
+        setNumPlans(-1);
+        setNumNodes(-1);
+        setNumActiveNodes(-1);
+        setRunning(false);
       }
     };
 
