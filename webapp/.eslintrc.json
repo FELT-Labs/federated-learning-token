@@ -44,7 +44,8 @@
     "react/function-component-definition": "off",
     "react/require-default-props": "off",
     "@typescript-eslint/no-explicit-any": "off",
-    "no-plusplus": ["error", { "allowForLoopAfterthoughts": true }]
+    "no-plusplus": ["error", { "allowForLoopAfterthoughts": true }],
+    "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }]
   },
   "settings": {
     "import/resolver": {

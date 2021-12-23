@@ -70,8 +70,8 @@ const Balance: FC = () => {
 };
 
 interface SidebarProps {
-  isActivating: (a: string) => boolean;
-  activateConnector: (a: string) => void;
+  isActivating: (_a: string) => boolean;
+  activateConnector: (_a: string) => void;
 }
 
 const Sidebar: FC<SidebarProps> = ({ isActivating, activateConnector }) => {

@@ -17,7 +17,7 @@ def test_project_creation(accounts, project, token):
     project.changeNodeStatus(True, {"from": owner})
 
     project.createPlan("testCID1", 10, 10, {"from": owner})
-    assert project.getPlansLength() == 1
+    assert project.numPlans() == 1
     assert token.balanceOf(project.address) == 100
     # This: .dict() works only if struct has more than 1 element
     assert project.plans(0).dict()["baseModelCID"] == "testCID1"
@@ -28,7 +28,7 @@ def test_project_creation(accounts, project, token):
     project.abortPlan({"from": owner})
 
     project.createPlan("testCID3", 10, 10, {"from": owner})
-    assert project.getPlansLength() == 3
+    assert project.numPlans() == 3
     assert project.plans(0).dict()["baseModelCID"] == "testCID1"
     assert project.plans(1).dict()["baseModelCID"] == "testCID2"
     assert project.plans(2).dict()["baseModelCID"] == "testCID3"

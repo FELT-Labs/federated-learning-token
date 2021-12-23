@@ -35,11 +35,7 @@ const Projects: FC = () => {
         if (manager) {
           const len = await manager.getProjectsLength();
           for (let i = 0; i < len && !didCancel; i++) {
-            try {
-              newProjects.push(manager.projects(i));
-            } catch (e) {
-              console.log(e);
-            }
+            newProjects.push(manager.projects(i));
           }
         }
       }
