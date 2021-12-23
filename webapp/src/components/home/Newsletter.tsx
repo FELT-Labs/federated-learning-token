@@ -9,7 +9,7 @@ import {
   InputGroup,
 } from 'reactstrap';
 import { AlertCircle, CheckCircle, RefreshCw } from 'react-feather';
-import useScript from '../../utils/useScript.js';
+import useScript from '../../utils/useScript';
 
 const Newsletter: FC = () => {
   useScript('https://sibforms.com/forms/end-form/build/main.js');

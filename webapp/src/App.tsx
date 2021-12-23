@@ -6,7 +6,7 @@ import { HashRouter as Router, Route, Routes } from 'react-router-dom';
 import './assets/scss/custome.scss';
 
 import Home from './views/Home';
-import AppEth from './views/AppEth.js';
+import AppEth from './views/AppEth';
 
 const App: FC = () => {
   return (
