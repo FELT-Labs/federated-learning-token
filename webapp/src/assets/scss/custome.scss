@@ -1,8 +1,6 @@
 // change the theme
-$theme-colors: (
-  'primary': #4fabce,
-  'danger': #ff4136,
-);
+$primary: #7386d5;
+$danger: #ff4136;
 
 // Import Bootstrap and its default variables
 /*@import '~bootstrap/scss/bootstrap.scss'; */
@@ -12,4 +10,30 @@ $theme-colors: (
 
 .cursor-default {
   cursor: default !important;
+}
+
+.btn-primary {
+  color: white;
+
+  &:hover {
+    color: white;
+  }
+}
+
+.btn-outline-primary:hover {
+  color: white;
+}
+
+.navbar-light {
+  .navbar-brand {
+    &:hover svg,
+    &:focus svg {
+      fill: #7386d5;
+    }
+
+    &:hover,
+    &:focus {
+      color: $primary;
+    }
+  }
 }
