@@ -12,7 +12,9 @@ import {
 } from 'reactstrap';
 import { Clock } from 'react-feather';
 import { Link } from 'react-router-dom';
+
 import { loadContract } from '../utils/contracts';
+import Breadcrumbs from '../components/dapp/Breadcrumbs';
 
 type ProjectType = [string, string, string, number];
 
@@ -52,8 +54,16 @@ const Projects: FC = () => {
   }, [library, chainId]);
 
   return (
-    <main className="p-3">
-      <Row>
+    <main>
+      <Row className="m-0">
+        <Breadcrumbs title="All Projects" />
+        <Col className="d-flex align-items-center">
+          <Button color="default" outline to="/app/create-project" tag={Link}>
+            Create Project
+          </Button>
+        </Col>
+      </Row>
+      <Row className="px-3">
         {projects.map(([address, name, description, time]) => (
           <Col key={address} sm="12" md="6" lg="4" className="mb-4">
             <Card className="shadow overflow-hidden border-0">
