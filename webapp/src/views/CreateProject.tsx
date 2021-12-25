@@ -1,9 +1,10 @@
 import { FC } from 'react';
 import { Signer } from 'ethers';
-import { Button } from 'reactstrap';
+import { Button, Row, Col } from 'reactstrap';
 import { useWeb3React } from '@web3-react/core';
 
 import { getContractFactory, getContractAddress } from '../utils/contracts';
+import Breadcrumbs from '../components/dapp/Breadcrumbs';
 
 async function deployContract(
   name: string,
@@ -35,24 +36,36 @@ async function deployContract(
   }
 }
 
+const breadcrumbLinks = [
+  {
+    link: '',
+    name: 'Create Project',
+  },
+];
+
 const CreateProject: FC = () => {
   const { chainId, library } = useWeb3React();
   return (
     <main>
-      <Button
-        onClick={async () => {
-          if (chainId) {
-            await deployContract(
-              'test',
-              'description',
-              chainId,
-              library.getSigner(),
-            );
-          }
-        }}
-      >
-        Click me
-      </Button>
+      <Breadcrumbs title="Create Project" links={breadcrumbLinks} />
+      <Row className="p-3">
+        <Col>
+          <Button
+            onClick={async () => {
+              if (chainId) {
+                await deployContract(
+                  'test',
+                  'description',
+                  chainId,
+                  library.getSigner(),
+                );
+              }
+            }}
+          >
+            Click me
+          </Button>
+        </Col>
+      </Row>
     </main>
   );
 };
