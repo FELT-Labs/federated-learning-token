@@ -26,7 +26,7 @@ const Breadcrumbs: FC<propTypes> = ({ title, links = [] }) => {
         {allLinks.map(({ link, name }, idx) => {
           const active = allLinks.length === idx + 1;
           return (
-            <BreadcrumbItem active={active}>
+            <BreadcrumbItem key={name} active={active}>
               {active ? <span>{name}</span> : <Link to={link}>{name}</Link>}
             </BreadcrumbItem>
           );

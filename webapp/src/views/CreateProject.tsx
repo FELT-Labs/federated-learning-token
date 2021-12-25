@@ -1,6 +1,21 @@
-import { FC } from 'react';
+import { FC, useState } from 'react';
 import { Signer } from 'ethers';
-import { Button, Row, Col } from 'reactstrap';
+import {
+  Button,
+  Row,
+  Form,
+  FormGroup,
+  Input,
+  FormText,
+  Label,
+  Card,
+  Modal,
+  ModalFooter,
+  ModalHeader,
+  ModalBody,
+  Spinner,
+  Progress,
+} from 'reactstrap';
 import { useWeb3React } from '@web3-react/core';
 
 import { getContractFactory, getContractAddress } from '../utils/contracts';
@@ -32,7 +47,7 @@ async function deployContract(
   // await manager.activateProject(address, "xxxx", "description of this super cool thing", 0);
 
   if (factory) {
-    await factory.deploy(...deployArgs);
+    // await factory.deploy(...deployArgs);
   }
 }
 
@@ -44,28 +59,78 @@ const breadcrumbLinks = [
 ];
 
 const CreateProject: FC = () => {
-  const { chainId, library } = useWeb3React();
+  const { chainId, library, account } = useWeb3React();
+  const isActive = account && chainId;
+
+  const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+  const [showModal, setShowModal] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [error, setError] = useState('');
+
+  const deploy = async () => {
+    if (chainId) {
+      setProgress(1);
+      setShowModal(true);
+      await deployContract(name, description, chainId, library.getSigner());
+      setProgress(2);
+    }
+  };
+
   return (
     <main>
       <Breadcrumbs title="Create Project" links={breadcrumbLinks} />
-      <Row className="p-3">
-        <Col>
-          <Button
-            onClick={async () => {
-              if (chainId) {
-                await deployContract(
-                  'test',
-                  'description',
-                  chainId,
-                  library.getSigner(),
-                );
-              }
-            }}
-          >
-            Click me
-          </Button>
-        </Col>
+      <Row className="px-4 px-sm-5 pb-5 justify-content-center">
+        <Card body className="shadow border-0" style={{ maxWidth: '800px' }}>
+          <Form>
+            <FormGroup>
+              <Label for="projectName">Project Name</Label>
+              <Input
+                id="projectName"
+                name="projectName"
+                placeholder="Awesome Project"
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
+            </FormGroup>
+            <FormGroup>
+              <Label for="description">Description</Label>
+              <Input
+                id="description"
+                name="text"
+                type="textarea"
+                value={description}
+                onChange={(e) =>
+                  setDescription(e.target.value.substring(0, 128))
+                }
+              />
+              <FormText>Characters left: {128 - description.length}</FormText>
+            </FormGroup>
+            <Button disabled={!isActive} color="primary" onClick={deploy}>
+              Deploy {showModal && <Spinner size="sm" />}
+            </Button>
+          </Form>
+        </Card>
       </Row>
+
+      <Modal centered isOpen={showModal}>
+        <ModalHeader>Deployment in progress</ModalHeader>
+        <ModalBody>Don&apos;t close this browser tab while running!</ModalBody>
+        <Progress
+          animated
+          color="success"
+          value={progress < 3 ? progress : 4}
+          max={4}
+        />
+        {error && <ModalBody className="text-danger">{error}</ModalBody>}
+        <ModalFooter>
+          <Button disabled color="primary" onClick={() => setShowModal(false)}>
+            Finish
+          </Button>{' '}
+          <Button onClick={() => setShowModal(false)}>Cancel</Button>
+        </ModalFooter>
+      </Modal>
     </main>
   );
 };
