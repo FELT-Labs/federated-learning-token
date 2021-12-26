@@ -120,11 +120,11 @@ const App: FC = () => {
   );
 };
 
-const AppEth: FC = () => {
+const DApp: FC = () => {
   return (
     <Web3ReactProvider getLibrary={getLibrary}>
       <App />
     </Web3ReactProvider>
   );
 };
-export default AppEth;
+export default DApp;

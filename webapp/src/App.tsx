@@ -6,7 +6,7 @@ import { HashRouter as Router, Route, Routes } from 'react-router-dom';
 import './assets/scss/custome.scss';
 
 import Home from './views/Home';
-import AppEth from './views/AppEth';
+import DApp from './views/Dapp';
 
 const App: FC = () => {
   return (
@@ -27,7 +27,7 @@ const App: FC = () => {
         <Routes>
           <Route path="/">
             <Route index element={<Home />} />
-            <Route path="app/*" element={<AppEth />} />
+            <Route path="app/*" element={<DApp />} />
             <Route path="*" element={<Home />} />
           </Route>
         </Routes>
