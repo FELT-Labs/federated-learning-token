@@ -15,7 +15,10 @@ $danger: #ff4136;
 .btn-primary {
   color: white;
 
-  &:hover {
+  &:hover,
+  &:focus,
+  &:disabled,
+  &.disabled {
     color: white;
   }
 }

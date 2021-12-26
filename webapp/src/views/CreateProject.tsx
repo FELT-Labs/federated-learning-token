@@ -1,3 +1,4 @@
+/* eslint-disable no-nested-ternary */
 import { FC, useState } from 'react';
 import { Contract, Signer, providers } from 'ethers';
 import {
@@ -15,9 +16,11 @@ import {
   ModalBody,
   Spinner,
   Progress,
+  Alert,
 } from 'reactstrap';
 import { useWeb3React } from '@web3-react/core';
-import { Check, Upload } from 'react-feather';
+import { Check, Info, Key, Upload } from 'react-feather';
+import { Link } from 'react-router-dom';
 
 import {
   getContractFactory,
@@ -26,48 +29,54 @@ import {
 } from '../utils/contracts';
 import Breadcrumbs from '../components/dapp/Breadcrumbs';
 import CircleIcon from '../components/CircleIcon';
+import ChainlinkConfig from '../utils/chainlinkConfig';
+import { getPublicKey, PublicKeyType } from '../utils/web3helpers';
 
 async function deployContract(
-  name: string,
-  description: string,
+  publicKey: PublicKeyType,
+  contractName: string,
   chainId: number,
   signer: Signer,
-): Promise<undefined | Contract> {
+): Promise<Contract> {
+  if (!(chainId in ChainlinkConfig)) {
+    throw Error('Invalid chain id, change connected blockchain');
+  }
   const tokenAddress = getContractAddress(chainId, 'FELToken');
-  const factory = await getContractFactory('ProjectContract', signer);
+  const factory = await getContractFactory(contractName, signer);
 
-  const address = await signer.getAddress();
-  const deployArgs = [
-    tokenAddress,
-
-    true,
-    new Uint8Array(32).fill(0),
-
-    new Uint8Array(32).fill(0),
-    address,
-    address,
-    2,
-  ];
-
-  if (factory) {
-    return factory.deploy(...deployArgs);
+  if (!factory) {
+    throw Error(
+      'Invalid contract type, unable to load contract for deployment.',
+    );
   }
 
-  return undefined;
+  const deployArgs = [
+    tokenAddress,
+    // Builder setup
+    publicKey.parity,
+    publicKey.key,
+    // Chainlink setup
+    ChainlinkConfig[chainId].keyhash,
+    ChainlinkConfig[chainId].vrfCoordinator,
+    ChainlinkConfig[chainId].linkToken,
+    // Chainlink fee:
+    ChainlinkConfig[chainId].fee,
+  ];
+  return factory.deploy(...deployArgs);
 }
 
 async function registerContract(
+  address: string,
   name: string,
   description: string,
   chainId: number,
   signer: Signer,
-): Promise<undefined | providers.TransactionResponse> {
-  const address = await signer.getAddress();
+): Promise<providers.TransactionResponse> {
   const manager = await loadContract(chainId, 'ProjectManager', signer);
-  if (manager) {
-    return manager.activateProject(address, name, description, 0);
+  if (!manager) {
+    throw Error('Unable to load Project Manager contract.');
   }
-  return undefined;
+  return manager.activateProject(address, name, description, 0);
 }
 
 const breadcrumbLinks = [
@@ -81,48 +90,102 @@ const CreateProject: FC = () => {
   const { chainId, library, account } = useWeb3React();
   const isActive = account && chainId;
 
-  const [isSubmitted, setSubmitted] = useState(false);
   const [name, setName] = useState('');
+  const [projectType, setProjectType] = useState('ProjectContract');
   const [description, setDescription] = useState('');
+
+  const [address, setAddress] = useState('');
+
+  const [isSubmitted, setSubmitted] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [progress, setProgress] = useState(3);
   const [error, setError] = useState('');
 
   const deploy = async () => {
     setSubmitted(true);
-    if (chainId && name && description) {
-      setShowModal(true);
-      setProgress(1);
-      const contract = await deployContract(
+    setProgress(0);
+    setAddress('');
+
+    if (!(chainId && name && description)) {
+      return;
+    }
+
+    setError('');
+    setShowModal(true);
+
+    setProgress(2);
+    let publicKey;
+    try {
+      publicKey = await getPublicKey(library.getSigner());
+    } catch (e: any) {
+      setError(e && e.message ? e.message : 'Unknown error');
+      return;
+    }
+
+    setProgress(3);
+    let contract;
+    try {
+      contract = await deployContract(
+        publicKey,
+        projectType,
+        chainId,
+        library.getSigner(),
+      );
+    } catch (e: any) {
+      setError(e && e.message ? e.message : 'Unknown error');
+      return;
+    } finally {
+      setProgress(4);
+    }
+
+    await contract.deployTransaction.wait();
+    setProgress(5);
+
+    setAddress(contract.address);
+
+    let transaction;
+    try {
+      transaction = await registerContract(
+        contract.address,
         name,
         description,
         chainId,
         library.getSigner(),
       );
-      setProgress(2);
-      if (contract) {
-        await contract.deployTransaction.wait();
-        setProgress(3);
-        const transaction = await registerContract(
-          name,
-          description,
-          chainId,
-          library.getSigner(),
-        );
-        setProgress(4);
-
-        if (transaction) {
-          await transaction.wait();
-          setProgress(5);
-        }
-      }
+    } catch (e: any) {
+      setError(e && e.message ? e.message : 'Unknown error');
+      return;
+    } finally {
+      setProgress(6);
     }
+
+    await transaction.wait();
+    setProgress(7);
   };
 
   return (
     <main>
       <Breadcrumbs title="Create Project" links={breadcrumbLinks} />
       <Row className="px-4 px-sm-5 pb-5 justify-content-center">
+        {address && progress === 7 && (
+          <Alert color="primary d-flex align-items-center text-primary">
+            <Info className="me-3" />
+            <div>
+              Contract was deployed. For more details visit project dashboard:
+              <br />
+              <Link
+                className="alert-link"
+                to={`../project/${address}`}
+                style={{
+                  color: '#374066',
+                  borderBottom: '1px dotted rgb(0 0 0 / 50%)',
+                }}
+              >
+                {address}
+              </Link>
+            </div>
+          </Alert>
+        )}
         <Card body className="shadow border-0" style={{ maxWidth: '800px' }}>
           <Form>
             <FormGroup>
@@ -137,6 +200,18 @@ const CreateProject: FC = () => {
                 invalid={isSubmitted && !name.length}
                 onChange={(e) => setName(e.target.value.substring(0, 63))}
               />
+            </FormGroup>
+            <FormGroup>
+              <Label for="projectTypeId">Project Type</Label>
+              <Input
+                id="projectTypeId"
+                name="projectType"
+                type="select"
+                value={projectType}
+                onChange={(e) => setProjectType(e.target.value)}
+              >
+                <option value="ProjectContract">Basic Project Contract</option>
+              </Input>
             </FormGroup>
             <FormGroup>
               <Label for="description">Description</Label>
@@ -161,40 +236,100 @@ const CreateProject: FC = () => {
       </Row>
 
       <Modal centered isOpen={showModal}>
-        <ModalHeader>Deployment in progress</ModalHeader>
+        <ModalHeader>
+          Deployment {progress < 7 ? 'in Progress' : 'Finished'}
+        </ModalHeader>
         <ModalBody>Don&apos;t close this browser tab while running!</ModalBody>
-        <div className="d-flex align-items-center">
+        <div className="d-flex align-items-center m-4 position-relative">
           <Progress
             className="w-100 m-0"
-            animated
-            color="success"
+            animated={!error && progress < 5}
+            color={error ? 'danger' : 'success'}
             value={progress}
-            max={4}
+            max={6}
           />
           <CircleIcon
-            icon={<Upload />}
-            color={progress < 3 ? 'secondary' : 'success'}
-            light={progress < 3}
+            icon={<Key />}
+            color={
+              error && progress === 2
+                ? 'danger'
+                : progress < 3
+                ? 'secondary'
+                : 'success'
+            }
+            light={progress < 3 && !(error && progress === 2)}
             style={{
               position: 'absolute',
               left: 0,
+              right: '33.33%',
+              margin: '0 auto',
+            }}
+          />
+          <CircleIcon
+            icon={<Upload />}
+            color={
+              error && progress === 4
+                ? 'danger'
+                : progress < 5
+                ? 'secondary'
+                : 'success'
+            }
+            light={progress < 5 && !(error && progress === 4)}
+            style={{
+              position: 'absolute',
+              left: '33.33%',
               right: 0,
               margin: '0 auto',
             }}
           />
           <CircleIcon
             icon={<Check />}
-            color={progress < 5 ? 'secondary' : 'success'}
-            light={progress < 5}
+            color={
+              error && progress === 6
+                ? 'danger'
+                : progress < 7
+                ? 'secondary'
+                : 'success'
+            }
+            light={progress < 7 && !(error && progress === 7)}
             style={{ position: 'absolute', right: 0 }}
           />
         </div>
         <div>
-          {error && <ModalBody className="text-danger">{error}</ModalBody>}
+          <ModalBody className="text-danger">
+            {error && (
+              <>
+                <span className="fw-bold">Error: </span>
+                {error}
+              </>
+            )}
+            {address && (
+              <Alert color="primary d-flex align-items-center text-primary">
+                <Info className="me-3" />
+                <div>
+                  Deployed contract address:{' '}
+                  {progress < 7 ? (
+                    <span>{address}</span>
+                  ) : (
+                    <Link
+                      className="alert-link"
+                      to={`../project/${address}`}
+                      style={{
+                        color: '#374066',
+                        borderBottom: '1px dotted rgb(0 0 0 / 50%)',
+                      }}
+                    >
+                      {address}
+                    </Link>
+                  )}
+                </div>
+              </Alert>
+            )}
+          </ModalBody>
         </div>
         <ModalFooter>
           <Button
-            disabled={progress < 5}
+            disabled={progress < 7}
             color="primary"
             onClick={() => setShowModal(false)}
           >
