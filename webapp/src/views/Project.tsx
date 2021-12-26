@@ -2,19 +2,12 @@ import { FC, useState, useEffect } from 'react';
 import { Contract } from 'ethers';
 import { useParams } from 'react-router-dom';
 import { useWeb3React } from '@web3-react/core';
-import {
-  Container,
-  Col,
-  Row,
-  Card,
-  Spinner,
-  CardTitle,
-  Button,
-} from 'reactstrap';
+import { Container, Col, Row, Card, Spinner, CardTitle } from 'reactstrap';
 import { AlertCircle, Cpu, Database } from 'react-feather';
 
 import { getProjectContract } from '../utils/contracts';
 import Breadcrumbs from '../components/dapp/Breadcrumbs';
+import CircleIcon from '../components/CircleIcon';
 
 interface ContractProps {
   contract: Contract;
@@ -85,14 +78,7 @@ const ContractDisplay: FC<ContractProps> = ({ contract }) => {
                 </Col>
 
                 <Col className="d-flex justify-content-center">
-                  <Button
-                    className="btn-icon-only rounded-circle ml-1 cursor-default"
-                    color="success"
-                  >
-                    <span className="btn-inner--icon text-white">
-                      <Database />
-                    </span>
-                  </Button>
+                  <CircleIcon icon={<Database />} color="success" />
                 </Col>
               </Row>
             </Card>
@@ -111,14 +97,7 @@ const ContractDisplay: FC<ContractProps> = ({ contract }) => {
                 </Col>
 
                 <Col className="d-flex justify-content-center">
-                  <Button
-                    className="btn-icon-only rounded-circle ml-1 cursor-default"
-                    color="warning"
-                  >
-                    <span className="btn-inner--icon text-white">
-                      <Cpu />
-                    </span>
-                  </Button>
+                  <CircleIcon icon={<Cpu />} color="warning" />
                 </Col>
               </Row>
             </Card>
@@ -139,14 +118,7 @@ const ContractDisplay: FC<ContractProps> = ({ contract }) => {
                 </Col>
 
                 <Col className="d-flex justify-content-center">
-                  <Button
-                    className="btn-icon-only rounded-circle ml-1 cursor-default"
-                    color="info"
-                  >
-                    <span className="btn-inner--icon text-white">
-                      <AlertCircle />
-                    </span>
-                  </Button>
+                  <CircleIcon icon={<AlertCircle />} color="info" />
                 </Col>
               </Row>
             </Card>
