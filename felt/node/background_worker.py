@@ -40,7 +40,7 @@ async def get_plan(project_contract):
         project_contract.functions.isNewPlan().call()
         and project_contract.functions.isPlanRunning().call()
     ):
-        length = project_contract.functions.getPlansLength().call()
+        length = project_contract.functions.numPlans().call()
         plan = project_contract.functions.plans(length - 1).call()
         return to_dict(plan, "TrainingPlan")
     return None
@@ -182,7 +182,7 @@ async def task(key):
         print("Node secret", secret)
 
         # Creat directory for storing plan
-        plan_index = project_contract.functions.getPlansLength().call()
+        plan_index = project_contract.functions.numPlans().call()
         plan_dir = LOGS / f"plan_{plan_index}"
         plan_dir.mkdir(parents=True, exist_ok=True)
 
