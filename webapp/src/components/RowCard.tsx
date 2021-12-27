@@ -27,9 +27,7 @@ const RowCard: FC<CardProps> = ({ text, icon }) => {
       }}
     >
       {icon && (
-        <div
-          style={{ display: 'flex', width: 40, height: 40, marginRight: 16 }}
-        >
+        <div style={{ display: 'flex', width: 40, height: 40, marginRight: 16 }}>
           {icon}
         </div>
       )}
