@@ -33,7 +33,7 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "eject": "react-scripts eject",
-    "lint": "eslint src --ext .ts,.tsx,.json --fix"
+    "lint": "eslint src --ext .ts,.tsx --fix"
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -56,13 +56,10 @@
     "@typescript-eslint/parser": "^5.7.0",
     "eslint": "^7.11.0",
     "eslint-config-airbnb": "^19.0.2",
-    "eslint-config-prettier": "^8.3.0",
     "eslint-import-resolver-typescript": "^2.5.0",
     "eslint-plugin-import": "^2.25.3",
     "eslint-plugin-jsx-a11y": "^6.5.1",
-    "eslint-plugin-prettier": "^4.0.0",
     "eslint-plugin-react": "^7.27.1",
-    "eslint-plugin-react-hooks": "^4.3.0",
-    "prettier": "^2.5.1"
+    "eslint-plugin-react-hooks": "^4.3.0"
   }
 }

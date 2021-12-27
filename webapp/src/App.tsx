@@ -8,32 +8,30 @@ import './assets/scss/custome.scss';
 import Home from './views/Home';
 import DApp from './views/Dapp';
 
-const App: FC = () => {
-  return (
-    <>
-      <Helmet>
-        <title>FELT - Federated Learning Token</title>
-        <meta
-          name="description"
-          content="Tool for running federated learning on blockchain."
-        />
-        <meta
-          name="keywords"
-          content="Federated Learning, Blockchain, Token, Solidity, Machine Learning"
-        />
-        <meta name="author" content="Břetislav Hájek" />
-      </Helmet>
-      <Router>
-        <Routes>
-          <Route path="/">
-            <Route index element={<Home />} />
-            <Route path="app/*" element={<DApp />} />
-            <Route path="*" element={<Home />} />
-          </Route>
-        </Routes>
-      </Router>
-    </>
-  );
-};
+const App: FC = () => (
+  <>
+    <Helmet>
+      <title>FELT - Federated Learning Token</title>
+      <meta
+        name="description"
+        content="Tool for running federated learning on blockchain."
+      />
+      <meta
+        name="keywords"
+        content="Federated Learning, Blockchain, Token, Solidity, Machine Learning"
+      />
+      <meta name="author" content="Břetislav Hájek" />
+    </Helmet>
+    <Router>
+      <Routes>
+        <Route path="/">
+          <Route index element={<Home />} />
+          <Route path="app/*" element={<DApp />} />
+          <Route path="*" element={<Home />} />
+        </Route>
+      </Routes>
+    </Router>
+  </>
+);
 
 export default App;
