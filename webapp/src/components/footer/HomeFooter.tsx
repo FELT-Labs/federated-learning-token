@@ -13,8 +13,7 @@ import { ReactComponent as Logo } from '../../assets/logo.svg';
 const HomeFooter: FC = () => {
   const blogUrl = 'https://bretahajek.com';
   const githubUrl = 'https://github.com/Breta01/federated-learning-token';
-  const licenceUrl =
-    'https://github.com/Breta01/federated-learning-token/blob/main/LICENSE';
+  const licenceUrl = 'https://github.com/Breta01/federated-learning-token/blob/main/LICENSE';
 
   return (
     <Container style={{ paddingTop: 52, paddingBottom: 52 }}>

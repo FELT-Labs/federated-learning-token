@@ -72,7 +72,7 @@ export async function getProjectContract(
   let contractArtifact;
   try {
     contractArtifact = await import(
-      `../artifacts/contracts/ProjectContract.json`
+      '../artifacts/contracts/ProjectContract.json'
     );
   } catch (e) {
     return undefined;

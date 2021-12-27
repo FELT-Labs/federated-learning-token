@@ -9,9 +9,7 @@ const RPC_URLS = {
   80001: process.env.REACT_APP_RPC_URL_80001 ?? '',
 };
 
-export const injected = new InjectedConnector({
-  supportedChainIds: [137, 80001, 1337],
-});
+export const injected = new InjectedConnector({ supportedChainIds: [137, 80001, 1337] });
 
 export const network = new NetworkConnector({
   urls: { 137: RPC_URLS[137], 80001: RPC_URLS[80001], 1337: RPC_URLS[1337] },

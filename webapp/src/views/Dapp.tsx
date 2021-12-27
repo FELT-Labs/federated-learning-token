@@ -45,8 +45,8 @@ function getErrorMessage(error: Error) {
   }
 
   if (
-    error instanceof UserRejectedRequestErrorInjected ||
-    error instanceof UserRejectedRequestErrorWalletConnect
+    error instanceof UserRejectedRequestErrorInjected
+    || error instanceof UserRejectedRequestErrorWalletConnect
   ) {
     return 'Please authorize this website to access your Ethereum account.';
   }
@@ -94,8 +94,7 @@ const App: FC = () => {
     activate(connectorsByName[name]);
   };
 
-  const isActivating = (name: string) =>
-    activatingConnector !== connectorsByName[name];
+  const isActivating = (name: string) => activatingConnector !== connectorsByName[name];
 
   return (
     <>
@@ -120,11 +119,9 @@ const App: FC = () => {
   );
 };
 
-const DApp: FC = () => {
-  return (
-    <Web3ReactProvider getLibrary={getLibrary}>
-      <App />
-    </Web3ReactProvider>
-  );
-};
+const DApp: FC = () => (
+  <Web3ReactProvider getLibrary={getLibrary}>
+    <App />
+  </Web3ReactProvider>
+);
 export default DApp;

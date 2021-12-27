@@ -6,8 +6,7 @@ export interface PublicKeyType {
 }
 
 export async function getPublicKey(signer: Signer): Promise<PublicKeyType> {
-  const message =
-    'Please sign this message in order to share your PUBLIC key with new project contract.';
+  const message = 'Please sign this message in order to share your PUBLIC key with new project contract.';
   const signature = await signer.signMessage(message);
   const recoveredPubKey = utils.recoverPublicKey(
     utils.arrayify(utils.hashMessage(message)),
