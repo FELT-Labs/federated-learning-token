@@ -52,9 +52,7 @@ const ProjectSummary: FC<ProjectDisplayProps> = ({ contract }) => {
       <Container
         fluid
         className="p-5 py-4"
-        style={{
-          background: 'linear-gradient(135deg, #4FABCE, #4347BA)',
-        }}
+        style={{ background: 'linear-gradient(135deg, #4FABCE, #4347BA)' }}
       >
         <Row md="3" xs="2">
           <Col>

@@ -222,9 +222,7 @@ const CreateProject: FC = () => {
                 value={description}
                 required
                 invalid={isSubmitted && !description.length}
-                onChange={(e) =>
-                  setDescription(e.target.value.substring(0, 127))
-                }
+                onChange={(e) => setDescription(e.target.value.substring(0, 127))}
               />
               <FormText>Characters left: {127 - description.length}</FormText>
             </FormGroup>
@@ -254,8 +252,8 @@ const CreateProject: FC = () => {
               error && progress === 2
                 ? 'danger'
                 : progress < 3
-                ? 'secondary'
-                : 'success'
+                  ? 'secondary'
+                  : 'success'
             }
             light={progress < 3 && !(error && progress === 2)}
             style={{
@@ -271,8 +269,8 @@ const CreateProject: FC = () => {
               error && progress === 4
                 ? 'danger'
                 : progress < 5
-                ? 'secondary'
-                : 'success'
+                  ? 'secondary'
+                  : 'success'
             }
             light={progress < 5 && !(error && progress === 4)}
             style={{
@@ -288,8 +286,8 @@ const CreateProject: FC = () => {
               error && progress === 6
                 ? 'danger'
                 : progress < 7
-                ? 'secondary'
-                : 'success'
+                  ? 'secondary'
+                  : 'success'
             }
             light={progress < 7 && !(error && progress === 7)}
             style={{ position: 'absolute', right: 0 }}
