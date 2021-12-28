@@ -31,7 +31,7 @@ const HomeNavbar: FC = () => {
           </NavItem>
 
           <NavItem>
-            <NavLink href="#">Docs</NavLink>
+            <NavLink href="https://docs.feltoken.ai/">Docs</NavLink>
           </NavItem>
 
           <NavItem>
