@@ -31,7 +31,7 @@ contract ProjectContract is TrainingPlans {
             publicKey: publicKey
         });
 
-        nodes[msg.sender] = 3;
+        nodeState[msg.sender] = 3;
         nodesArray.push(Node({
             _address: msg.sender,
             activated: false,

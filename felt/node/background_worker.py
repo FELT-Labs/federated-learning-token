@@ -44,7 +44,7 @@ async def get_plan(project_contract):
 
 
 def get_node_secret(project_contract, account):
-    index = project_contract.functions.nodes(account.address).call()
+    index = project_contract.functions.nodeState(account.address).call()
     assert (
         index >= 3
     ), f"Node with this address ({account.address}) isn't approved by contract."

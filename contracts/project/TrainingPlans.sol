@@ -154,10 +154,10 @@ contract TrainingPlans is Builders, DataProviders {
     /** Function node can become active/inactive */
     function changeNodeStatus(bool status) public onlyNode {
         require(!isPlanRunning, "Node can't change status while plan running.");
-        if (nodesArray[nodes[msg.sender] - 3].activated != status) {
+        if (nodesArray[nodeState[msg.sender] - 3].activated != status) {
             activeNodes = (status) ? activeNodes + 1 : activeNodes - 1;
         }
-        nodesArray[nodes[msg.sender] - 3].activated = status;
+        nodesArray[nodeState[msg.sender] - 3].activated = status;
     }
 
     // get pseudo random number
