@@ -1,30 +1,30 @@
 // SPDX-License-Identifier: GPL3
-/*
-   Project contract manages references to data providers (nodes) and
-   scientiests (plan creators). Data providers must watch this contract
-   and execute new plans. This contract is instantiated for each project
-   and can be edited for individual needs.
-
-   TODO: Make interface/abstract project contract
-*/
 pragma solidity ^0.8.0;
 
 import "./Token.sol";
 import "./project/TrainingPlans.sol";
 
+// TODO: Make interface/abstract project contract
 
+/**
+ * @title Project Contract
+ * @notice Project Contract manages references to Data Providers (nodes) and
+ * Builders (scientists). Data providers must watch this contract and execute
+ * new plans. Builders creat training plans.
+ * @dev This contract is instantiated for each project and can be edited for individual needs.
+ */
 contract ProjectContract is TrainingPlans {
     FELToken private token;
 
-    constructor(
-        FELToken _token,
-        // Builder setup
-        bool parity,
-        bytes32 publicKey
-    ) {
+    /**
+     * @dev Initializes the project. Creator becomes both builder and data provider, might be changed in future
+     * @param _token address of the FELToken
+     * @param parity - Builder setup
+     * @param publicKey - Builder setup
+     */
+    constructor(FELToken _token, bool parity, bytes32 publicKey) {
         token = _token;
 
-        // Set creator both as builder and node, might be changed in future
         builders[msg.sender] = Builder({
             _address: msg.sender,
             parity: parity,
@@ -43,8 +43,12 @@ contract ProjectContract is TrainingPlans {
         }));
     }
 
-
-    // Create plan
+    /**
+     * @notice Builder creates training plan
+     * @param modelCID - ipfs CID
+     * @param rounds - number of training rounds
+     * @param reward - reward for data providers for each model submitted
+     */
     function createPlan(string memory modelCID, uint32 rounds, uint reward) public {
         _addPlan(modelCID, rounds, reward);
 
@@ -53,7 +57,10 @@ contract ProjectContract is TrainingPlans {
         token.transferFrom(msg.sender, address(this), totalReward);
     }
 
-    // Submit model
+    /**
+     * @notice Data provider submits model
+     * @param modelCID - ipfs CID
+     */
     function submitModel(string memory modelCID) public {
         _saveModel(modelCID);
 
@@ -61,7 +68,6 @@ contract ProjectContract is TrainingPlans {
         token.transfer(msg.sender, plans[numPlans - 1].nodeReward);
         plans[numPlans - 1].totalReward -= plans[numPlans - 1].nodeReward;
     }
-
 
 
     /** TODO:
