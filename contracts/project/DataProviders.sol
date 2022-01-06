@@ -52,7 +52,6 @@ contract DataProviders {
         _;
     }
 
-    // TODO are these 2 functions needed?
     function getNodesLength() public view returns(uint) {
         return nodesArray.length;
     }

@@ -25,7 +25,7 @@ contract ProjectManager is Ownable {
     Project[] public projects;
     uint256 public activationFee = 0;
 
-    constructor(FELToken _token) public {
+    constructor(FELToken _token) {
         token = _token;
     }
 

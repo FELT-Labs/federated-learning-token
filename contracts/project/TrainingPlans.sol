@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: GPL3
 pragma solidity ^0.8.0;
 
-import "@chainlink/contracts/src/v0.8/VRFConsumerBase.sol";
-
 import "./Builders.sol";
 import "./DataProviders.sol";
 
@@ -13,20 +11,15 @@ import "./DataProviders.sol";
  * There is always only 1 plan running at a time
  * All the plans are stored on the blockchain
  */
-contract TrainingPlans is VRFConsumerBase, Builders, DataProviders {
-    // Chainlink VRF
-    bytes32 internal keyHash;
-    uint256 internal fee;
-    uint256 public randomResult; // TODO is this needed ?
-
-    // Training Plans
+contract TrainingPlans is Builders, DataProviders {
+    // Training Plan Round
     struct Round {
         bool completed;
         uint numSubmitted;
         mapping(address => string) modelsCID;
     }
 
-    // Training plan defines instructions for training clients // TODO (data providers) ?
+    // Training Plan defines instructions for training clients (data providers)
     struct TrainingPlan {
         // bytes data;
         address creator;
@@ -38,7 +31,7 @@ contract TrainingPlans is VRFConsumerBase, Builders, DataProviders {
         // Final model uploaded by finalNode
         string finalModelCID;
 
-        // Secret for sharing with creator
+        // Secret for sharing with builder
         // TODO: maybe change to single array of 97 bytes
         bool parity;
         bytes32 secret0;
@@ -55,35 +48,26 @@ contract TrainingPlans is VRFConsumerBase, Builders, DataProviders {
 
         uint keyTurn;
 
-        // mapping (acting as array) of rounds // TODO why not array ?
+        // mapping (acting as array) of rounds
         mapping(uint => Round) rounds;
     }
 
-    // TODO why not array ?
     mapping(uint => TrainingPlan) public plans;
     uint32 public numPlans = 0;
 
-    mapping(bytes32 => uint) requestToPlan;
-    bool public isNewPlan = false;
     bool public isPlanRunning = false;
     uint32 public currentRound = 0;
 
+    // seed for pseudo random number generator
+    uint256 private _seed = 7;
 
-    constructor(bytes32 _keyhash, address _vrfCoordinator, address _linkToken, uint256 _fee)
-    VRFConsumerBase(_vrfCoordinator, _linkToken)
-    {
-        // Chainlink VRF
-        keyHash = _keyhash;
-        fee = _fee;
-    }
 
-    // TODO uint32 ?
-    function calculateTotalReward(uint32 _rounds, uint _reward) internal view returns (uint) {
-        return _rounds * _reward * activeNodes;
+    function _calculateTotalReward(uint32 _rounds, uint _reward) internal view returns (uint) {
+        return uint(_rounds) * _reward * activeNodes;
     }
 
     // TODO: Add Chainlink Keeper to close round if time elapses
-    function saveModel(string memory modelCID) internal onlyNode {
+    function _saveModel(string memory modelCID) internal onlyNode {
         require(
             currentRound < plans[numPlans - 1].numRounds,
             "No more rounds to perform."
@@ -109,12 +93,9 @@ contract TrainingPlans is VRFConsumerBase, Builders, DataProviders {
         return plans[numPlans - 1].rounds[roundIdx].modelsCID[nodeAddress];
     }
 
-    function addPlan(string memory modelCID, uint32 rounds, uint reward) internal onlyBuilder returns(bytes32) {
-        require(!isNewPlan, "Another plan is already being executed");
+    function _addPlan(string memory modelCID, uint32 rounds, uint reward) internal onlyBuilder {
+        require(!isPlanRunning, "Another plan is already being executed");
         require(activeNodes > 0, "No active nodes to execute the plan");
-
-        isNewPlan = true;
-        currentRound = 0;
 
         TrainingPlan storage plan = plans[numPlans++];
         plan.creator = msg.sender;
@@ -122,14 +103,20 @@ contract TrainingPlans is VRFConsumerBase, Builders, DataProviders {
         plan.numRounds = rounds;
         plan.numNodes = activeNodes;
         plan.nodeReward = reward;
-        plan.totalReward = calculateTotalReward(rounds, reward);
+        plan.totalReward = _calculateTotalReward(rounds, reward);
         plan.keyTurn = keyTurn;
 
-        bytes32 requestId = getRandomNumber();
-        requestToPlan[requestId] = numPlans - 1;
+        uint256 randNum = _getRandomNumber();
 
-        // Returning requestId mainly for testing purposes
-        return requestId;
+        // TODO: Deal better with inactive nodes so it is more fair
+        uint256 i = randNum % nodesArray.length;
+        for (; !nodesArray[i % nodesArray.length].activated; ++i) {}
+
+        plan.finalNode = nodesArray[i % nodesArray.length]._address;
+        plan.randomSeed = uint32(randNum);
+
+        currentRound = 0;
+        isPlanRunning = true;
     }
 
     // Abort plan
@@ -138,11 +125,12 @@ contract TrainingPlans is VRFConsumerBase, Builders, DataProviders {
             numPlans > 0 && plans[numPlans - 1].creator == msg.sender,
             "Only creator can abort the plan"
         );
-        isNewPlan = false;
+        isPlanRunning = false;
     }
 
     // Finish plan
     // IMPORTANT: Use combination of seed and secret to generate builder secret
+    // TODO add verification by other nodes
     function finishPlan(
         bool parity,
         bytes32 secret0,
@@ -152,6 +140,7 @@ contract TrainingPlans is VRFConsumerBase, Builders, DataProviders {
     ) public onlyNode {
         TrainingPlan storage plan = plans[numPlans - 1];
         require(plan.finalNode == msg.sender, "Only pre-selected node can finish plan");
+        require(currentRound >= plan.numRounds, "All rounds must be completed");
 
         plan.finalModelCID = modelCID;
 
@@ -160,45 +149,22 @@ contract TrainingPlans is VRFConsumerBase, Builders, DataProviders {
         plan.secret1 = secret1;
         plan.secret2 = secret2;
 
-        isNewPlan = false;
         isPlanRunning = false;
     }
 
 
-    // TODO: fugure out where to put this better
     /** Function node can become active/inactive */
     function changeNodeStatus(bool status) public onlyNode {
-        require(!isNewPlan, "Node can't change status while plan running.");
+        require(!isPlanRunning, "Node can't change status while plan running.");
         if (nodesArray[nodes[msg.sender] - 3].activated != status) {
             activeNodes = (status) ? activeNodes + 1 : activeNodes - 1;
         }
         nodesArray[nodes[msg.sender] - 3].activated = status;
     }
 
-
-    /*** BLOCK: VRF handling ***/
-    /**
-     * Requests randomness
-     */
-    function getRandomNumber() private returns (bytes32 requestId) {
-        require(LINK.balanceOf(address(this)) >= fee, "Not enough LINK - fill contract with faucet");
-        return requestRandomness(keyHash, fee);
-    }
-
-    /**
-     * Callback function used by VRF Coordinator
-     */
-    function fulfillRandomness(bytes32 requestId, uint256 randomness) internal override {
-        uint idx = requestToPlan[requestId];
-        if (isNewPlan && idx + 1 == numPlans) {
-            isPlanRunning = true;
-
-            // TODO: Deal better with inactive nodes so it is more fair
-            uint256 i = randomness % nodesArray.length;
-            for (; !nodesArray[i % nodesArray.length].activated; ++i) {}
-
-            plans[idx].finalNode = nodesArray[i % nodesArray.length]._address;
-            plans[idx].randomSeed = uint32(randomness);
-        }
+    // get pseudo random number
+    function _getRandomNumber() private returns (uint256) {
+        _seed = uint256(keccak256(abi.encodePacked(_seed, blockhash(block.number - 1), block.coinbase, block.difficulty)));
+        return _seed;
     }
 }

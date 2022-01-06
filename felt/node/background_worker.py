@@ -36,10 +36,7 @@ LOGS = Path(__file__).parent / "logs" / sys.argv[1]
 
 async def get_plan(project_contract):
     """Get latest running plan else return None."""
-    if (
-        project_contract.functions.isNewPlan().call()
-        and project_contract.functions.isPlanRunning().call()
-    ):
+    if project_contract.functions.isPlanRunning().call():
         length = project_contract.functions.numPlans().call()
         plan = project_contract.functions.plans(length - 1).call()
         return to_dict(plan, "TrainingPlan")

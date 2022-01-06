@@ -52,27 +52,15 @@ def manager(ProjectManager, token):
 
 
 @pytest.fixture(scope="module")
-def project(ProjectContract, token, get_keyhash, chainlink_fee):
+def project(ProjectContract, token):
     """
     Yield a `Contract` object for the ProjectContract contract.
     """
     owner = get_account()
     parity, public_key = export_public_key(owner.private_key[2:])
 
-    project = ProjectContract.deploy(
-        token,
-        parity,
-        public_key,
-        get_keyhash,
-        get_contract("vrf_coordinator").address,
-        get_contract("link_token").address,
-        chainlink_fee,
-        {"from": get_account()},
-    )
+    project = ProjectContract.deploy(token, parity, public_key, {"from": get_account()})
 
-    get_contract("link_token").transfer(
-        project.address, chainlink_fee * 3, {"from": get_account()}
-    )
     yield project
 
 

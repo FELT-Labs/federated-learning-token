@@ -20,15 +20,8 @@ contract ProjectContract is TrainingPlans {
         FELToken _token,
         // Builder setup
         bool parity,
-        bytes32 publicKey,
-        // Chainlink setup
-        bytes32 _keyhash,
-        address _vrfCoordinator,
-        address _linkToken,
-        uint256 _fee
-    )
-        TrainingPlans(_keyhash, _vrfCoordinator, _linkToken, _fee)
-    {
+        bytes32 publicKey
+    ) {
         token = _token;
 
         // Set creator both as builder and node, might be changed in future
@@ -52,20 +45,17 @@ contract ProjectContract is TrainingPlans {
 
 
     // Create plan
-    function createPlan(string memory modelCID, uint32 rounds, uint reward) public returns(bytes32) {
-        bytes32 requestId = addPlan(modelCID, rounds, reward);
+    function createPlan(string memory modelCID, uint32 rounds, uint reward) public {
+        _addPlan(modelCID, rounds, reward);
 
         // Builder has to provide the reward
-        uint totalReward = calculateTotalReward(rounds, reward);
+        uint totalReward = _calculateTotalReward(rounds, reward);
         token.transferFrom(msg.sender, address(this), totalReward);
-
-        // Returning requestId mainly for testing purposes
-        return requestId;
     }
 
     // Submit model
     function submitModel(string memory modelCID) public {
-        saveModel(modelCID);
+        _saveModel(modelCID);
 
         // Send reward to node
         token.transfer(msg.sender, plans[numPlans - 1].nodeReward);
