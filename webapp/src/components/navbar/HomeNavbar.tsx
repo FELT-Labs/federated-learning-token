@@ -48,7 +48,7 @@ const HomeNavbar: FC = () => {
           </NavLink>
         </NavbarText>
         <NavbarText>
-          <NavLink href="https://discord.gg/MgTDCW8GyW">
+          <NavLink href="https://discord.gg/G4ZFfstsV2">
             <Discord className="hover-fill-svg" width="35" height="35" />
           </NavLink>
         </NavbarText>

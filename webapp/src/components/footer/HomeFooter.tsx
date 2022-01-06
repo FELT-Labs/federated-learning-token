@@ -15,7 +15,7 @@ const HomeFooter: FC = () => {
   const blogUrl = 'https://bretahajek.com';
   const githubUrl = 'https://github.com/Breta01/federated-learning-token';
   const twitterUrl = 'https://twitter.com/FELToken';
-  const discordUrl = 'https://discord.gg/MgTDCW8GyW';
+  const discordUrl = 'https://discord.gg/G4ZFfstsV2';
   const licenceUrl = 'https://github.com/Breta01/federated-learning-token/blob/main/LICENSE';
 
   return (
