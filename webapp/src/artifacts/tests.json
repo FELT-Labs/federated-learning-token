@@ -1,10 +1,13 @@
 {
   "contracts": {
+    "Builders": "42ee6c0d0a1e30da286ba11abc69b47ea7581b42",
+    "DataProviders": "8e9dd3c86961743c3555adae953d076d30e7416d",
     "FELToken": "0fe4d5c47a86a277295ed766cfa0b2b97e9db5e0",
     "LinkToken": "49e7bae2df618e81d877632c6ad55872ff2ce801",
     "OpenZeppelin/openzeppelin-contracts@4.3.2/ERC20": "5c27d7156fdbfe889902cc167df697405a50ad20",
-    "ProjectContract": "f88424b048242d484ecb2af03f916c82c75c346e",
+    "ProjectContract": "3ad4d3f4cfc81dd8c129f4c993dc1ce87aa52232",
     "ProjectManager": "91fb31ef03979266ef3ca0858070db657a372b7f",
+    "TrainingPlans": "ee54cee63f488d3aef07a6252faf0cb9b53b5282",
     "VRFCoordinatorMock": "a234e721cab3c47e532d8404949512e63f344855",
     "smartcontractkit/chainlink-brownie-contracts@0.2.2/BasicToken": "92084ac5279a2a3db988d9e01d7e6d3e3a4dab8d",
     "smartcontractkit/chainlink-brownie-contracts@0.2.2/SafeMathChainlink": "3b4158955f564edb18bd7a8ffdb49859c904f0b7",
@@ -20,26 +23,23 @@
         "ProjectManager"
       ],
       "results": "..",
-      "sha1": "43d44fa3cae916f7bf7b64bc8f48364c9a436502",
+      "sha1": "5c27028685acc8027c4dbec33ef8a96aa8a65f23",
       "txhash": [
-        "a327c7776a671bb26428534930d212d027a76087"
+        "e51e480ee794adab6f6c8045f1b4b069abe7d10e"
       ]
     },
     "tests/test_basic_project.py": {
       "coverage": false,
       "isolated": [
+        "Builders",
+        "DataProviders",
         "FELToken",
-        "LinkToken",
         "OpenZeppelin/openzeppelin-contracts@4.3.2/ERC20",
         "ProjectContract",
-        "VRFCoordinatorMock",
-        "smartcontractkit/chainlink-brownie-contracts@0.2.2/BasicToken",
-        "smartcontractkit/chainlink-brownie-contracts@0.2.2/SafeMathChainlink",
-        "smartcontractkit/chainlink-brownie-contracts@0.2.2/StandardToken",
-        "smartcontractkit/chainlink-brownie-contracts@0.2.2/VRFRequestIDBase"
+        "TrainingPlans"
       ],
       "results": "..",
-      "sha1": "330d7d21da24af8f762d628239fde20a80756bd2",
+      "sha1": "8b2b86688788a761531d075fe0ec5f018fccdacb",
       "txhash": []
     },
     "tests/test_basic_token.py": {
@@ -49,12 +49,12 @@
         "OpenZeppelin/openzeppelin-contracts@4.3.2/ERC20"
       ],
       "results": "...",
-      "sha1": "fcbe48ec3f526f06f3b4d266eb849b136c677755",
+      "sha1": "b38e96612f7e5090a57c6213c783f6bec15a3e19",
       "txhash": []
     }
   },
   "tx": {
-    "a327c7776a671bb26428534930d212d027a76087": {
+    "e51e480ee794adab6f6c8045f1b4b069abe7d10e": {
       "ProjectManager": {
         "0": [
           [],
@@ -68,7 +68,7 @@
           [],
           []
         ],
-        "5": [
+        "6": [
           [],
           [],
           []

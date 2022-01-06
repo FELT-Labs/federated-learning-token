@@ -30,8 +30,8 @@ contract DataProviders {
     // 1 - pending
     // 2 - declined
     // 3 <= i  - represents index i in node array as (i - 3)
-    mapping(address => uint) public nodes; // TODO rename to nodeState
-    Node[] public nodesArray; // TODO rename to nodes
+    mapping(address => uint) public nodeState;
+    Node[] public nodesArray;
     uint32 public activeNodes = 0;
     uint32 public keyTurn = 0; // Increment on every node join
 
@@ -41,7 +41,7 @@ contract DataProviders {
 
     modifier onlyNode {
         require(
-            nodes[msg.sender] >= 3,
+            nodeState[msg.sender] >= 3,
             "Only nodes are allowed to execute this."
         );
         _;
@@ -49,7 +49,7 @@ contract DataProviders {
 
     modifier onlyActiveNode {
         require(
-            nodes[msg.sender] >= 3 && nodesArray[nodes[msg.sender] - 3].activated,
+            nodeState[msg.sender] >= 3 && nodesArray[nodeState[msg.sender] - 3].activated,
             "Only nodes that are active are allowed to execute this."
         );
         _;
@@ -69,8 +69,8 @@ contract DataProviders {
      * @param publicKey compressed public key value
      */
     function requestJoinNode(bool parity, bytes32 publicKey) public {
-        require(nodes[msg.sender] == 0, "Address already made request.");
-        nodes[msg.sender] = 1;
+        require(nodeState[msg.sender] == 0, "Address already made request.");
+        nodeState[msg.sender] = 1;
         nodeRequests.push(NodeJoinRequest({
             _address: msg.sender,
             parity: parity,
@@ -91,7 +91,7 @@ contract DataProviders {
     */
     function acceptNode(bool parity, bytes32 secret0, bytes32 secret1, bytes32 secret2) public onlyNode {
         require(nodeRequests.length > 0, "No request to process.");
-        nodes[nodeRequests[nodeRequests.length - 1]._address] = nodesArray.length + 3;
+        nodeState[nodeRequests[nodeRequests.length - 1]._address] = nodesArray.length + 3;
 
         keyTurn += 1;
         nodesArray.push(Node({
@@ -112,7 +112,7 @@ contract DataProviders {
      */
     function declineNode() public onlyNode {
         require(nodeRequests.length > 0, "No request to process.");
-        nodes[nodeRequests[nodeRequests.length - 1]._address] = 2;
+        nodeState[nodeRequests[nodeRequests.length - 1]._address] = 2;
         nodeRequests.pop();
     }
 }
