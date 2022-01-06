@@ -1,10 +1,5 @@
 """Module for deploying project contract."""
 from brownie import FELToken, ProjectContract, ProjectManager, accounts, config, network
-from scripts.helpful_scripts import (
-    LOCAL_BLOCKCHAIN_ENVIRONMENTS,
-    get_account,
-    get_contract,
-)
 
 from felt.core.web3 import encrypt_secret, export_public_key, get_current_secret
 
@@ -12,25 +7,12 @@ from felt.core.web3 import encrypt_secret, export_public_key, get_current_secret
 def deploy_project(owner):
     """Deploy project contract."""
     token = FELToken[-1]
-    keyhash = config["networks"][network.show_active()]["keyhash"]
-    fee = config["networks"][network.show_active()]["fee"]
-    vrf_coordinator = get_contract("vrf_coordinator")
-    link_token = get_contract("link_token")
 
     parity, public_key = export_public_key(owner.private_key[2:])
-
-    project = ProjectContract.deploy(
-        token,
-        parity,
-        public_key,
-        keyhash,
-        vrf_coordinator,
-        link_token,
-        fee,
-        {"from": owner},
-    )
+    project = ProjectContract.deploy(token, parity, public_key, {"from": owner})
 
     manager = ProjectManager[-1]
+    # TODO missing {"from": owner} ?
     manager.activateProject(
         project.address, "Test Project", "This is great project...", 0
     )

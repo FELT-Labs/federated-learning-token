@@ -36,10 +36,7 @@ LOGS = Path(__file__).parent / "logs" / sys.argv[1]
 
 async def get_plan(project_contract):
     """Get latest running plan else return None."""
-    if (
-        project_contract.functions.isNewPlan().call()
-        and project_contract.functions.isPlanRunning().call()
-    ):
+    if project_contract.functions.isPlanRunning().call():
         length = project_contract.functions.numPlans().call()
         plan = project_contract.functions.plans(length - 1).call()
         return to_dict(plan, "TrainingPlan")
@@ -47,7 +44,7 @@ async def get_plan(project_contract):
 
 
 def get_node_secret(project_contract, account):
-    index = project_contract.functions.nodes(account.address).call()
+    index = project_contract.functions.nodeState(account.address).call()
     assert (
         index >= 3
     ), f"Node with this address ({account.address}) isn't approved by contract."
