@@ -5,11 +5,9 @@ import "./Builders.sol";
 import "./DataProviders.sol";
 
 /**
- * @title Training Plans
  * @dev A contract that manages the training plans for the project.
- *
- * There is always only 1 plan running at a time
- * All the plans are stored on the blockchain
+ * There is always only 1 plan running at a time. All the plans are
+ * stored on the blockchain
  */
 contract TrainingPlans is Builders, DataProviders {
     // Training Plan Round

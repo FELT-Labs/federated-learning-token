@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: GPL3
 pragma solidity ^0.8.0;
 
+/**
+ * @dev Reference data providers in the project and their requests to join the project
+ */
 contract DataProviders {
     // Data provider entity (node)
     struct Node {
@@ -60,9 +63,10 @@ contract DataProviders {
         return nodeRequests.length;
     }
 
-    /** Node can request to join providing their public key.
-        @param parity based on header value (0x02/0x03 - false/true)
-        @param publicKey compressed public key value
+    /**
+     * @notice Node can request to join providing their public key.
+     * @param parity based on header value (0x02/0x03 - false/true)
+     * @param publicKey compressed public key value
      */
     function requestJoinNode(bool parity, bytes32 publicKey) public {
         require(nodes[msg.sender] == 0, "Address already made request.");
@@ -74,16 +78,17 @@ contract DataProviders {
         }));
     }
 
-    /** Accepting first request in the stack
-        @param parity header type
-        @param secret0 sharing encrypted common secret for nodes
-        @param secret1 sharing encrypted common secret for nodes
-        @param secret2 sharing encrypted common secret for nodes
+    /**
+     * @notice Accepting first request in the stack
+     * @param parity header type
+     * @param secret0 sharing encrypted common secret for nodes
+     * @param secret1 sharing encrypted common secret for nodes
+     * @param secret2 sharing encrypted common secret for nodes
 
         TODO: Secret should be updated as hash of previous secret
               So that the node doesn't have access to previous models
+        TODO: Should not accept node when plan is running
     */
-    // TODO you can accept node while plan running ?
     function acceptNode(bool parity, bytes32 secret0, bytes32 secret1, bytes32 secret2) public onlyNode {
         require(nodeRequests.length > 0, "No request to process.");
         nodes[nodeRequests[nodeRequests.length - 1]._address] = nodesArray.length + 3;
@@ -102,7 +107,9 @@ contract DataProviders {
         nodeRequests.pop();
     }
 
-    /** Declining first request in the stack */
+    /**
+     * @notice Declining first request in the stack
+     */
     function declineNode() public onlyNode {
         require(nodeRequests.length > 0, "No request to process.");
         nodes[nodeRequests[nodeRequests.length - 1]._address] = 2;

@@ -1,17 +1,14 @@
 // SPDX-License-Identifier: GPL3
-/*
-   Contract for managing individual projects at one place. This helps with
-   activation and referencing of the contract and allowes referencing
-   contracts from the homepage (webapp).
-*/
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
-
 import "./Token.sol";
 
-// TODO: Function for chainlink withdraw
-
+/**
+ * @title Project Contract Manager
+ * @notice Contract for managing individual projects at one place.
+ * @dev Helps with activation and referencing of the contract and allows referencing contracts from the webapp.
+ */
 contract ProjectManager is Ownable {
     struct Project {
         address _address;
@@ -37,7 +34,9 @@ contract ProjectManager is Ownable {
         return projects.length;
     }
 
-    // TODO: Add contract creation function
+    /**
+     * @notice Add a new project contract to the list of projects.
+     */
     function activateProject(
         address _contract,
         string memory name,
@@ -47,11 +46,11 @@ contract ProjectManager is Ownable {
         token.transferFrom(msg.sender, address(this), activationFee);
         token.transferFrom(msg.sender, _contract, transferAmount);
 
-        // TODO: Transfer link and token to the contract
-
         projects.push(Project(_contract, name, description, block.timestamp));
 
         return true;
     }
+
+    // TODO: Add contract creation function
 }
 

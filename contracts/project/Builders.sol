@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: GPL3
 pragma solidity ^0.8.0;
 
+/**
+ * @dev Reference builder in the project
+ */
 contract Builders {
     // Plan designer entity (builder)
     struct Builder {
@@ -19,9 +22,10 @@ contract Builders {
         _;
     }
 
-    /** Builder can update his public key.
-        @param parity based on header value (0x02/0x03 - false/true)
-        @param publicKey compressed public key value
+    /**
+     * @notice Builder can update his public key.
+     * @param parity based on header value (0x02/0x03 - false/true)
+     * @param publicKey compressed public key value
      */
     function setBuilderPublickey(bool parity, bytes32 publicKey) public {
         require(builders[msg.sender]._address == msg.sender, "Builder not set");
