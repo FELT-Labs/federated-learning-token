@@ -60,7 +60,7 @@ def test_encryption_mechanism(accounts, project):
     #  2. Access node values by index
     #  3. Decrypt secrets from node values using private key
     #  4. Use secret to encrypt models
-    index = project.nodes(request["_address"])
+    index = project.nodeState(request["_address"])
     assert index == 4
 
     node = project.nodesArray(index - 3).dict()
