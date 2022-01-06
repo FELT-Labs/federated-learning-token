@@ -1,4 +1,5 @@
 import { FC, useState, ReactNode } from 'react';
+import CircleIcon from './CircleIcon';
 
 interface CardProps {
   text: string;
@@ -27,11 +28,9 @@ const RowCard: FC<CardProps> = ({ text, icon }) => {
       }}
     >
       {icon && (
-        <div style={{ display: 'flex', width: 40, height: 40, marginRight: 16 }}>
-          {icon}
-        </div>
+        <CircleIcon color="primary" {...{ icon }} style={{ minWidth: '2.375rem' }} />
       )}
-      <p className="card-text">{text}</p>
+      <p className="ps-2 card-text">{text}</p>
     </div>
   );
 };

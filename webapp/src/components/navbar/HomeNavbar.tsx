@@ -11,8 +11,9 @@ import {
   NavLink,
 } from 'reactstrap';
 import { NavLink as RouterNavLink } from 'react-router-dom';
-import { GitHub } from 'react-feather';
+import { GitHub, Twitter } from 'react-feather';
 import { ReactComponent as Logo } from '../../assets/logo.svg';
+import { ReactComponent as Discord } from '../../assets/icons/discord.svg';
 
 const HomeNavbar: FC = () => {
   const [isOpen, setOpen] = useState(false);
@@ -42,10 +43,21 @@ const HomeNavbar: FC = () => {
         </Nav>
 
         <NavbarText>
+          <NavLink href="https://twitter.com/FELToken">
+            <Twitter />
+          </NavLink>
+        </NavbarText>
+        <NavbarText>
+          <NavLink href="https://discord.gg/MgTDCW8GyW">
+            <Discord className="hover-fill-svg" width="35" height="35" />
+          </NavLink>
+        </NavbarText>
+        <NavbarText className="pe-3">
           <NavLink href="https://github.com/Breta01/federated-learning-token">
             <GitHub />
           </NavLink>
         </NavbarText>
+
         <Nav>
           <NavItem>
             <Button color="primary" outline size="">
