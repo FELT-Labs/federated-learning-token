@@ -7,12 +7,15 @@ import {
   NavLink,
   UncontrolledTooltip,
 } from 'reactstrap';
-import { GitHub } from 'react-feather';
+import { GitHub, Twitter } from 'react-feather';
 import { ReactComponent as Logo } from '../../assets/logo.svg';
+import { ReactComponent as Discord } from '../../assets/icons/discord.svg';
 
 const HomeFooter: FC = () => {
   const blogUrl = 'https://bretahajek.com';
   const githubUrl = 'https://github.com/Breta01/federated-learning-token';
+  const twitterUrl = 'https://twitter.com/FELToken';
+  const discordUrl = 'https://discord.gg/MgTDCW8GyW';
   const licenceUrl = 'https://github.com/Breta01/federated-learning-token/blob/main/LICENSE';
 
   return (
@@ -69,6 +72,34 @@ const HomeFooter: FC = () => {
         </div>
 
         <div>
+          <Button
+            className="btn-icon-only rounded-circle ml-1"
+            color="twitter"
+            href={twitterUrl}
+            id="tooltip_footer_twitter"
+            target="_blank"
+          >
+            <span className="btn-inner--icon text-white">
+              <Twitter />
+            </span>
+          </Button>
+          <UncontrolledTooltip delay={0} target="tooltip_footer_twitter">
+            Follow on Twitter
+          </UncontrolledTooltip>
+          <Button
+            className="btn-icon-only rounded-circle ml-1"
+            color="discord"
+            href={discordUrl}
+            id="tooltip_footer_discord"
+            target="_blank"
+          >
+            <span className="btn-inner--icon text-white">
+              <Discord fill="white" />
+            </span>
+          </Button>
+          <UncontrolledTooltip delay={0} target="tooltip_footer_discord">
+            Join community Discord
+          </UncontrolledTooltip>
           <Button
             className="btn-icon-only rounded-circle ml-1"
             color="github"

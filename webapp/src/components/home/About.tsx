@@ -5,7 +5,7 @@ import Features from './Features';
 
 const About: FC = () => (
   <section
-    style={{ background: 'linear-gradient(180deg, #4FABCE, rgba(67, 71, 186, 0.5)' }}
+    style={{ background: 'linear-gradient(180deg, #4FABCE, #697dcf)' }}
   >
     <Container className="py-lg d-flex">
       <div className="col px-0">

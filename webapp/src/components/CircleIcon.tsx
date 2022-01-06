@@ -1,9 +1,9 @@
-import { FC, CSSProperties } from 'react';
+import { FC, CSSProperties, ReactNode } from 'react';
 import { Button } from 'reactstrap';
 import classNames from 'classnames';
 
 type propTypes = {
-  icon: JSX.Element;
+  icon: ReactNode;
   light?: boolean;
   color?: string;
   style?: CSSProperties;

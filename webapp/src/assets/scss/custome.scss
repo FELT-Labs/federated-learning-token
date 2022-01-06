@@ -12,6 +12,7 @@ $danger: #ff4136;
   cursor: default !important;
 }
 
+// Buttonons
 .btn-primary {
   color: white;
 
@@ -27,6 +28,7 @@ $danger: #ff4136;
   color: white;
 }
 
+// Navbar
 .navbar-light {
   .navbar-brand {
     &:hover svg,
@@ -37,6 +39,15 @@ $danger: #ff4136;
     &:hover,
     &:focus {
       color: $primary;
+    }
+
+  }
+
+  .navbar-text a:hover {
+    color: #7386d5;
+
+    & .hover-fill-svg {
+      fill: #7386d5;
     }
   }
 }
