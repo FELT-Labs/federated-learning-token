@@ -12,7 +12,7 @@ $danger: #ff4136;
   cursor: default !important;
 }
 
-// Buttonons
+// Buttons
 .btn-primary {
   color: white;
 
@@ -50,4 +50,9 @@ $danger: #ff4136;
       fill: #7386d5;
     }
   }
+}
+
+// Forms
+.input-group-text {
+  z-index: 10;
 }
