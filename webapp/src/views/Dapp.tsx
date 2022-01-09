@@ -105,7 +105,7 @@ const App: FC = () => {
           <Routes>
             <Route index element={<Projects />} />
             <Route path="create-project" element={<CreateProject />} />
-            <Route path="project/:address" element={<Project />} />
+            <Route path="project/:address/*" element={<Project />} />
           </Routes>
           {!!error && (
             <h4 style={{ marginTop: '1rem', marginBottom: '0' }}>
