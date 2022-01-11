@@ -98,7 +98,7 @@ const CreateProject: FC = () => {
 
   const [isSubmitted, setSubmitted] = useState(false);
   const [showModal, setShowModal] = useState(false);
-  const [progress, setProgress] = useState(3);
+  const [progress, setProgress] = useState(0);
   const [error, setError] = useState('');
 
   const deploy = async () => {
