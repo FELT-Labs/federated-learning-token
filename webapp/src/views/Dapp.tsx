@@ -23,6 +23,12 @@ import HomeFooter from '../components/footer/HomeFooter';
 import CreateProject from './CreateProject';
 import Project from './Project';
 
+// Fix missing ethereum on window (injected by MetaMask)
+declare const window: Window &
+  typeof globalThis & {
+    ethereum: any;
+  };
+
 const ConnectorNames = {
   Injected: 'Injected',
   Network: 'Network',
@@ -66,6 +72,13 @@ function getLibrary(
 const App: FC = () => {
   const context = useWeb3React();
   const { connector, activate, error } = context;
+
+  const { ethereum } = window;
+  if (ethereum) {
+    // Deprecade event which brings issues
+    // https://github.com/NoahZinsmeister/web3-react/issues/257
+    ethereum.removeAllListeners('networkChanged');
+  }
 
   // handle logic to recognize the connector currently being activated
   const [activatingConnector, setActivatingConnector] = useState<

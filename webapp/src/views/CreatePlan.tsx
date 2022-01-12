@@ -1,6 +1,6 @@
 /* eslint-disable no-nested-ternary */
-import { FC, useState } from 'react';
-import { Contract, Signer, providers } from 'ethers';
+import { FC, useEffect, useState } from 'react';
+import { Contract, Signer, providers, utils, BigNumber } from 'ethers';
 import {
   Button,
   Row,
@@ -25,10 +25,11 @@ import { Check, Send } from 'react-feather';
 import Breadcrumbs from '../components/dapp/Breadcrumbs';
 import CircleIcon from '../components/CircleIcon';
 import { isKeyof } from '../utils/indexGuard';
+import { getContractAddress, loadContract } from '../utils/contracts';
 
 function isValidCID(cid: string): boolean {
   // TODO: Check for validity
-  return !cid.length;
+  return !!cid.length;
 }
 
 const predefinedModels = { 'Linear Regression': 'CID' };
@@ -58,13 +59,46 @@ const CreatePlan: FC<ProjectDisplayProps> = ({ contract }) => {
   const [numRounds, setNumRounds] = useState(0);
   const [reward, setReward] = useState(0);
 
+  const [upAllowance, setUpAllowance] = useState(0);
+
   const [isSubmitted, setSubmitted] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState('');
 
+  const [allowance, setAllowance] = useState<undefined | BigNumber>(undefined);
+  const [tokenContract, setTokenContract] = useState<undefined | Contract>(undefined);
+
+  useEffect(() => {
+    let didCancel = false;
+
+    async function getTokenContract() {
+      if (library && chainId) {
+        const token = await loadContract(
+          chainId,
+          'FELToken',
+          library.getSigner(),
+        );
+
+        if (token && account && contract) {
+          const a = await token.allowance(account, contract.address);
+          if (!didCancel) {
+            setTokenContract(token);
+            setAllowance(a);
+          }
+        }
+      }
+    }
+
+    getTokenContract();
+    return () => {
+      didCancel = true;
+    };
+  }, [library, chainId, account, contract]);
+
   const deploy = async () => {
     setSubmitted(true);
+    setError('');
     setProgress(0);
 
     const cid = (isCustome) ? modelCID : (isKeyof(modelName, predefinedModels)) ? predefinedModels[modelName] : '';
@@ -83,9 +117,29 @@ const CreatePlan: FC<ProjectDisplayProps> = ({ contract }) => {
     }
   };
 
-  // TODO: create token alloance on separate function
-  // const increaseAllowance = async () => {
-  // };
+  const increaseAllowance = async () => {
+    setSubmitted(true);
+    setError('');
+    setProgress(0);
+
+    if (contract && tokenContract && chainId && library) {
+      setShowModal(true);
+      try {
+        setProgress(2);
+        const tx = await tokenContract.approve(
+          contract.address,
+          utils.parseUnits(upAllowance.toString(), 'gwei'),
+        );
+        setProgress(3);
+        await tx.wait();
+      } catch (e: any) {
+        setError(e && e.message ? e.message : 'Unknown error');
+        setProgress((progress > 3) ? 4 : 2);
+        return;
+      }
+      setProgress(5);
+    }
+  };
 
   return (
     <main>
@@ -160,7 +214,7 @@ const CreatePlan: FC<ProjectDisplayProps> = ({ contract }) => {
               />
             </FormGroup>
             <FormGroup>
-              <Label for="reward">Node reward per round</Label>
+              <Label for="reward">Node reward per round (in gwei)</Label>
               <Input
                 id="reward"
                 name="reward"
@@ -170,7 +224,28 @@ const CreatePlan: FC<ProjectDisplayProps> = ({ contract }) => {
                 invalid={isSubmitted && !reward}
                 onChange={(e) => setReward(Math.max(0, parseInt(e.target.value, 10)))}
               />
+              <FormText>
+                Your allowance is: {!!allowance && utils.formatUnits(allowance, 'gwei')} gwei. Please increase allowance by clicking here.
+              </FormText>
             </FormGroup>
+            <FormGroup>
+              <Label for="reward">Increase Allowance (in gwei)</Label>
+              <InputGroup>
+                <Input
+                  id="reward"
+                  name="reward"
+                  type="number"
+                  value={upAllowance}
+                  required
+                  invalid={isSubmitted && !reward}
+                  onChange={(e) => setUpAllowance(Math.max(0, parseInt(e.target.value, 10)))}
+                />
+                <Button disabled={!isActive} color="primary" onClick={increaseAllowance}>
+                  Increase Allowance {showModal && <Spinner size="sm" />}
+                </Button>
+              </InputGroup>
+            </FormGroup>
+
             <Button disabled={!isActive} color="primary" onClick={deploy}>
               Deploy {showModal && <Spinner size="sm" />}
             </Button>
