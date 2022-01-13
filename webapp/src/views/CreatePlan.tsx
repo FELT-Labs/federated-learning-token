@@ -143,6 +143,8 @@ const CreatePlan: FC<ProjectDisplayProps> = ({ contract }) => {
       setShowModal(true);
       try {
         setProgress(2);
+        // TODO: This might lead to some issues later
+        // https://docs.openzeppelin.com/contracts/2.x/api/token/erc20#IERC20-approve-address-uint256-
         const tx = await tokenContract.approve(
           contract.address,
           utils.parseUnits(newAllowance.toString(), 'gwei'),
