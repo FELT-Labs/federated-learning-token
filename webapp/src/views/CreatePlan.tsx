@@ -1,6 +1,6 @@
 /* eslint-disable no-nested-ternary */
 import { FC, useEffect, useState } from 'react';
-import { Contract, Signer, providers, utils, BigNumber } from 'ethers';
+import { Contract, utils, BigNumber } from 'ethers';
 import {
   Button,
   Row,
@@ -18,21 +18,25 @@ import {
   InputGroup,
   InputGroupText,
   FormText,
+  Col,
+  Table,
 } from 'reactstrap';
 import { useWeb3React } from '@web3-react/core';
 import { Check, Send } from 'react-feather';
+import isIPFS from 'is-ipfs';
 
 import Breadcrumbs from '../components/dapp/Breadcrumbs';
 import CircleIcon from '../components/CircleIcon';
 import { isKeyof } from '../utils/indexGuard';
-import { getContractAddress, loadContract } from '../utils/contracts';
+import { loadContract } from '../utils/contracts';
 
 function isValidCID(cid: string): boolean {
-  // TODO: Check for validity
-  return !!cid.length;
+  // TODO: Test if exists?
+  // Check for validity
+  return isIPFS.cid(cid);
 }
 
-const predefinedModels = { 'Linear Regression': 'CID' };
+const predefinedModels = { 'Linear Regression': 'bafkreicliqylyoblfo7clpzkmycwfqn567qbawnffduekcvawl3czoti2u' };
 
 interface ProjectDisplayProps {
   contract: Contract;
@@ -56,12 +60,13 @@ const CreatePlan: FC<ProjectDisplayProps> = ({ contract }) => {
   const [modelCID, setModelCID] = useState('');
   const [modelName, setModelName] = useState('');
   const [isCustome, setIsCustome] = useState(false);
-  const [numRounds, setNumRounds] = useState(0);
+  const [numRounds, setNumRounds] = useState(1);
   const [reward, setReward] = useState(0);
 
-  const [upAllowance, setUpAllowance] = useState(0);
+  const [newAllowance, setNewAllowance] = useState(0);
 
-  const [isSubmitted, setSubmitted] = useState(false);
+  const [isPlanSubmitted, setPlanSubmitted] = useState(false);
+  const [isAllowSubmitted, setAllowSubmitted] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState('');
@@ -96,13 +101,25 @@ const CreatePlan: FC<ProjectDisplayProps> = ({ contract }) => {
     };
   }, [library, chainId, account, contract]);
 
-  const deploy = async () => {
-    setSubmitted(true);
+  // Values displayed in the table
+  const totalReward = reward * numRounds;
+  const totalRewardBN = utils.parseUnits(totalReward.toString(), 'gwei');
+  const remAllowance = (allowance) ? utils.formatUnits(allowance.sub(totalRewardBN), 'gwei') : 'NaN';
+  const positive = (allowance) ? allowance.gte(totalRewardBN) : undefined;
+
+  const clearModal = () => {
+    setAllowSubmitted(false);
+    setPlanSubmitted(false);
     setError('');
     setProgress(0);
+  };
+
+  const deploy = async () => {
+    clearModal();
+    setPlanSubmitted(true);
 
     const cid = (isCustome) ? modelCID : (isKeyof(modelName, predefinedModels)) ? predefinedModels[modelName] : '';
-    if (isValidCID(cid)) {
+    if (positive && isValidCID(cid)) {
       setShowModal(true);
       try {
         setProgress(2);
@@ -111,30 +128,35 @@ const CreatePlan: FC<ProjectDisplayProps> = ({ contract }) => {
         await tx.wait();
       } catch (e: any) {
         setError(e && e.message ? e.message : 'Unknown error');
+        setProgress((progress > 2) ? 4 : 2);
         return;
       }
       setProgress(5);
     }
   };
 
-  const increaseAllowance = async () => {
-    setSubmitted(true);
-    setError('');
-    setProgress(0);
+  const updateAllowance = async () => {
+    clearModal();
+    setAllowSubmitted(true);
 
-    if (contract && tokenContract && chainId && library) {
+    if (newAllowance > 0 && contract && tokenContract && chainId && library) {
       setShowModal(true);
       try {
         setProgress(2);
         const tx = await tokenContract.approve(
           contract.address,
-          utils.parseUnits(upAllowance.toString(), 'gwei'),
+          utils.parseUnits(newAllowance.toString(), 'gwei'),
         );
         setProgress(3);
         await tx.wait();
+        // Update allowance displayed (user can change the allowance value inside MetaMask)
+        if (tokenContract) {
+          const a = await tokenContract.allowance(account, contract.address);
+          setAllowance(a);
+        }
       } catch (e: any) {
         setError(e && e.message ? e.message : 'Unknown error');
-        setProgress((progress > 3) ? 4 : 2);
+        setProgress((progress > 2) ? 4 : 2);
         return;
       }
       setProgress(5);
@@ -167,10 +189,16 @@ const CreatePlan: FC<ProjectDisplayProps> = ({ contract }) => {
                   type="select"
                   value={modelName}
                   disabled={isCustome}
+                  invalid={isPlanSubmitted
+                    && !isCustome
+                    && !modelName.length
+                    && !isKeyof(modelName, predefinedModels)}
                   onChange={(e) => setModelName(e.target.value)}
                 >
                   <option value="">Select predefined model...</option>
-                  {Object.keys(predefinedModels).map((name) => <option key={name} value={name}>{name}</option>)}
+                  {Object.keys(predefinedModels).map((name) => (
+                    <option key={name} value={name}>{name}</option>
+                  ))}
                 </Input>
               </InputGroup>
             </FormGroup>
@@ -194,6 +222,7 @@ const CreatePlan: FC<ProjectDisplayProps> = ({ contract }) => {
                   type="text"
                   value={modelCID}
                   disabled={!isCustome}
+                  invalid={isPlanSubmitted && isCustome && !isValidCID(modelCID)}
                   onChange={(e) => setModelCID(e.target.value)}
                 />
               </InputGroup>
@@ -207,7 +236,7 @@ const CreatePlan: FC<ProjectDisplayProps> = ({ contract }) => {
                 id="rounds"
                 name="rounds"
                 type="range"
-                min="0"
+                min="1"
                 max="100"
                 value={numRounds}
                 onChange={(e) => setNumRounds(parseInt(e.target.value, 10))}
@@ -221,43 +250,114 @@ const CreatePlan: FC<ProjectDisplayProps> = ({ contract }) => {
                 type="number"
                 value={reward}
                 required
-                invalid={isSubmitted && !reward}
+                invalid={isPlanSubmitted && !positive}
                 onChange={(e) => setReward(Math.max(0, parseInt(e.target.value, 10)))}
               />
               <FormText>
-                Your allowance is: {!!allowance && utils.formatUnits(allowance, 'gwei')} gwei. Please increase allowance by clicking here.
+                Your allowance is: {!!allowance && utils.formatUnits(allowance, 'gwei')} gwei.
+                You can increase allowance using field below.
               </FormText>
             </FormGroup>
-            <FormGroup>
-              <Label for="reward">Increase Allowance (in gwei)</Label>
-              <InputGroup>
-                <Input
-                  id="reward"
-                  name="reward"
-                  type="number"
-                  value={upAllowance}
-                  required
-                  invalid={isSubmitted && !reward}
-                  onChange={(e) => setUpAllowance(Math.max(0, parseInt(e.target.value, 10)))}
-                />
-                <Button disabled={!isActive} color="primary" onClick={increaseAllowance}>
-                  Increase Allowance {showModal && <Spinner size="sm" />}
-                </Button>
-              </InputGroup>
+            <FormGroup row className="justify-content-center">
+              <Label
+                md={4}
+                className="fw-bold"
+              >
+                Reward calculation
+              </Label>
+              <Col md={6}>
+                <Table borderless size="sm">
+                  <tbody>
+                    <tr>
+                      <td>
+                        Rounds
+                      </td>
+                      <td className="text-end">
+                        {numRounds}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        Reward per round
+                      </td>
+                      <td className="text-end">
+                        {reward}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        Total reward
+                      </td>
+                      <td className="text-end">
+                        {numRounds * reward}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        Remaining allowance
+                      </td>
+                      <td className={`text-end ${positive ? 'text-success' : 'text-danger'}`}>
+                        {remAllowance}
+                      </td>
+                    </tr>
+                  </tbody>
+                </Table>
+              </Col>
+              <Col md={10}>
+                <FormGroup>
+                  <Label for="reward">Change Allowance (in gwei)</Label>
+                  <InputGroup>
+                    <Input
+                      id="reward"
+                      name="reward"
+                      type="number"
+                      value={newAllowance}
+                      required
+                      invalid={isAllowSubmitted && !newAllowance}
+                      onChange={(e) => setNewAllowance(Math.max(0, parseInt(e.target.value, 10)))}
+                    />
+                    <Button
+                      disabled={!isActive}
+                      color="primary"
+                      onClick={updateAllowance}
+                    >
+                      Update Allowance {isAllowSubmitted && showModal && <Spinner size="sm" />}
+                    </Button>
+                  </InputGroup>
+                </FormGroup>
+              </Col>
             </FormGroup>
 
-            <Button disabled={!isActive} color="primary" onClick={deploy}>
-              Deploy {showModal && <Spinner size="sm" />}
-            </Button>
+            <FormGroup>
+              <Button
+                disabled={!isActive}
+                color="primary"
+                onClick={deploy}
+              >
+                Deploy {isPlanSubmitted && showModal && <Spinner size="sm" />}
+              </Button>
+              {isPlanSubmitted && progress === 0
+              && (
+              <small className="text-danger">
+                Make sure all fields are filled correctly.
+              </small>
+              )}
+            </FormGroup>
           </Form>
         </Card>
       </Row>
 
       <Modal centered isOpen={showModal}>
         <ModalHeader>
-          Deployment {progress < 7 ? 'in Progress' : 'Finished'}
+          Transaction {progress < 5 ? 'in Progress' : 'Finished'}
         </ModalHeader>
-        <ModalBody>Don&apos;t close this browser tab while running!</ModalBody>
+        <ModalBody>
+          {(progress === 2 && !error) && 'Waiting for transaction confirmation. Please confirm transaction using your wallet (e.g. MetaMask).'}
+          {(progress === 2 && !!error) && 'Something went wrong during transaction creation/approval.'}
+          {progress === 3 && 'Transaction send! Waiting for transaction to be processed by blockchain.'}
+          {progress === 4 && 'Something went wrong during transaction execution.'}
+          {progress === 5 && 'Transaction sucessfully completed.'}
+        </ModalBody>
         <div className="d-flex align-items-center m-4 position-relative">
           <Progress
             className="w-100 m-0"
@@ -314,7 +414,7 @@ const CreatePlan: FC<ProjectDisplayProps> = ({ contract }) => {
           >
             Finish
           </Button>{' '}
-          <Button onClick={() => setShowModal(false)}>Cancel</Button>
+          <Button onClick={() => setShowModal(false)}>Close</Button>
         </ModalFooter>
       </Modal>
     </main>

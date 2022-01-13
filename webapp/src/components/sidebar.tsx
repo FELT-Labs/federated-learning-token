@@ -16,6 +16,7 @@ import SimpleTooltip from './tooltip';
 import { ReactComponent as TokenSvg } from '../assets/logo.svg';
 import { ReactComponent as MetaMaskSvg } from '../assets/metamask-fox.svg';
 import { ReactComponent as WalletConnectSvg } from '../assets/walletconnect-logo.svg';
+import { loadContract } from '../utils/contracts';
 
 interface ChainsData {
   [key: number]: string;
@@ -27,10 +28,19 @@ const SupportedChains: ChainsData = {
   1337: 'Local Network (testnet)',
 };
 
+function formatBalance(balance: string): string {
+  if (balance.length <= 15) {
+    return balance;
+  }
+  return `${balance.substring(0, 15)}...`;
+}
+
 const Balance: FC = () => {
   const { account, library, chainId } = useWeb3React();
 
   const [balance, setBalance] = useState<undefined | BigNumber>();
+  const [tokenBalance, setTokenBalance] = useState<undefined | BigNumber>();
+
   useEffect(() => {
     let stale = false;
 
@@ -47,12 +57,38 @@ const Balance: FC = () => {
     };
   }, [account, library, chainId]); // ensures refresh if referential identity of library doesn't change across chainIds
 
+  useEffect(() => {
+    let didCancel = false;
+
+    async function getTokenBalance() {
+      if (library && chainId && account) {
+        const token = await loadContract(
+          chainId,
+          'FELToken',
+          library.getSigner(),
+        );
+
+        if (token) {
+          const b = await token.balanceOf(account);
+          if (!didCancel) {
+            setTokenBalance(b);
+          }
+        }
+      }
+    }
+
+    getTokenBalance();
+    return () => {
+      didCancel = true;
+    };
+  }, [library, chainId, account]);
+
   return (
     <>
       <div id="balanceEther" className="row mb-3 px-3 align-items-center">
         <DollarSign className="col-2" color="white" />
         <span className="col-10">
-          {!!balance && utils.formatEther(balance.toString())}
+          {!!balance && formatBalance(utils.formatEther(balance))}
         </span>
         <SimpleTooltip placement="bottom" target="balanceEther">
           Account Polygon balance
@@ -60,7 +96,9 @@ const Balance: FC = () => {
       </div>
       <div id="balanceToken" className="row mb-3 px-3 align-items-center">
         <TokenSvg fill="white" className="col-2" width="24" height="24" />
-        <span className="col-10">TODO: token balance</span>
+        <span className="col-10">
+          {!!tokenBalance && formatBalance(utils.formatEther(tokenBalance))}
+        </span>
         <SimpleTooltip placement="bottom" target="balanceToken">
           Account FELT token balance
         </SimpleTooltip>
