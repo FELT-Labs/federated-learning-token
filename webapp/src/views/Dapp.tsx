@@ -112,7 +112,7 @@ const App: FC = () => {
   return (
     <>
       <HomeNavbar />
-      <div className="d-flex">
+      <div className="d-flex dapp-container">
         <Sidebar {...{ isActivating, activateConnector }} />
         <div className="w-100 sidebar-content">
           <Routes>

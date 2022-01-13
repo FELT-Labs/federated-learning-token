@@ -30,7 +30,7 @@ This repository contains 3 main components:
 
     Or else you need to install it like this:
     ```bash
-    pin install -r requirements.txt -r requirements-lib.txt
+    pip install -r requirements.txt -r requirements-lib.txt
     python -m pip install -e .
     ```
 
@@ -98,7 +98,7 @@ This repository contains 3 main components:
 
 ## Installation - contracts
 ## Installation - felt library (nodes, builders)
-## Installation - web application (dapp)
+## Installation and run - web application (dapp)
 
 1. Install the React client dependencies.
 
@@ -112,8 +112,23 @@ This repository contains 3 main components:
     cd ./webapp
     npm install 
     ```
+2. In case you want to test the dApp with local blockchain (ganache-cli), you can run local instance as:
+    ```bash
+    brownie run deploy -I
+    # If needed install the requirements first:
+    pip install -r requirements.txt -r requirements-lib.txt
+    python -m pip install -e .
+    ```
 
-2. The application requires access to contract ABI and deployment address. Make sure that `webapp/src/artifacts` directory has same content as `build` directory. This should be handled by `deploy.py` script, but in some cases these directories can differ and you should copy content from `build` to `webapp/src/artifacts`.
+3. The application requires access to contract ABI and deployment address. Make sure that `webapp/src/artifacts` directory has same content as `build` directory. This should be handled by `deploy.py` script, but in some cases these directories can differ and you should copy content from `build` to `webapp/src/artifacts`.
+
+
+### Known Issues
+When running local blockchain (ganache-cli) MetaMask sometimes gives transaction error:
+
+    the tx doesn't have the correct nonce. account has nonce of: X tx has nonce of: Y
+
+This can be solved by opening `MetaMask > Settings > Advanced > Reset Account`. Or sometimes just switching to different blockchain and then back to localhost also helps.
 
 ## Ending a Session
 
