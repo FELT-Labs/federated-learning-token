@@ -29,7 +29,6 @@ import {
 } from '../utils/contracts';
 import Breadcrumbs from '../components/dapp/Breadcrumbs';
 import CircleIcon from '../components/CircleIcon';
-import ChainlinkConfig from '../utils/chainlinkConfig';
 import { getPublicKey, PublicKeyType } from '../utils/web3helpers';
 
 async function deployContract(
@@ -38,9 +37,9 @@ async function deployContract(
   chainId: number,
   signer: Signer,
 ): Promise<Contract> {
-  if (!(chainId in ChainlinkConfig)) {
-    throw Error('Invalid chain id, change connected blockchain');
-  }
+  // if (!(chainId in ChainlinkConfig)) {
+  //   throw Error('Invalid chain id, change connected blockchain');
+  // }
   const tokenAddress = getContractAddress(chainId, 'FELToken');
   const factory = await getContractFactory(contractName, signer);
 
@@ -56,11 +55,11 @@ async function deployContract(
     publicKey.parity,
     publicKey.key,
     // Chainlink setup
-    ChainlinkConfig[chainId].keyhash,
-    ChainlinkConfig[chainId].vrfCoordinator,
-    ChainlinkConfig[chainId].linkToken,
+    // ChainlinkConfig[chainId].keyhash,
+    // ChainlinkConfig[chainId].vrfCoordinator,
+    // ChainlinkConfig[chainId].linkToken,
     // Chainlink fee:
-    ChainlinkConfig[chainId].fee,
+    // ChainlinkConfig[chainId].fee,
   ];
   return factory.deploy(...deployArgs);
 }
@@ -98,7 +97,7 @@ const CreateProject: FC = () => {
 
   const [isSubmitted, setSubmitted] = useState(false);
   const [showModal, setShowModal] = useState(false);
-  const [progress, setProgress] = useState(3);
+  const [progress, setProgress] = useState(0);
   const [error, setError] = useState('');
 
   const deploy = async () => {

@@ -41,6 +41,7 @@ export function useInactiveListener(suppress = false) {
 
   useEffect(() => {
     const { ethereum } = window;
+
     if (ethereum && ethereum.on && !active && !error && !suppress) {
       const handleConnect = () => {
         activate(injected);
@@ -53,25 +54,20 @@ export function useInactiveListener(suppress = false) {
           activate(injected);
         }
       };
-      const handleNetworkChanged = (_networkId: string) => {
-        activate(injected);
-      };
 
       ethereum.on('connect', handleConnect);
       ethereum.on('chainChanged', handleChainChanged);
       ethereum.on('accountsChanged', handleAccountsChanged);
-      ethereum.on('networkChanged', handleNetworkChanged);
 
       return () => {
         if (ethereum.removeListener) {
           ethereum.removeListener('connect', handleConnect);
           ethereum.removeListener('chainChanged', handleChainChanged);
           ethereum.removeListener('accountsChanged', handleAccountsChanged);
-          ethereum.removeListener('networkChanged', handleNetworkChanged);
         }
       };
     }
     // eslint-disable-next-line @typescript-eslint/no-empty-function
-    return () => {};
+    return () => { };
   }, [active, error, suppress, activate]);
 }

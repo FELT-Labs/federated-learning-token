@@ -2,7 +2,6 @@ import { FC, useState, useEffect } from 'react';
 import { Contract } from 'ethers';
 import { Container, Col, Row, Card, CardTitle } from 'reactstrap';
 import { AlertCircle, Cpu, Database } from 'react-feather';
-import Breadcrumbs from '../dapp/Breadcrumbs';
 import CircleIcon from '../CircleIcon';
 
 interface ProjectDisplayProps {
@@ -39,16 +38,8 @@ const ProjectSummary: FC<ProjectDisplayProps> = ({ contract }) => {
     fetchData();
   }, [contract]);
 
-  const breadcrumbLinks = [
-    {
-      link: '',
-      name: 'Project',
-    },
-  ];
-
   return (
     <main>
-      <Breadcrumbs title="Project" links={breadcrumbLinks} />
       <Container
         fluid
         className="p-5 py-4"

@@ -6,7 +6,7 @@ import map from '../artifacts/deployments/map.json';
 type Provider = providers.Provider;
 
 function getChain(chainId: number): string {
-  return chainId === 1337 ? 'dev' : chainId.toString();
+  return (chainId === 1337) ? 'dev' : chainId.toString();
 }
 
 export function getContractAddress(

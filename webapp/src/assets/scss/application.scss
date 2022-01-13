@@ -21,6 +21,10 @@
 }
 
 @media only screen and (max-width: 580px) {
+  .dapp-container {
+    position: relative;
+  }
+
   .sidebar {
     position: absolute;
     height: 100%;
