@@ -23,6 +23,12 @@ import HomeFooter from '../components/footer/HomeFooter';
 import CreateProject from './CreateProject';
 import Project from './Project';
 
+// Fix missing ethereum on window (injected by MetaMask)
+declare const window: Window &
+  typeof globalThis & {
+    ethereum: any;
+  };
+
 const ConnectorNames = {
   Injected: 'Injected',
   Network: 'Network',
@@ -67,6 +73,13 @@ const App: FC = () => {
   const context = useWeb3React();
   const { connector, activate, error } = context;
 
+  const { ethereum } = window;
+  if (ethereum) {
+    // Deprecade event which brings issues
+    // https://github.com/NoahZinsmeister/web3-react/issues/257
+    ethereum.removeAllListeners('networkChanged');
+  }
+
   // handle logic to recognize the connector currently being activated
   const [activatingConnector, setActivatingConnector] = useState<
     undefined | AbstractConnector
@@ -99,13 +112,13 @@ const App: FC = () => {
   return (
     <>
       <HomeNavbar />
-      <div className="d-flex">
+      <div className="d-flex dapp-container">
         <Sidebar {...{ isActivating, activateConnector }} />
         <div className="w-100 sidebar-content">
           <Routes>
             <Route index element={<Projects />} />
             <Route path="create-project" element={<CreateProject />} />
-            <Route path="project/:address" element={<Project />} />
+            <Route path="project/:address/*" element={<Project />} />
           </Routes>
           {!!error && (
             <h4 style={{ marginTop: '1rem', marginBottom: '0' }}>
