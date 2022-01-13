@@ -12,9 +12,8 @@ def deploy_project(owner):
     project = ProjectContract.deploy(token, parity, public_key, {"from": owner})
 
     manager = ProjectManager[-1]
-    # TODO missing {"from": owner} ?
     manager.activateProject(
-        project.address, "Test Project", "This is great project...", 0
+        project.address, "Test Project", "This is great project...", 0, {"from": owner}
     )
 
     return project
