@@ -56,13 +56,14 @@ $danger: #ff4136;
   }
 }
 
-// Forms
-.input-group-text {
-  z-index: 10;
-  background-color: #e9ecef;
-}
-
 // Table
 .table {
   --bs-table-accent-bg: none;
+}
+
+
+// Form: dropdown select
+.form-select option {
+  font-size: 0.9rem;
+  font-family: var(--bs-font-sans-serif);
 }

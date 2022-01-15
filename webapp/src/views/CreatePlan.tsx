@@ -170,7 +170,7 @@ const CreatePlan: FC<ProjectDisplayProps> = ({ contract }) => {
       <Breadcrumbs title="Create Training Plan" links={breadcrumbLinks} />
       <Row className="px-4 px-sm-5 pb-5 justify-content-center">
         <Card body className="shadow border-0" style={{ maxWidth: '800px' }}>
-          <Form>
+          <Form className="create-plan-form">
             <FormGroup>
               <Label for="modelCID">Select model</Label>
               <InputGroup>
