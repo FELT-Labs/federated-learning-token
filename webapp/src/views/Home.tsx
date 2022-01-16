@@ -8,6 +8,8 @@ import Video from '../components/home/Video';
 import ContuctUs from '../components/home/ContuctUs';
 import Newsletter from '../components/home/Newsletter';
 import LogoBar from '../components/home/LogoBar';
+import Roadmap from '../components/home/Roadmap';
+import Team from '../components/home/Team';
 
 const Home: FC = () => (
   <>
@@ -17,6 +19,8 @@ const Home: FC = () => (
       <LogoBar />
       <Benefits />
       <Video />
+      <Roadmap />
+      <Team />
       <ContuctUs />
       <Newsletter />
     </div>
