@@ -13,6 +13,7 @@ import { ReactComponent as Discord } from '../../assets/icons/discord.svg';
 
 const HomeFooter: FC = () => {
   const blogUrl = 'https://bretahajek.com';
+  const docsUrl = 'https://docs.feltoken.ai';
   const githubUrl = 'https://github.com/Breta01/federated-learning-token';
   const twitterUrl = 'https://twitter.com/FELToken';
   const discordUrl = 'https://discord.gg/G4ZFfstsV2';
@@ -25,15 +26,12 @@ const HomeFooter: FC = () => {
       >
         <Nav className="nav-footer">
           <NavItem>
-            <NavLink href="#">Contact Us</NavLink>
-          </NavItem>
-          <NavItem>
             <NavLink href={blogUrl} target="_blank">
               Blog
             </NavLink>
           </NavItem>
           <NavItem>
-            <NavLink href="#">Docs</NavLink>
+            <NavLink href={docsUrl}>Docs</NavLink>
           </NavItem>
         </Nav>
       </div>
