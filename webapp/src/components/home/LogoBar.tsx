@@ -36,7 +36,7 @@ const LogoBar: FC = () => (
         height: 80,
       }}
     >
-      <h4 style={{ color: '#EEEEEE', marginTop: 12 }}>
+      <h4 style={{ color: '#EEEEEE', marginTop: 12, textAlign: 'center' }}>
         Created during Chainlink Hackathon 2021
       </h4>
     </div>
