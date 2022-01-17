@@ -1,6 +1,5 @@
 import { FC, useState } from 'react';
 import {
-  Button,
   Collapse,
   Nav,
   Navbar,
@@ -57,14 +56,6 @@ const HomeNavbar: FC = () => {
             <GitHub />
           </NavLink>
         </NavbarText>
-
-        <Nav>
-          <NavItem>
-            <Button color="primary" outline size="">
-              Start building
-            </Button>
-          </NavItem>
-        </Nav>
       </Collapse>
     </Navbar>
   );
