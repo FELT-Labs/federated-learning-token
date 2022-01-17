@@ -1,5 +1,5 @@
 import { FC, useState } from 'react';
-import { Container } from 'reactstrap';
+import { Col, Container, Row } from 'reactstrap';
 import breta from '../../assets/team/breta.jpeg';
 import filip from '../../assets/team/filip.jpeg';
 
@@ -19,7 +19,7 @@ const Profile: FC<ProfileProps> = ({ name, image, linkedin }) => {
         justifyContent: 'center',
         alignItems: 'center',
         flexDirection: 'column',
-        margin: '0 20px 0 20px',
+        margin: '10px 20px 10px 20px',
         border: 0,
         background: 'none',
       }}
@@ -55,10 +55,14 @@ const Team: FC = () => {
     <Container>
       <h1 className="text-center">Our Team</h1>
 
-      <div style={{ display: 'flex', justifyContent: 'center' }}>
-        <Profile name="Břetislav Hájek" image={breta} linkedin={bretaLinkedIn} />
-        <Profile name="Filip Masár" image={filip} linkedin={filipLinkedIn} />
-      </div>
+      <Row style={{ margin: 'auto', maxWidth: 600 }}>
+        <Col sm={6} xs={12}>
+          <Profile name="Břetislav Hájek" image={breta} linkedin={bretaLinkedIn} />
+        </Col>
+        <Col sm={6} xs={12}>
+          <Profile name="Filip Masár" image={filip} linkedin={filipLinkedIn} />
+        </Col>
+      </Row>
     </Container>
   );
 };
