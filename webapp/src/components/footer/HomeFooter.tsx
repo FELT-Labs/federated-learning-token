@@ -20,7 +20,7 @@ const HomeFooter: FC = () => {
   const licenceUrl = 'https://github.com/Breta01/federated-learning-token/blob/main/LICENSE';
 
   return (
-    <Container style={{ paddingTop: 52, paddingBottom: 52 }}>
+    <Container style={{ paddingTop: 52, paddingBottom: 52, marginTop: 'auto' }}>
       <div
         style={{ display: 'flex', justifyContent: 'center', marginBottom: 20 }}
       >

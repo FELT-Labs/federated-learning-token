@@ -18,18 +18,14 @@ import {
   Progress,
   Alert,
 } from 'reactstrap';
-import { useWeb3React } from '@web3-react/core';
 import { Check, Info, Key, Upload } from 'react-feather';
 import { Link } from 'react-router-dom';
 
-import {
-  getContractFactory,
-  getContractAddress,
-  loadContract,
-} from '../utils/contracts';
+import { getContractFactory, getContractAddress, loadContract } from '../utils/contracts';
 import Breadcrumbs from '../components/dapp/Breadcrumbs';
 import CircleIcon from '../components/CircleIcon';
 import { getPublicKey, PublicKeyType } from '../utils/web3helpers';
+import { hooks } from '../connectors/metaMask';
 
 async function deployContract(
   publicKey: PublicKeyType,
@@ -86,8 +82,11 @@ const breadcrumbLinks = [
 ];
 
 const CreateProject: FC = () => {
-  const { chainId, library, account } = useWeb3React();
-  const isActive = account && chainId;
+  const { useChainId, useProvider, useIsActive } = hooks;
+
+  const chainId = useChainId();
+  const provider = useProvider();
+  const isActive = useIsActive();
 
   const [name, setName] = useState('');
   const [projectType, setProjectType] = useState('ProjectContract');
@@ -101,6 +100,9 @@ const CreateProject: FC = () => {
   const [error, setError] = useState('');
 
   const deploy = async () => {
+    if (!provider) {
+      return;
+    }
     setSubmitted(true);
     setProgress(0);
     setAddress('');
@@ -115,7 +117,7 @@ const CreateProject: FC = () => {
     setProgress(2);
     let publicKey;
     try {
-      publicKey = await getPublicKey(library.getSigner());
+      publicKey = await getPublicKey(provider.getSigner());
     } catch (e: any) {
       setError(e && e.message ? e.message : 'Unknown error');
       return;
@@ -128,7 +130,7 @@ const CreateProject: FC = () => {
         publicKey,
         projectType,
         chainId,
-        library.getSigner(),
+        provider.getSigner(),
       );
     } catch (e: any) {
       setError(e && e.message ? e.message : 'Unknown error');
@@ -149,7 +151,7 @@ const CreateProject: FC = () => {
         name,
         description,
         chainId,
-        library.getSigner(),
+        provider.getSigner(),
       );
     } catch (e: any) {
       setError(e && e.message ? e.message : 'Unknown error');
