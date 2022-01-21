@@ -21,7 +21,6 @@ import {
   Col,
   Table,
 } from 'reactstrap';
-import { useWeb3React } from '@web3-react/core';
 import { Check, Send } from 'react-feather';
 import isIPFS from 'is-ipfs';
 
@@ -29,6 +28,7 @@ import Breadcrumbs from '../components/dapp/Breadcrumbs';
 import CircleIcon from '../components/CircleIcon';
 import { isKeyof } from '../utils/indexGuard';
 import { loadContract } from '../utils/contracts';
+import { hooks } from '../connectors/metaMask';
 
 function isValidCID(cid: string): boolean {
   // TODO: Test if exists?
@@ -54,8 +54,12 @@ const CreatePlan: FC<ProjectDisplayProps> = ({ contract }) => {
     },
   ];
 
-  const { chainId, library, account } = useWeb3React();
-  const isActive = account && chainId;
+  const { useChainId, useProvider, useIsActive, useAccount } = hooks;
+
+  const chainId = useChainId();
+  const provider = useProvider();
+  const isActive = useIsActive();
+  const account = useAccount();
 
   const [modelCID, setModelCID] = useState('');
   const [modelName, setModelName] = useState('');
@@ -78,11 +82,11 @@ const CreatePlan: FC<ProjectDisplayProps> = ({ contract }) => {
     let didCancel = false;
 
     async function getTokenContract() {
-      if (library && chainId) {
+      if (provider && chainId) {
         const token = await loadContract(
           chainId,
           'FELToken',
-          library.getSigner(),
+          provider.getSigner(),
         );
 
         if (token && account && contract) {
@@ -99,7 +103,7 @@ const CreatePlan: FC<ProjectDisplayProps> = ({ contract }) => {
     return () => {
       didCancel = true;
     };
-  }, [library, chainId, account, contract]);
+  }, [chainId, account, contract, provider]);
 
   // Values displayed in the table
   const totalReward = reward * numRounds;
@@ -139,7 +143,7 @@ const CreatePlan: FC<ProjectDisplayProps> = ({ contract }) => {
     clearModal();
     setAllowSubmitted(true);
 
-    if (newAllowance > 0 && contract && tokenContract && chainId && library) {
+    if (newAllowance > 0 && contract && tokenContract && chainId && provider) {
       setShowModal(true);
       try {
         setProgress(2);
