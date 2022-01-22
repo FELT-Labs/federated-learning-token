@@ -10,7 +10,6 @@ from starlette.routing import Mount
 from starlette.staticfiles import StaticFiles
 
 from felt.node.routes.main import router as main_router
-from felt.node.routes.training import router as train_router
 from felt.node.utils.template import TemplateResponse
 
 # Load dotenv at the beginning of the program
@@ -23,7 +22,6 @@ logs_folder = main_folder / "logs"
 # Routes
 routes = [
     Mount("/static", StaticFiles(directory=main_folder / "static"), name="static"),
-    Mount("/training", routes=train_router.routes),
     Mount("/", routes=main_router.routes),
 ]
 
