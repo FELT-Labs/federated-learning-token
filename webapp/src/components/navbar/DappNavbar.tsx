@@ -1,5 +1,5 @@
 import { FC, useState, useEffect, useCallback } from 'react';
-import { Navbar, NavbarBrand } from 'reactstrap';
+import { Button, Modal, ModalBody, ModalHeader, Navbar, NavbarBrand } from 'reactstrap';
 import { NavLink as RouterNavLink } from 'react-router-dom';
 import { BigNumber, utils } from 'ethers';
 import { ReactComponent as MetaMaskSvg } from '../../assets/metamask-fox.svg';
@@ -7,6 +7,7 @@ import { ReactComponent as Logo } from '../../assets/logo.svg';
 import { CHAINS, getAddChainParameters } from '../../utils/chains';
 import { metaMask, hooks } from '../../connectors/metaMask';
 import ErrorAlert from '../ErrorAlert';
+import Balance from '../dapp/Balance';
 
 const Account: FC = () => {
   const { useAccount, useProvider, useENSNames } = hooks;
@@ -15,15 +16,7 @@ const Account: FC = () => {
   const ENSNames = useENSNames(provider);
 
   const [address, setAddress] = useState<string>();
-  const [balance, setBalance] = useState<BigNumber | undefined>();
-
-  useEffect(() => {
-    if (provider && account) {
-      provider.getBalance(account).then((n) => setBalance(n));
-    } else {
-      setBalance(undefined);
-    }
-  }, [provider, account]);
+  const [showDetails, setShowDetails] = useState(false);
 
   useEffect(() => {
     if (account) {
@@ -37,10 +30,20 @@ const Account: FC = () => {
   if (!account) return <div>-</div>;
 
   return (
-    <div>
-      {balance ? `(Ξ${utils.formatEther(balance)})` : null}
-      <b>{address}</b>
-    </div>
+    <>
+      <Button onClick={() => setShowDetails(true)} style={{ textTransform: 'none', borderRadius: 20 }}>
+        {address}
+      </Button>
+      <Modal isOpen={showDetails}>
+        <ModalHeader toggle={() => setShowDetails(false)}>
+          {address}
+        </ModalHeader>
+        <ModalBody>
+          <p>You are connected through MetaMask</p>
+          <Balance />
+        </ModalBody>
+      </Modal>
+    </>
   );
 };
 
@@ -57,6 +60,16 @@ const SelectNetwork: FC<SelectNetworkProps> = ({ desiredChainId, setChainId }) =
       value={desiredChainId}
       onChange={(event) => setChainId(Number(event.target.value))}
       disabled={isActivating}
+      style={{
+        color: '#fff',
+        backgroundColor: '#697dcf',
+        opacity: 0.4,
+        border: '1px solid gray',
+        borderRadius: 4,
+        padding: '0.5em',
+        marginRight: 10,
+        margin: '0.5em 0',
+      }}
     >
       {Object.keys(CHAINS).map((key) => (
         <option key={Number(key)} value={key}>
@@ -80,12 +93,12 @@ const MetaMaskConnect: FC<MetaMaskConnectProps> = ({ desiredChainId }) => {
   };
 
   return (
-    <button type="button" onClick={clickConnect} disabled={isActivating}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 4, padding: 4 }}>
+    <Button onClick={clickConnect} disabled={isActivating}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
         <MetaMaskSvg width={32} />
         {isActivating ? 'Connecting...' : 'Connect'}
       </div>
-    </button>
+    </Button>
   );
 };
 
