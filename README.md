@@ -150,18 +150,24 @@ brownie test
 
 To deploy your contracts to the mainnet or one of the test nets, first modify [`scripts/deploy.py`](`scripts/deploy.py`) to [use a funded account](https://eth-brownie.readthedocs.io/en/stable/account-management.html).
 
-Then:
+Then for testnet:
 
 ```bash
-brownie run deploy --network kovan
+brownie run deploy --network polygon-test
 ```
 
-Replace `kovan` with the name of the network you wish you use. You may also wish to adjust Brownie's [network settings](https://eth-brownie.readthedocs.io/en/stable/network-management.html).
+Then for live:
+
+```bash
+brownie run deploy --network polygon-main
+```
+
+Or replace `matic` with the name of the network you wish you use. You may also wish to adjust Brownie's [network settings](https://eth-brownie.readthedocs.io/en/stable/network-management.html).
 
 For contracts deployed on a live network, the deployment information is stored permanently unless you:
 
 * Delete or rename the contract file or
-* Manually remove the `client/src/artifacts/` directory
+* Manually remove the `build/` directory
 
 
 

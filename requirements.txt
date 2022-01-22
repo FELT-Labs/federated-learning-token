@@ -1,8 +1,8 @@
-eth-brownie
-python-dotenv
+eth-brownie==1.17.2
+python-dotenv==0.16.0
 
 # Linting and code style
-black==21.10b0
+black==21.11b1
 flake8
 isort==5.10.0
 pre-commit
