@@ -2,12 +2,13 @@ import React, { FC } from 'react';
 import {
   Button,
   Container,
-  Nav,
+  Nav, NavbarBrand,
   NavItem,
   NavLink,
   UncontrolledTooltip,
 } from 'reactstrap';
 import { GitHub, Twitter } from 'react-feather';
+import { NavLink as RouterNavLink } from 'react-router-dom';
 import { ReactComponent as Logo } from '../../assets/logo.svg';
 import { ReactComponent as Discord } from '../../assets/icons/discord.svg';
 
@@ -20,22 +21,7 @@ const HomeFooter: FC = () => {
   const licenceUrl = 'https://github.com/Breta01/federated-learning-token/blob/main/LICENSE';
 
   return (
-    <Container style={{ paddingTop: 52, paddingBottom: 52, marginTop: 'auto' }}>
-      <div
-        style={{ display: 'flex', justifyContent: 'center', marginBottom: 20 }}
-      >
-        <Nav className="nav-footer">
-          <NavItem>
-            <NavLink href={blogUrl} target="_blank">
-              Blog
-            </NavLink>
-          </NavItem>
-          <NavItem>
-            <NavLink href={docsUrl}>Docs</NavLink>
-          </NavItem>
-        </Nav>
-      </div>
-
+    <Container style={{ paddingTop: 52, paddingBottom: 8, marginTop: 'auto' }}>
       <div
         style={{
           display: 'flex',
@@ -51,22 +37,18 @@ const HomeFooter: FC = () => {
             gap: 16,
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            <Logo width={50} height={50} />
+          <NavbarBrand tag={RouterNavLink} to="/" style={{ color: 'black', cursor: 'pointer' }}>
+            <Logo width={50} height={50} fill="#32325d" />
             FELT
+          </NavbarBrand>
+          <div>
+            <NavLink href={blogUrl} target="_blank" style={{ fontSize: 14 }}>
+              Blog
+            </NavLink>
+            <NavLink href={docsUrl} style={{ fontSize: 14 }}>
+              Docs
+            </NavLink>
           </div>
-
-          <NavLink
-            href="https://github.com/Breta01"
-            target="_blank"
-            style={{ fontSize: 14 }}
-          >
-            © {new Date().getFullYear()} Breta
-          </NavLink>
-
-          <NavLink href={licenceUrl} target="_blank" style={{ fontSize: 14 }}>
-            GPL-3.0 License
-          </NavLink>
         </div>
 
         <div>
@@ -113,6 +95,20 @@ const HomeFooter: FC = () => {
             Star on Github
           </UncontrolledTooltip>
         </div>
+      </div>
+
+      <div style={{ display: 'flex', justifyContent: 'center', marginTop: 20 }}>
+        <NavLink
+          href="https://github.com/Breta01"
+          target="_blank"
+          style={{ fontSize: 14 }}
+        >
+          © {new Date().getFullYear()} Breta
+        </NavLink>
+
+        <NavLink href={licenceUrl} target="_blank" style={{ fontSize: 14 }}>
+          GPL-3.0 License
+        </NavLink>
       </div>
     </Container>
   );
