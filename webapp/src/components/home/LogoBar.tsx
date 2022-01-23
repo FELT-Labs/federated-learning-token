@@ -1,8 +1,9 @@
 import React, { FC } from 'react';
 
-import ethereumLogo from '../../assets/companies/ethereum.png';
+import polygonLogo from '../../assets/companies/polygon.png';
 import filecoinLogo from '../../assets/companies/filecoin.png';
 import ipfsLogo from '../../assets/companies/ipfs.png';
+import oceanLogo from '../../assets/companies/ocean.png';
 import chainlinkLogo from '../../assets/companies/chainlink.png';
 
 const LogoBar: FC = () => (
@@ -22,10 +23,11 @@ const LogoBar: FC = () => (
         filter: 'grayscale(100%)',
       }}
     >
-      <img src={ethereumLogo} alt="ethereum" height="100%" />
+      <img src={polygonLogo} alt="ethereum" height="50%" />
       <img src={filecoinLogo} alt="filecoin" height="100%" />
       <img src={ipfsLogo} alt="ipfs" height="100%" />
-      <img src={chainlinkLogo} alt="chainlink" height="100%" />
+      <img src={oceanLogo} alt="chainlink" height="90%" />
+      <img src={chainlinkLogo} alt="chainlink" height="90%" />
     </div>
     <div
       style={{
