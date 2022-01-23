@@ -1,7 +1,6 @@
 import { FC, useState, useEffect, useCallback } from 'react';
 import { Button, Modal, ModalBody, ModalHeader, Navbar, NavbarBrand } from 'reactstrap';
 import { NavLink as RouterNavLink } from 'react-router-dom';
-import { BigNumber, utils } from 'ethers';
 import { ReactComponent as MetaMaskSvg } from '../../assets/metamask-fox.svg';
 import { ReactComponent as Logo } from '../../assets/logo.svg';
 import { CHAINS, getAddChainParameters } from '../../utils/chains';

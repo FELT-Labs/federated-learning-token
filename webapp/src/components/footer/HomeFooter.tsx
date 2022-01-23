@@ -2,8 +2,7 @@ import React, { FC } from 'react';
 import {
   Button,
   Container,
-  Nav, NavbarBrand,
-  NavItem,
+  NavbarBrand,
   NavLink,
   UncontrolledTooltip,
 } from 'reactstrap';
