@@ -1,26 +1,29 @@
 import { FC, useState, useEffect } from 'react';
 import { Contract } from 'ethers';
 import { Link, Route, Routes, useParams } from 'react-router-dom';
-import { useWeb3React } from '@web3-react/core';
 import { Button, Col, Row, Spinner } from 'reactstrap';
 import { getProjectContract } from '../utils/contracts';
 import ProjectSummary from '../components/project/ProjectSummary';
 import ProjectPlans from '../components/project/ProjectPlans';
 import Breadcrumbs from '../components/dapp/Breadcrumbs';
 import CreatePlan from './CreatePlan';
+import { hooks } from '../connectors/metaMask';
 
 const Project: FC = () => {
   const { address } = useParams();
-  const [contract, setContract] = useState<Contract>();
+  const { useChainId, useProvider } = hooks;
 
-  const { library, chainId } = useWeb3React();
+  const chainId = useChainId();
+  const provider = useProvider();
+
+  const [contract, setContract] = useState<Contract>();
 
   useEffect(() => {
     let didCancel = false;
 
     async function getContract() {
-      if (library && address) {
-        const c = await getProjectContract(address, library.getSigner());
+      if (provider && address) {
+        const c = await getProjectContract(address, provider.getSigner());
 
         if (c && !didCancel) {
           setContract(c);
@@ -32,7 +35,7 @@ const Project: FC = () => {
     return () => {
       didCancel = true;
     };
-  }, [library, chainId, address]);
+  }, [chainId, address, provider]);
 
   const breadcrumbLinks = [
     {
