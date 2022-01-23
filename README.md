@@ -156,13 +156,7 @@ Then for testnet:
 brownie run deploy --network polygon-test
 ```
 
-Then for live:
-
-```bash
-brownie run deploy --network polygon-main
-```
-
-Or replace `matic` with the name of the network you wish you use. You may also wish to adjust Brownie's [network settings](https://eth-brownie.readthedocs.io/en/stable/network-management.html).
+You may also wish to adjust Brownie's [network settings](https://eth-brownie.readthedocs.io/en/stable/network-management.html).
 
 For contracts deployed on a live network, the deployment information is stored permanently unless you:
 

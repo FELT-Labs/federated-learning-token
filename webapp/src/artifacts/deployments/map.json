@@ -1,13 +1,21 @@
 {
-  "dev": {
+  "80001": {
     "FELToken": [
-      "0x3b6664eced86050bbD3cd2dEbc9e362E27d3a154"
-    ],
-    "ProjectContract": [
-      "0xAF1826f1890185F09d8E2751Ef87fc1246028bbC"
+      "0xc5E50366B6FFe6268154A2202bE312763244b32D"
     ],
     "ProjectManager": [
-      "0xb1cB4345e5cCb0E4FA36016f19A1a48B7aEE7834"
+      "0x6B0350915ab8df09069D2a07b72572EE895fabd0"
+    ]
+  },
+  "dev": {
+    "FELToken": [
+      "0x3754A94250Fc1a300ba2F36503675a0476CE6A20"
+    ],
+    "ProjectContract": [
+      "0x48066c61E640bF4FaA8a7F81ab55FCA59bE4C752"
+    ],
+    "ProjectManager": [
+      "0x701Ffc0f977422C60B9FA4f124f4A982e61b7D12"
     ]
   }
 }
