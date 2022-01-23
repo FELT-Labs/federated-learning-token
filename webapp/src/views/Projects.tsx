@@ -1,26 +1,20 @@
 import { FC, useState, useEffect } from 'react';
-import { useWeb3React } from '@web3-react/core';
-import {
-  Col,
-  Row,
-  Card,
-  CardBody,
-  CardTitle,
-  CardSubtitle,
-  CardText,
-  Button,
-} from 'reactstrap';
+import { Col, Row, Card, CardBody, CardTitle, CardSubtitle, CardText, Button } from 'reactstrap';
 import { Clock } from 'react-feather';
 import { Link } from 'react-router-dom';
 
 import { loadContract } from '../utils/contracts';
 import Breadcrumbs from '../components/dapp/Breadcrumbs';
+import { hooks } from '../connectors/metaMask';
 
 type ProjectType = [string, string, string, number];
 
 const Projects: FC = () => {
   const [projects, setProjects] = useState<Array<ProjectType>>([]);
-  const { library, chainId } = useWeb3React();
+  const { useChainId, useProvider } = hooks;
+
+  const provider = useProvider();
+  const chainId = useChainId();
 
   useEffect(() => {
     let didCancel = false;
@@ -28,12 +22,8 @@ const Projects: FC = () => {
     async function fetchProjects() {
       const newProjects = [];
 
-      if (library && chainId) {
-        const manager = await loadContract(
-          chainId,
-          'ProjectManager',
-          library.getSigner(),
-        );
+      if (provider && chainId) {
+        const manager = await loadContract(chainId, 'ProjectManager', provider.getSigner());
         if (manager) {
           const len = await manager.getProjectsLength();
           for (let i = 0; i < len && !didCancel; i++) {
@@ -51,7 +41,7 @@ const Projects: FC = () => {
     return () => {
       didCancel = true;
     };
-  }, [library, chainId]);
+  }, [provider, chainId]);
 
   return (
     <main>
@@ -71,7 +61,7 @@ const Projects: FC = () => {
                 className="d-flex align-items-center"
                 style={{
                   height: '8rem',
-                  backgroundColor: `#${address.substr(2, 6)}60`,
+                  backgroundColor: `#${address.substring(2, 6)}60`,
                 }}
               >
                 <CardTitle
@@ -79,7 +69,7 @@ const Projects: FC = () => {
                   className="text-center align-middle"
                   style={{ height: 'auto', width: '100%' }}
                 >
-                  {name.length > 50 ? `${name.substr(0, 50)}...` : name}
+                  {name.length > 50 ? `${name.substring(0, 50)}...` : name}
                 </CardTitle>
               </div>
               <CardBody>
