@@ -3,8 +3,8 @@
     "static/js/0.f822cf28.chunk.js": "./static/js/0.f822cf28.chunk.js",
     "static/js/0.f822cf28.chunk.js.map": "./static/js/0.f822cf28.chunk.js.map",
     "main.css": "./static/css/main.30f5f992.chunk.css",
-    "main.js": "./static/js/main.86134740.chunk.js",
-    "main.js.map": "./static/js/main.86134740.chunk.js.map",
+    "main.js": "./static/js/main.4a986bb5.chunk.js",
+    "main.js.map": "./static/js/main.4a986bb5.chunk.js.map",
     "runtime-main.js": "./static/js/runtime-main.79900df8.js",
     "runtime-main.js.map": "./static/js/runtime-main.79900df8.js.map",
     "static/js/3.7e720796.chunk.js": "./static/js/3.7e720796.chunk.js",
@@ -50,17 +50,18 @@
     "static/media/breta.98768e56.jpeg": "./static/media/breta.98768e56.jpeg",
     "static/media/chainlink.fcea9ff7.png": "./static/media/chainlink.fcea9ff7.png",
     "static/media/discord.8e5e8271.svg": "./static/media/discord.8e5e8271.svg",
-    "static/media/ethereum.eb33cc3b.png": "./static/media/ethereum.eb33cc3b.png",
     "static/media/filecoin.ce0732e1.png": "./static/media/filecoin.ce0732e1.png",
     "static/media/filip.3012fad5.jpeg": "./static/media/filip.3012fad5.jpeg",
     "static/media/ipfs.96fcd10a.png": "./static/media/ipfs.96fcd10a.png",
     "static/media/logo.8c3677d9.svg": "./static/media/logo.8c3677d9.svg",
-    "static/media/metamask-fox.025eadf5.svg": "./static/media/metamask-fox.025eadf5.svg"
+    "static/media/metamask-fox.025eadf5.svg": "./static/media/metamask-fox.025eadf5.svg",
+    "static/media/ocean.f25b4eac.png": "./static/media/ocean.f25b4eac.png",
+    "static/media/polygon.32381d53.png": "./static/media/polygon.32381d53.png"
   },
   "entrypoints": [
     "static/js/runtime-main.79900df8.js",
     "static/js/3.7e720796.chunk.js",
     "static/css/main.30f5f992.chunk.css",
-    "static/js/main.86134740.chunk.js"
+    "static/js/main.4a986bb5.chunk.js"
   ]
 }
