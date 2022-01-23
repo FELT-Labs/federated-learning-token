@@ -1,4 +1,4 @@
-from distutils.dir_util import copy_tree
+from shutil import copytree, rmtree
 
 from brownie import FELToken, ProjectManager, accounts, config, network
 from scripts.deploy_project import deploy_project, setup_test_project
@@ -11,6 +11,7 @@ def main():
     owner = accounts.add(config["wallets"]["owner_key"])
     print(f"On network {network.show_active()}")
 
+    print(network.show_active())
     # requires brownie account to have been created
     if network.show_active() == "development":
         node1 = accounts.add(config["wallets"]["node1_key"])
@@ -28,10 +29,13 @@ def main():
         project = deploy_project(owner)
         setup_test_project(project, owner)
 
-    elif network.show_active() == "mumbai":
+    elif network.show_active() in ["polygon-test", "polygon-main"]:
         # add these accounts to metamask by importing private key
         feltoken = FELToken.deploy(INITIAL_SUPPLY, {"from": owner}, publish_source=True)
         ProjectManager.deploy(feltoken, {"from": owner}, publish_source=True)
 
     # Copy build dir for application
-    copy_tree("build", "webapp/src/artifacts")
+    rmtree("webapp/src/artifacts", ignore_errors=True)
+    copytree("build", "webapp/src/artifacts")
+    # Remove unused files
+    rmtree("webapp/src/artifacts/contracts/dependencies")
