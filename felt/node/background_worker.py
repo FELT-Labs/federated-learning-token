@@ -1,3 +1,4 @@
+import argparse
 import asyncio
 import os
 import sys
@@ -6,16 +7,15 @@ from pathlib import Path
 import joblib
 import numpy as np
 from brownie import accounts
-from coincurve import PrivateKey
 from dotenv import load_dotenv
 from sklearn import datasets
-from web3.middleware import construct_sign_and_send_raw_middleware
 
 from felt.core.average import average_models
 from felt.core.contracts import to_dict
+from felt.core.data import load_data
+from felt.core.node import check_node_state, get_node_secret
 from felt.core.storage import ipfs_download_file, ipfs_upload_file
 from felt.core.web3 import (
-    decrypt_secret,
     encrypt_bytes,
     encrypt_secret,
     get_current_secret,
@@ -26,12 +26,14 @@ from felt.core.web3 import (
 # Load dotenv at the beginning of the program
 load_dotenv()
 
-# Connect to application running on this server itself and coordinate tasks
-ENDPOINT = "localhost:8000"
-PROTOCOL = "http://"
-WS = "ws://"
-
+# Path for saving logs and models during training
 LOGS = Path(__file__).parent / "logs" / sys.argv[1]
+
+KEYS = {
+    "main": os.environ["PRIVATE_KEY"],
+    "node1": os.environ["NODE1_PRIVATE_KEY"],
+    "node2": os.environ["NODE2_PRIVATE_KEY"],
+}
 
 
 async def get_plan(project_contract):
@@ -41,19 +43,6 @@ async def get_plan(project_contract):
         plan = project_contract.functions.plans(length - 1).call()
         return to_dict(plan, "TrainingPlan")
     return None
-
-
-def get_node_secret(project_contract, account):
-    index = project_contract.functions.nodeState(account.address).call()
-    assert (
-        index >= 3
-    ), f"Node with this address ({account.address}) isn't approved by contract."
-
-    node = project_contract.functions.nodesArray(index - 3).call()
-    node = to_dict(node, "Node")
-
-    ct = node["secret0"] + node["secret1"] + node["secret2"]
-    return decrypt_secret(ct, node["parity"], account.private_key[2:]), node
 
 
 async def upload_encrypted_model(model, model_path, secret):
@@ -107,9 +96,9 @@ async def execute_rounds(
 
         # 5. Send model to the contract (current round)
         tx = project_contract.functions.submitModel(cid).transact(
-            {"from": account._acct.address, "gas": 10 ** 6}
+            {"from": account._acct.address}
         )
-        tx_r = w3.eth.wait_for_transaction_receipt(tx)
+        w3.eth.wait_for_transaction_receipt(tx)
 
         # 6. Download models and wait for round finished
         models = [model]
@@ -145,21 +134,15 @@ async def execute_rounds(
     return model
 
 
-async def task(key):
+async def task(key, chain_id, contract_address, X, y):
     account = accounts.add(key)
-
-    # TODO: Proper data - this is only for demonstration
-    X, y = datasets.load_diabetes(return_X_y=True)
-    subset = np.random.choice(X.shape[0], 100, replace=False)
-    X, y = X[subset], y[subset]
-
-    w3 = get_web3()
-    acct = account._acct
-    w3.middleware_onion.add(construct_sign_and_send_raw_middleware(acct))
-    w3.eth.default_account = acct.address
+    w3 = get_web3(account, chain_id)
     print("Worker connected to chain id: ", w3.eth.chain_id)
-    contracts = get_project_contract(w3)
-    project_contract = contracts["ProjectContract"]
+
+    project_contract = get_project_contract(w3, contract_address)
+    if not check_node_state(project_contract, account):
+        print("Script stoped.")
+        return
 
     # Obtain secret from the contract
     SECRET, node = get_node_secret(project_contract, account)
@@ -176,7 +159,6 @@ async def task(key):
         np.random.seed(plan["randomSeed"])
 
         secret = get_current_secret(SECRET, node["entryKeyTurn"], plan["keyTurn"])
-        print("Node secret", secret)
 
         # Creat directory for storing plan
         plan_index = project_contract.functions.numPlans().call()
@@ -213,25 +195,85 @@ async def task(key):
                 builder_secret, builder["parity"], builder["publicKey"]
             )
 
-            project_contract.functions.finishPlan(parity, *ciphertext, cid).transact(
-                {"from": account._acct.address, "gas": 10 ** 6}
-            )
+            tx = project_contract.functions.finishPlan(
+                parity, *ciphertext, cid
+            ).transact({"from": account._acct.address})
+            w3.eth.wait_for_transaction_receipt(tx)
             print("Final model uploaded and encrypted for a builder.")
 
         await asyncio.sleep(30)
         print("Plan finished!")
 
 
-def main():
-    key = sys.argv[1]
-    if key == "main":
-        key = os.environ["PRIVATE_KEY"]
-    elif key == "node1":
-        key = os.environ["NODE1_PRIVATE_KEY"]
-    elif key == "node2":
-        key = os.environ["NODE2_PRIVATE_KEY"]
+def parse_args(args_str=None):
+    """Parse and partially validate arguments form command line.
+    Arguments are parsed from string args_str or command line if args_str is None
 
-    asyncio.run(task(key))
+    Args:
+        args_str (str): string with arguments or None if using command line
+
+    Returns:
+        Parsed args object
+    """
+    parser = argparse.ArgumentParser(
+        description="Data provider worker script managing the trainig."
+    )
+    parser.add_argument(
+        "--chain",
+        type=int,
+        help="Chain Id of chain to which should be the worker connected.",
+    )
+    parser.add_argument("--contract", type=str, help="Contract address")
+    parser.add_argument(
+        "--account",
+        type=str,
+        default="main",
+        help="Name of account to use as specified in .env (main, node1, node2)",
+    )
+    parser.add_argument(
+        "--data",
+        type=str,
+        default="test",
+        help="Path to CSV file with data. Last column is considered as Y.",
+    )
+    args = parser.parse_args(args_str)
+
+    assert args.chain in [
+        1337,
+        80001,
+        137,
+    ], "Invalid chain id or chain id is not supported (suppoerted: 1337, 137, 80001)"
+    assert len(args.contract) == 42, "The contract address has invalid length."
+    assert args.account in KEYS, "Invalid name of an account."
+
+    return args
+
+
+def main(args_str=None):
+    """Parse arguments and run worker task (watching contract and training models)."""
+    try:
+        args = parse_args(args_str)
+        key = KEYS[args.account]
+    except Exception as e:
+        print("Invalid parameters:")
+        print(e)
+        return
+
+    if args.data == "test":
+        # Demo data for testing
+        X, y = datasets.load_diabetes(return_X_y=True)
+        subset = np.random.choice(X.shape[0], 100, replace=False)
+        X, y = X[subset], y[subset]
+    else:
+        try:
+            X, y = load_data(args.data)
+        except Exception as e:
+            print(f"Unable to load {args.data}")
+            print(e)
+            return
+
+    print(key)
+    asyncio.run(task(key, args.chain, args.contract, X, y))
 
 
 if __name__ == "__main__":

@@ -8,31 +8,30 @@ from coincurve.keys import PublicKey
 from ecies import decrypt, encrypt
 from ecies.utils import aes_decrypt, aes_encrypt
 from web3 import Web3
-
-ETH_NODE = "http://127.0.0.1:8545"
+from web3.gas_strategies.time_based import medium_gas_price_strategy
+from web3.middleware import construct_sign_and_send_raw_middleware
 
 BUILD_FOLDER = Path(__file__).parent.parent.parent / "build"
 
-CHAIN_ID_MAP = {1337: "dev"}
+CHAIN_ID_MAP = {
+    1337: "http://127.0.0.1:8545",
+    80001: "https://rpc-mumbai.maticvigil.com/v1/b5019eba066c735d9bd10b800ca694ed720e8d87",
+}
 
 
-def get_web3():
+def get_web3(account, chain_id):
     """Get connection to web3."""
-    return Web3(Web3.HTTPProvider(ETH_NODE))
+    w3 = Web3(Web3.HTTPProvider(CHAIN_ID_MAP[chain_id]))
+    w3.eth.set_gas_price_strategy(medium_gas_price_strategy)
+    w3.middleware_onion.add(construct_sign_and_send_raw_middleware(account._acct))
+    w3.eth.default_account = account._acct.address
+    return w3
 
 
-def get_project_contract(w3):
-    """Load all deployed project contract on current chain from build folder."""
-    chain_id = w3.eth.chain_id
-    chain_id = CHAIN_ID_MAP.get(chain_id, chain_id)
-    deploy_map = json.load((BUILD_FOLDER / "deployments/map.json").open())
-
-    contracts = {}
-    for key, address in deploy_map[chain_id].items():
-        contract = json.load((BUILD_FOLDER / f"contracts/{key}.json").open())
-        contracts[key] = w3.eth.contract(address=address[-1], abi=contract["abi"])
-
-    return contracts
+def get_project_contract(w3, address):
+    """Load project contract on current chain from build folder."""
+    contract = json.load((BUILD_FOLDER / f"contracts/ProjectContract.json").open())
+    return w3.eth.contract(address=address, abi=contract["abi"])
 
 
 def export_public_key(private_key):
