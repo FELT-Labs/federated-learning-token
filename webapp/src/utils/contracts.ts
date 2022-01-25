@@ -1,5 +1,4 @@
 import { Contract, ContractFactory, Signer, providers } from 'ethers';
-
 import { isKeyof } from './indexGuard';
 import map from '../artifacts/deployments/map.json';
 
@@ -9,16 +8,10 @@ function getChain(chainId: number): string {
   return (chainId === 1337) ? 'dev' : chainId.toString();
 }
 
-export function getContractAddress(
-  chainId: number,
-  name: string,
-): undefined | string {
+export function getContractAddress(chainId: number, name: string): undefined | string {
   const chain = getChain(chainId);
-  if (isKeyof(chain, map)) {
-    if (isKeyof(name, map[chain])) {
-      return map[chain][name].at(-1);
-    }
-  }
+
+  if (isKeyof(chain, map) && isKeyof(name, map[chain])) return map[chain][name].at(-1);
 
   return undefined;
 }
@@ -31,20 +24,14 @@ export async function loadContract(
   const chain = getChain(chainId);
   const address = getContractAddress(chainId, name);
 
-  if (address === undefined) {
-    return undefined;
-  }
+  if (address === undefined) return undefined;
 
-  let contractArtifact;
   try {
-    contractArtifact = await import(
-      `../artifacts/deployments/${chain}/${address}.json`
-    );
+    const contractArtifact = await import(`../artifacts/deployments/${chain}/${address}.json`);
+    return new Contract(address.substring(2), contractArtifact.abi, library);
   } catch (e) {
     return undefined;
   }
-
-  return new Contract(address.substr(2), contractArtifact.abi, library);
 }
 
 export async function getContractFactory(

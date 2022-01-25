@@ -54,14 +54,12 @@ const Project: FC = () => {
         index
         element={(
           <>
-            <Row className="m-0">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <Breadcrumbs title="Project" links={breadcrumbLinks} />
-              <Col className="d-flex align-items-center">
-                <Button color="default" outline to="create-plan" tag={Link}>
-                  Create Training Plan
-                </Button>
-              </Col>
-            </Row>
+              <Button color="default" outline to="create-plan" tag={Link} style={{ marginRight: 40 }}>
+                Create Training Plan
+              </Button>
+            </div>
             <ProjectSummary contract={contract} />
             <ProjectPlans contract={contract} />
           </>
