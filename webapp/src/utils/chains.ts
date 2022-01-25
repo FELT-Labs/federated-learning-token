@@ -37,17 +37,9 @@ export function getAddChainParameters(chainId: number): AddEthereumChainParamete
 }
 
 export const CHAINS: { [chainId: number]: BasicChainInformation | ExtendedChainInformation } = {
-  // Localhost
   1337: {
     url: process.env.REACT_APP_RPC_URL_1337 ?? '',
     name: 'Localhost',
-  },
-  // Polygon
-  137: {
-    url: process.env.REACT_APP_RPC_URL_137 ?? '',
-    name: 'Polygon Mainnet',
-    nativeCurrency: MATIC,
-    blockExplorerUrls: ['https://polygonscan.com'],
   },
   80001: {
     url: process.env.REACT_APP_RPC_URL_80001 ?? '',
