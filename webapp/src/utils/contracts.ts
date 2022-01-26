@@ -52,18 +52,11 @@ export async function getContractFactory(
   );
 }
 
-export async function getProjectContract(
-  address: string,
-  library: Signer | Provider,
-): Promise<undefined | Contract> {
-  let contractArtifact;
+export async function getProjectContract(address: string, library: Signer | Provider): Promise<Contract | undefined> {
   try {
-    contractArtifact = await import(
-      '../artifacts/contracts/ProjectContract.json'
-    );
+    const contractArtifact = await import('../artifacts/contracts/ProjectContract.json');
+    return new Contract(address, contractArtifact.abi, library);
   } catch (e) {
     return undefined;
   }
-
-  return new Contract(address, contractArtifact.abi, library);
 }

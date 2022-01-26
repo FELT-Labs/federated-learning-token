@@ -53,7 +53,7 @@ const Projects: FC = () => {
 
       <Row className="px-3">
         {projects.map(([address, name, description, time]) => (
-          <ProjectCard address={address} name={name} description={description} time={time} />
+          <ProjectCard address={address} name={name} description={description} time={time} key={address} />
         ))}
       </Row>
     </main>

@@ -1,18 +1,15 @@
 import { FC, useState, useEffect } from 'react';
 import { Contract } from 'ethers';
-import { Link, Route, Routes, useParams } from 'react-router-dom';
-import { Button, Col, Row, Spinner } from 'reactstrap';
+import { Route, Routes, useParams } from 'react-router-dom';
+import { Spinner } from 'reactstrap';
 import { getProjectContract } from '../utils/contracts';
-import ProjectSummary from '../components/project/ProjectSummary';
-import ProjectPlans from '../components/project/ProjectPlans';
-import Breadcrumbs from '../components/dapp/Breadcrumbs';
-import CreatePlan from './CreatePlan';
 import { hooks } from '../connectors/metaMask';
+import ProjectDashboard from '../components/project/ProjectDashboard';
+import CreatePlan from './CreatePlan';
 
 const Project: FC = () => {
   const { address } = useParams();
   const { useChainId, useProvider } = hooks;
-
   const chainId = useChainId();
   const provider = useProvider();
 
@@ -37,34 +34,13 @@ const Project: FC = () => {
     };
   }, [chainId, address, provider]);
 
-  const breadcrumbLinks = [
-    {
-      link: '',
-      name: 'Project',
-    },
-  ];
-
   if (contract === undefined) {
     return <Spinner className="m-3" />;
   }
 
   return (
     <Routes>
-      <Route
-        index
-        element={(
-          <>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Breadcrumbs title="Project" links={breadcrumbLinks} />
-              <Button color="default" outline to="create-plan" tag={Link} style={{ marginRight: 40 }}>
-                Create Training Plan
-              </Button>
-            </div>
-            <ProjectSummary contract={contract} />
-            <ProjectPlans contract={contract} />
-          </>
-      )}
-      />
+      <Route index element={<ProjectDashboard contract={contract} />} />
       <Route path="create-plan" element={<CreatePlan contract={contract} />} />
     </Routes>
   );
