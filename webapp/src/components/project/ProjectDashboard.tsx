@@ -6,6 +6,8 @@ import ProjectSummary from './ProjectSummary';
 import ProjectPlans from './ProjectPlans';
 import Breadcrumbs from '../dapp/Breadcrumbs';
 import ErrorAlert from '../ErrorAlert';
+import { hooks } from '../../connectors/metaMask';
+import ProjectRoles from './ProjectRoles';
 
 export type IPlan = {
   numRounds: number;
@@ -20,6 +22,9 @@ interface ProjectDashboardProps {
 }
 
 const ProjectDashboard: FC<ProjectDashboardProps> = ({ contract }) => {
+  const { useAccount } = hooks;
+  const account = useAccount();
+
   const breadcrumbLinks = [
     {
       link: '',
@@ -35,6 +40,29 @@ const ProjectDashboard: FC<ProjectDashboardProps> = ({ contract }) => {
   const [numActiveNodes, setNumActiveNodes] = useState(-1);
   const [isRunning, setIsRunning] = useState(false);
   const [plan, setPlan] = useState<IPlan>();
+  const [builder, setBuilder] = useState<any>();
+  const [nodeState, setNodeState] = useState<number>();
+
+  useEffect(() => {
+    setBuilder(undefined);
+    setNodeState(undefined);
+
+    const fetchRoles = async () => {
+      try {
+        const [b, n] = await Promise.all([
+          contract.builders(account),
+          contract.nodeState(account),
+        ]);
+        setBuilder(b);
+        setNodeState(n.toNumber());
+      } catch (err) {
+        setError(String(err));
+      }
+    };
+    if (account) {
+      fetchRoles();
+    }
+  }, [account, contract]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -79,6 +107,7 @@ const ProjectDashboard: FC<ProjectDashboardProps> = ({ contract }) => {
 
       { error === undefined && !loading && (
         <>
+          <ProjectRoles builder={builder} nodeState={nodeState} />
           <ProjectSummary
             numPlans={numPlans}
             numActiveNodes={numActiveNodes}
