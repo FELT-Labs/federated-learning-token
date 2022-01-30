@@ -1,10 +1,10 @@
 import { FC, useState, useEffect } from 'react';
 import { utils, BigNumber } from 'ethers';
 import { DollarSign } from 'react-feather';
-import SimpleTooltip from '../tooltip';
-import { ReactComponent as TokenSvg } from '../../assets/logo.svg';
-import { loadContract } from '../../utils/contracts';
-import { hooks } from '../../connectors/metaMask';
+import SimpleTooltip from '../../tooltip';
+import { ReactComponent as TokenSvg } from '../../../assets/logo.svg';
+import { loadContract } from '../../../utils/contracts';
+import { hooks } from '../../../connectors/metaMask';
 
 function formatBalance(balance: string): string {
   if (balance.length <= 15) {

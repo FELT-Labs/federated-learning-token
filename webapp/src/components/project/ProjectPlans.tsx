@@ -1,46 +1,16 @@
-import { FC, useState, useEffect } from 'react';
-import { BigNumber, Contract } from 'ethers';
-import { Container, Row, Spinner } from 'reactstrap';
+import { FC } from 'react';
+import { Container, Row } from 'reactstrap';
 import Card from '../Card';
-
-interface IPlan {
-  numRounds: number;
-  numNodes: BigNumber;
-  totalReward: BigNumber;
-  nodeReward: BigNumber;
-  creator: string;
-}
+import { IPlan } from './ProjectDashboard';
 
 interface ProjectPlansProps {
-  contract: Contract;
+  numPlans: number;
+  plan: IPlan | undefined
 }
 
-// TODO show other plans
-const ProjectPlans: FC<ProjectPlansProps> = ({ contract }) => {
-  const [numPlans, setNumPlans] = useState(-1);
-  const [plan, setPlan] = useState<IPlan>();
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const n = await contract.numPlans();
-        setNumPlans(n);
-        if (n > 0) {
-          const p = await contract.plans(0);
-          setPlan(p);
-        }
-      } catch (e) {
-        console.log(e);
-
-        setNumPlans(-1);
-        setPlan(undefined);
-      }
-    };
-
-    fetchData();
-  }, [contract]);
-
-  if (plan === undefined) return <Spinner />;
+// TODO show other plans not just most recent one
+const ProjectPlans: FC<ProjectPlansProps> = ({ numPlans, plan }) => {
+  if (plan === undefined) return null; // there is no training plan yet
 
   return (
     <Container>
