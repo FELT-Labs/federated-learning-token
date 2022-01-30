@@ -1,7 +1,7 @@
 import argparse
-import asyncio
 import os
-import sys
+import time
+from io import BytesIO
 from pathlib import Path
 
 import joblib
@@ -27,7 +27,7 @@ from felt.core.web3 import (
 load_dotenv()
 
 # Path for saving logs and models during training
-LOGS = Path(__file__).parent / "logs" / sys.argv[1]
+LOGS = Path(__file__).parent / "logs" / f"{time.time()}"
 
 KEYS = {
     "main": os.environ["PRIVATE_KEY"],
@@ -36,7 +36,7 @@ KEYS = {
 }
 
 
-async def get_plan(project_contract):
+def get_plan(project_contract):
     """Get latest running plan else return None."""
     if project_contract.functions.isPlanRunning().call():
         length = project_contract.functions.numPlans().call()
@@ -45,7 +45,7 @@ async def get_plan(project_contract):
     return None
 
 
-async def upload_encrypted_model(model, model_path, secret):
+def upload_encrypted_model(model, model_path, secret):
     """Encrypt and upload model to IPFS.
 
     Args:
@@ -54,24 +54,17 @@ async def upload_encrypted_model(model, model_path, secret):
     Returns:
         (str): CID of uploaded file.
     """
-    enc_model_path = model_path.parent / f"enc_node_model.joblib"
-    # TODO: Optimize this part, so we don't need to r/w so many times
+    # TODO: Optimize this part, so we don't need to r/w, json.dump to memory?
     joblib.dump(model, model_path)
     with open(model_path, "rb") as f:
         encrypted_model = encrypt_bytes(f.read(), secret)
 
-    with open(enc_model_path, "wb") as f:
-        f.write(encrypted_model)
-
     # 4. Upload file to IPFS
-    with open(enc_model_path, "rb") as f:
-        res = await ipfs_upload_file(f)
+    res = ipfs_upload_file(BytesIO(encrypted_model))
     return res.json()["cid"]
 
 
-async def execute_rounds(
-    X, y, model, plan, plan_dir, secret, account, project_contract, w3
-):
+def execute_rounds(X, y, model, plan, plan_dir, secret, account, project_contract, w3):
     """Perform training rounds according to the training plan.
 
     Args:
@@ -92,18 +85,18 @@ async def execute_rounds(
 
         # 3. Encrypt the model
         model_path = round_dir / f"node_model.joblib"
-        cid = await upload_encrypted_model(model, model_path, secret)
+        cid = upload_encrypted_model(model, model_path, secret)
 
         # 5. Send model to the contract (current round)
         tx = project_contract.functions.submitModel(cid).transact(
-            {"from": account._acct.address}
+            {"from": account._acct.address, "gasPrice": w3.eth.gas_price}
         )
         w3.eth.wait_for_transaction_receipt(tx)
 
         # 6. Download models and wait for round finished
         models = [model]
         downloaded = set()
-        print("Waiting for other models to finish round.")
+        print("Waiting for other nodes to finish round.")
         while len(models) < plan["numNodes"]:
             length = project_contract.functions.getNodesLength().call()
             for node_idx in range(length):
@@ -124,7 +117,7 @@ async def execute_rounds(
                 print(f"Downloading CID from node {node_idx}", cid)
 
                 m_path = round_dir / f"model_node_{node_idx}.joblib"
-                await ipfs_download_file(cid, m_path, secret)
+                ipfs_download_file(cid, m_path, secret)
                 models.append(joblib.load(m_path))
                 downloaded.add(node_idx)
 
@@ -134,13 +127,25 @@ async def execute_rounds(
     return model
 
 
-async def task(key, chain_id, contract_address, X, y):
+def watch_for_plan(project_contract):
+    """Wait until new plan created."""
+    # TODO: Use contract emiting events
+    while True:
+        plan = get_plan(project_contract)
+        if plan is not None:
+            return plan
+
+        time.sleep(3)
+        print("Waiting for a plan.")
+
+
+def task(key, chain_id, contract_address, X, y):
     account = accounts.add(key)
     w3 = get_web3(account, chain_id)
     print("Worker connected to chain id: ", w3.eth.chain_id)
 
     project_contract = get_project_contract(w3, contract_address)
-    if not check_node_state(project_contract, account):
+    if not check_node_state(w3, project_contract, account):
         print("Script stoped.")
         return
 
@@ -148,12 +153,7 @@ async def task(key, chain_id, contract_address, X, y):
     SECRET, node = get_node_secret(project_contract, account)
 
     while True:
-        plan = await get_plan(project_contract)
-        if plan is None:
-            await asyncio.sleep(3)
-            print("Waiting for a plan.")
-            continue
-
+        plan = watch_for_plan(project_contract)
         print("Executing a plan!")
         # Use random seed from contract
         np.random.seed(plan["randomSeed"])
@@ -167,10 +167,10 @@ async def task(key, chain_id, contract_address, X, y):
 
         # 1. Download model by CID
         base_model_path = plan_dir / "base_model.joblib"
-        await ipfs_download_file(plan["baseModelCID"], output_path=base_model_path)
+        ipfs_download_file(plan["baseModelCID"], output_path=base_model_path)
         model = joblib.load(base_model_path)
 
-        final_model = await execute_rounds(
+        final_model = execute_rounds(
             X, y, model, plan, plan_dir, secret, account, project_contract, w3
         )
         print("Creating final model.")
@@ -185,9 +185,7 @@ async def task(key, chain_id, contract_address, X, y):
             bs = int.from_bytes(secret, "big") * plan["randomSeed"]
             builder_secret = bs.to_bytes((bs.bit_length() + 7) // 8, "big")[-32:]
 
-            cid = await upload_encrypted_model(
-                final_model, final_model_path, builder_secret
-            )
+            cid = upload_encrypted_model(final_model, final_model_path, builder_secret)
 
             builder = project_contract.functions.builders(plan["creator"]).call()
             builder = to_dict(builder, "Builder")
@@ -197,11 +195,11 @@ async def task(key, chain_id, contract_address, X, y):
 
             tx = project_contract.functions.finishPlan(
                 parity, *ciphertext, cid
-            ).transact({"from": account._acct.address})
+            ).transact({"from": account._acct.address, "gasPrice": w3.eth.gas_price})
             w3.eth.wait_for_transaction_receipt(tx)
             print("Final model uploaded and encrypted for a builder.")
 
-        await asyncio.sleep(30)
+        time.sleep(30)
         print("Plan finished!")
 
 
@@ -255,8 +253,7 @@ def main(args_str=None):
         args = parse_args(args_str)
         key = KEYS[args.account]
     except Exception as e:
-        print("Invalid parameters:")
-        print(e)
+        print(f"Invalid parameters:\n{e}")
         return
 
     if args.data == "test":
@@ -268,12 +265,10 @@ def main(args_str=None):
         try:
             X, y = load_data(args.data)
         except Exception as e:
-            print(f"Unable to load {args.data}")
-            print(e)
+            print(f"Unable to load {args.data}\n{e}")
             return
 
-    print(key)
-    asyncio.run(task(key, args.chain, args.contract, X, y))
+    task(key, args.chain, args.contract, X, y)
 
 
 if __name__ == "__main__":
