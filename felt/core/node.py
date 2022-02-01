@@ -45,7 +45,10 @@ def check_node_state(w3, project_contract, account):
             if x.lower() in ["y", "yes", "ye"]:
                 parity, public_key = export_public_key(account.private_key[2:])
                 tx = project_contract.functions.requestJoinNode(
-                    parity, public_key, {"from": account.__acct.address}
+                    parity,
+                    public_key,
+                ).transact(
+                    {"from": account._acct.address, "gasPrice": w3.eth.gas_price},
                 )
                 w3.eth.wait_for_transaction_receipt(tx)
                 print("Request to join sent. Waiting to be accepted.")
