@@ -148,6 +148,7 @@ def task(key, chain_id, contract_address, X, y):
     if not check_node_state(w3, project_contract, account):
         print("Script stoped.")
         return
+    print("Node is ready for training.")
 
     # Obtain secret from the contract
     SECRET, node = get_node_secret(project_contract, account)

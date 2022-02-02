@@ -1,21 +1,45 @@
 import time
 
 from felt.core.contracts import to_dict
+from felt.core.prompts import yes_no_prompt
 from felt.core.web3 import decrypt_secret, export_public_key
 
 
-def get_node_secret(project_contract, account):
-    """Get shared secret for node represented by account."""
+def get_node(project_contract, account):
+    """Get node data for given account."""
     index = project_contract.functions.nodeState(account.address).call()
     assert (
         index >= 3
     ), f"Node with this address ({account.address}) isn't approved by contract."
 
     node = project_contract.functions.nodesArray(index - 3).call()
-    node = to_dict(node, "Node")
+    return to_dict(node, "Node")
 
+
+def get_node_secret(project_contract, account):
+    """Get shared secret for node represented by account."""
+    node = get_node(project_contract, account)
     ct = node["secret0"] + node["secret1"] + node["secret2"]
     return decrypt_secret(ct, node["parity"], account.private_key[2:]), node
+
+
+def check_node_isactive(w3, project_contract, account):
+    """Check if accepted node has active status."""
+    node = get_node(project_contract, account)
+    if not node["activated"]:
+        print("Node with this account is set as inactive.")
+        if yes_no_prompt("Do you want to activate the node?", default=False):
+            # TODO: Add this once contract updated
+            tx = project_contract.functions.activate().transact(
+                {"from": account._acct.address, "gasPrice": w3.eth.gas_price},
+            )
+            w3.eth.wait_for_transaction_receipt(tx)
+            print("Node activated.")
+        else:
+            print("Node remains inactive.")
+            return False
+
+    return True
 
 
 def check_node_state(w3, project_contract, account):
@@ -39,10 +63,9 @@ def check_node_state(w3, project_contract, account):
     while True:
         index = project_contract.functions.nodeState(account.address).call()
         if index == 0:
-            # Request ?
+            # Request join as data provider
             print("You haven't requested access to project yet.")
-            x = input("Do you want to join the project? [y/N]")
-            if x.lower() in ["y", "yes", "ye"]:
+            if yes_no_prompt("Do you want to join the project?", default=False):
                 parity, public_key = export_public_key(account.private_key[2:])
                 tx = project_contract.functions.requestJoinNode(
                     parity,
@@ -66,6 +89,5 @@ def check_node_state(w3, project_contract, account):
             print("Node was declined from participation in this project.")
             return False
 
-        # TODO: Check if node is in active state
-        print("Node is ready for training.")
-        return True
+        # Check if node is set to active
+        return check_node_isactive(w3, project_contract, account)
