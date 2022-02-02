@@ -1,4 +1,3 @@
-aiofiles
 coincurve
 eciespy
 httpx

@@ -1,21 +1,21 @@
-import asyncio
+import argparse
 import os
-import sys
+import time
+from io import BytesIO
 from pathlib import Path
 
 import joblib
 import numpy as np
 from brownie import accounts
-from coincurve import PrivateKey
 from dotenv import load_dotenv
 from sklearn import datasets
-from web3.middleware import construct_sign_and_send_raw_middleware
 
 from felt.core.average import average_models
 from felt.core.contracts import to_dict
+from felt.core.data import load_data
+from felt.core.node import check_node_state, get_node_secret
 from felt.core.storage import ipfs_download_file, ipfs_upload_file
 from felt.core.web3 import (
-    decrypt_secret,
     encrypt_bytes,
     encrypt_secret,
     get_current_secret,
@@ -26,15 +26,17 @@ from felt.core.web3 import (
 # Load dotenv at the beginning of the program
 load_dotenv()
 
-# Connect to application running on this server itself and coordinate tasks
-ENDPOINT = "localhost:8000"
-PROTOCOL = "http://"
-WS = "ws://"
+# Path for saving logs and models during training
+LOGS = Path(__file__).parent / "logs" / f"{time.time()}"
 
-LOGS = Path(__file__).parent / "logs" / sys.argv[1]
+KEYS = {
+    "main": os.environ["PRIVATE_KEY"],
+    "node1": os.environ["NODE1_PRIVATE_KEY"],
+    "node2": os.environ["NODE2_PRIVATE_KEY"],
+}
 
 
-async def get_plan(project_contract):
+def get_plan(project_contract):
     """Get latest running plan else return None."""
     if project_contract.functions.isPlanRunning().call():
         length = project_contract.functions.numPlans().call()
@@ -43,20 +45,7 @@ async def get_plan(project_contract):
     return None
 
 
-def get_node_secret(project_contract, account):
-    index = project_contract.functions.nodeState(account.address).call()
-    assert (
-        index >= 3
-    ), f"Node with this address ({account.address}) isn't approved by contract."
-
-    node = project_contract.functions.nodesArray(index - 3).call()
-    node = to_dict(node, "Node")
-
-    ct = node["secret0"] + node["secret1"] + node["secret2"]
-    return decrypt_secret(ct, node["parity"], account.private_key[2:]), node
-
-
-async def upload_encrypted_model(model, model_path, secret):
+def upload_encrypted_model(model, model_path, secret):
     """Encrypt and upload model to IPFS.
 
     Args:
@@ -65,24 +54,17 @@ async def upload_encrypted_model(model, model_path, secret):
     Returns:
         (str): CID of uploaded file.
     """
-    enc_model_path = model_path.parent / f"enc_node_model.joblib"
-    # TODO: Optimize this part, so we don't need to r/w so many times
+    # TODO: Optimize this part, so we don't need to r/w, json.dump to memory?
     joblib.dump(model, model_path)
     with open(model_path, "rb") as f:
         encrypted_model = encrypt_bytes(f.read(), secret)
 
-    with open(enc_model_path, "wb") as f:
-        f.write(encrypted_model)
-
     # 4. Upload file to IPFS
-    with open(enc_model_path, "rb") as f:
-        res = await ipfs_upload_file(f)
+    res = ipfs_upload_file(BytesIO(encrypted_model))
     return res.json()["cid"]
 
 
-async def execute_rounds(
-    X, y, model, plan, plan_dir, secret, account, project_contract, w3
-):
+def execute_rounds(X, y, model, plan, plan_dir, secret, account, project_contract, w3):
     """Perform training rounds according to the training plan.
 
     Args:
@@ -103,18 +85,18 @@ async def execute_rounds(
 
         # 3. Encrypt the model
         model_path = round_dir / f"node_model.joblib"
-        cid = await upload_encrypted_model(model, model_path, secret)
+        cid = upload_encrypted_model(model, model_path, secret)
 
         # 5. Send model to the contract (current round)
         tx = project_contract.functions.submitModel(cid).transact(
-            {"from": account._acct.address, "gas": 10 ** 6}
+            {"from": account._acct.address, "gasPrice": w3.eth.gas_price}
         )
-        tx_r = w3.eth.wait_for_transaction_receipt(tx)
+        w3.eth.wait_for_transaction_receipt(tx)
 
         # 6. Download models and wait for round finished
         models = [model]
         downloaded = set()
-        print("Waiting for other models to finish round.")
+        print("Waiting for other nodes to finish round.")
         while len(models) < plan["numNodes"]:
             length = project_contract.functions.getNodesLength().call()
             for node_idx in range(length):
@@ -135,7 +117,7 @@ async def execute_rounds(
                 print(f"Downloading CID from node {node_idx}", cid)
 
                 m_path = round_dir / f"model_node_{node_idx}.joblib"
-                await ipfs_download_file(cid, m_path, secret)
+                ipfs_download_file(cid, m_path, secret)
                 models.append(joblib.load(m_path))
                 downloaded.add(node_idx)
 
@@ -145,38 +127,39 @@ async def execute_rounds(
     return model
 
 
-async def task(key):
+def watch_for_plan(project_contract):
+    """Wait until new plan created."""
+    # TODO: Use contract emiting events
+    while True:
+        plan = get_plan(project_contract)
+        if plan is not None:
+            return plan
+
+        time.sleep(3)
+        print("Waiting for a plan.")
+
+
+def task(key, chain_id, contract_address, X, y):
     account = accounts.add(key)
-
-    # TODO: Proper data - this is only for demonstration
-    X, y = datasets.load_diabetes(return_X_y=True)
-    subset = np.random.choice(X.shape[0], 100, replace=False)
-    X, y = X[subset], y[subset]
-
-    w3 = get_web3()
-    acct = account._acct
-    w3.middleware_onion.add(construct_sign_and_send_raw_middleware(acct))
-    w3.eth.default_account = acct.address
+    w3 = get_web3(account, chain_id)
     print("Worker connected to chain id: ", w3.eth.chain_id)
-    contracts = get_project_contract(w3)
-    project_contract = contracts["ProjectContract"]
+
+    project_contract = get_project_contract(w3, contract_address)
+    if not check_node_state(w3, project_contract, account):
+        print("Script stoped.")
+        return
+    print("Node is ready for training.")
 
     # Obtain secret from the contract
     SECRET, node = get_node_secret(project_contract, account)
 
     while True:
-        plan = await get_plan(project_contract)
-        if plan is None:
-            await asyncio.sleep(3)
-            print("Waiting for a plan.")
-            continue
-
+        plan = watch_for_plan(project_contract)
         print("Executing a plan!")
         # Use random seed from contract
         np.random.seed(plan["randomSeed"])
 
         secret = get_current_secret(SECRET, node["entryKeyTurn"], plan["keyTurn"])
-        print("Node secret", secret)
 
         # Creat directory for storing plan
         plan_index = project_contract.functions.numPlans().call()
@@ -185,10 +168,10 @@ async def task(key):
 
         # 1. Download model by CID
         base_model_path = plan_dir / "base_model.joblib"
-        await ipfs_download_file(plan["baseModelCID"], output_path=base_model_path)
+        ipfs_download_file(plan["baseModelCID"], output_path=base_model_path)
         model = joblib.load(base_model_path)
 
-        final_model = await execute_rounds(
+        final_model = execute_rounds(
             X, y, model, plan, plan_dir, secret, account, project_contract, w3
         )
         print("Creating final model.")
@@ -203,9 +186,7 @@ async def task(key):
             bs = int.from_bytes(secret, "big") * plan["randomSeed"]
             builder_secret = bs.to_bytes((bs.bit_length() + 7) // 8, "big")[-32:]
 
-            cid = await upload_encrypted_model(
-                final_model, final_model_path, builder_secret
-            )
+            cid = upload_encrypted_model(final_model, final_model_path, builder_secret)
 
             builder = project_contract.functions.builders(plan["creator"]).call()
             builder = to_dict(builder, "Builder")
@@ -213,25 +194,82 @@ async def task(key):
                 builder_secret, builder["parity"], builder["publicKey"]
             )
 
-            project_contract.functions.finishPlan(parity, *ciphertext, cid).transact(
-                {"from": account._acct.address, "gas": 10 ** 6}
-            )
+            tx = project_contract.functions.finishPlan(
+                parity, *ciphertext, cid
+            ).transact({"from": account._acct.address, "gasPrice": w3.eth.gas_price})
+            w3.eth.wait_for_transaction_receipt(tx)
             print("Final model uploaded and encrypted for a builder.")
 
-        await asyncio.sleep(30)
+        time.sleep(30)
         print("Plan finished!")
 
 
-def main():
-    key = sys.argv[1]
-    if key == "main":
-        key = os.environ["PRIVATE_KEY"]
-    elif key == "node1":
-        key = os.environ["NODE1_PRIVATE_KEY"]
-    elif key == "node2":
-        key = os.environ["NODE2_PRIVATE_KEY"]
+def parse_args(args_str=None):
+    """Parse and partially validate arguments form command line.
+    Arguments are parsed from string args_str or command line if args_str is None
 
-    asyncio.run(task(key))
+    Args:
+        args_str (str): string with arguments or None if using command line
+
+    Returns:
+        Parsed args object
+    """
+    parser = argparse.ArgumentParser(
+        description="Data provider worker script managing the trainig."
+    )
+    parser.add_argument(
+        "--chain",
+        type=int,
+        help="Chain Id of chain to which should be the worker connected.",
+    )
+    parser.add_argument("--contract", type=str, help="Contract address")
+    parser.add_argument(
+        "--account",
+        type=str,
+        default="main",
+        help="Name of account to use as specified in .env (main, node1, node2)",
+    )
+    parser.add_argument(
+        "--data",
+        type=str,
+        default="test",
+        help="Path to CSV file with data. Last column is considered as Y.",
+    )
+    args = parser.parse_args(args_str)
+
+    assert args.chain in [
+        1337,
+        80001,
+        137,
+    ], "Invalid chain id or chain id is not supported (suppoerted: 1337, 137, 80001)"
+    assert len(args.contract) == 42, "The contract address has invalid length."
+    assert args.account in KEYS, "Invalid name of an account."
+
+    return args
+
+
+def main(args_str=None):
+    """Parse arguments and run worker task (watching contract and training models)."""
+    try:
+        args = parse_args(args_str)
+        key = KEYS[args.account]
+    except Exception as e:
+        print(f"Invalid parameters:\n{e}")
+        return
+
+    if args.data == "test":
+        # Demo data for testing
+        X, y = datasets.load_diabetes(return_X_y=True)
+        subset = np.random.choice(X.shape[0], 100, replace=False)
+        X, y = X[subset], y[subset]
+    else:
+        try:
+            X, y = load_data(args.data)
+        except Exception as e:
+            print(f"Unable to load {args.data}\n{e}")
+            return
+
+    task(key, args.chain, args.contract, X, y)
 
 
 if __name__ == "__main__":

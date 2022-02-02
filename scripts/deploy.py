@@ -28,6 +28,11 @@ def main():
 
         project = deploy_project(owner)
         setup_test_project(project, owner)
+        # Print instructions for testing
+        print("Connect test data provider as (change account and data as needed):")
+        print(
+            f"felt-node-worker --chain 1337 --contract {project} --account node1 --data test"
+        )
 
     elif network.show_active() in ["polygon-test", "polygon-main"]:
         # add these accounts to metamask by importing private key

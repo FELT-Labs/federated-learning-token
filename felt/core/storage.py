@@ -1,14 +1,13 @@
 """Module for storing and managing data files at IPFS/Filecoin using web3.storage."""
-import asyncio
 import os
+import time
 
-import aiofiles
 import httpx
 
 from felt.core.web3 import decrypt_bytes
 
 
-async def ipfs_upload_file(file):
+def ipfs_upload_file(file):
     """Upload file to IPFS using web3.storage.
 
     Args:
@@ -17,17 +16,15 @@ async def ipfs_upload_file(file):
     Returns:
         Response: httpx response object
     """
-    async with httpx.AsyncClient(timeout=10.0) as client:
-        res = await client.post(
-            f"https://api.web3.storage/upload",
-            headers={"Authorization": "Bearer " + os.environ["WEB3_STORAGE_TOKEN"]},
-            files={"file": file},
-        )
-
-    return res
+    return httpx.post(
+        f"https://api.web3.storage/upload",
+        headers={"Authorization": "Bearer " + os.environ["WEB3_STORAGE_TOKEN"]},
+        files={"file": file},
+        timeout=10.0,
+    )
 
 
-async def ipfs_download_file(cid, output_path=None, secret=None):
+def ipfs_download_file(cid, output_path=None, secret=None):
     """Download file stored in IPFS.
 
     Args:
@@ -37,22 +34,19 @@ async def ipfs_download_file(cid, output_path=None, secret=None):
     Returns:
         Response: httpx response object
     """
-    async with httpx.AsyncClient(timeout=10.0) as client:
-        for _ in range(5):
-            try:
-                res = await client.get(
-                    f"https://{cid}.ipfs.dweb.link/",
-                )
-            except httpx.ReadTimeout:
-                print("Connection timeout - retry")
-                await asyncio.sleep(5)
+    for _ in range(5):
+        try:
+            res = httpx.get(f"https://{cid}.ipfs.dweb.link/", timeout=10.0)
+        except httpx.ReadTimeout:
+            print("Connection timeout - retry")
+            time.sleep(5)
 
     content = res.content
     if secret is not None:
         content = decrypt_bytes(res.content, secret)
 
     if output_path is not None:
-        async with aiofiles.open(output_path, "wb") as f:
-            await f.write(content)
+        with open(output_path, "wb") as f:
+            f.write(content)
 
     return content

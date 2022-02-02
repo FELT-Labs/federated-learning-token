@@ -41,7 +41,7 @@ contract DataProviders {
 
     modifier onlyNode {
         require(
-            nodeState[msg.sender] >= 3,
+            isNode(msg.sender),
             "Only nodes are allowed to execute this."
         );
         _;
@@ -49,10 +49,18 @@ contract DataProviders {
 
     modifier onlyActiveNode {
         require(
-            nodeState[msg.sender] >= 3 && nodesArray[nodeState[msg.sender] - 3].activated,
+            isNode(msg.sender) && nodesArray[nodeState[msg.sender] - 3].activated,
             "Only nodes that are active are allowed to execute this."
         );
         _;
+    }
+
+    /**
+     * @notice Check if given address belongs to node
+     * @param _address address to check
+     */
+    function isNode(address _address) public view returns(bool) {
+        return nodeState[_address] >= 3;
     }
 
     function getNodesLength() public view returns(uint) {
@@ -114,5 +122,41 @@ contract DataProviders {
         require(nodeRequests.length > 0, "No request to process.");
         nodeState[nodeRequests[nodeRequests.length - 1]._address] = 2;
         nodeRequests.pop();
+    }
+
+    /**
+     * @notice Node activates itself
+     */
+    function activate() public onlyNode {
+        require(
+            !nodesArray[nodeState[msg.sender] - 3].activated,
+            "Node is already active."
+        );
+        nodesArray[nodeState[msg.sender] - 3].activated = true;
+    }
+
+    /**
+     * @notice Node deactivates itself
+     * @dev onlyNode modifier is not required. It is checked inside _deactivateNode(...)
+     */
+    function deactivate() public {
+        _deactivateNode(msg.sender);
+    }
+
+    /**
+     * @notice Deactivate node by address
+     * @dev We will use this later in the training plan - kick inactive nodes
+     * @param _address address of node which should be deactivated
+     */
+    function _deactivateNode(address _address) internal {
+        require(
+            isNode(_address),
+            "Address is not valid node."
+        );
+        require(
+            nodesArray[nodeState[_address] - 3].activated,
+            "Node is already inactive"
+        );
+        nodesArray[nodeState[_address] - 3].activated = true;
     }
 }
