@@ -14,10 +14,10 @@ import { ReactComponent as Discord } from '../../assets/icons/discord.svg';
 const HomeFooter: FC = () => {
   const blogUrl = 'https://bretahajek.com';
   const docsUrl = 'https://docs.feltoken.ai';
-  const githubUrl = 'https://github.com/Breta01/federated-learning-token';
+  const githubUrl = 'https://github.com/FELToken/federated-learning-token';
   const twitterUrl = 'https://twitter.com/FELToken';
   const discordUrl = 'https://discord.gg/G4ZFfstsV2';
-  const licenceUrl = 'https://github.com/Breta01/federated-learning-token/blob/main/LICENSE';
+  const licenceUrl = 'https://github.com/FELToken/federated-learning-token/blob/main/LICENSE';
 
   return (
     <Container style={{ paddingTop: 52, paddingBottom: 8, marginTop: 'auto' }}>
@@ -98,7 +98,7 @@ const HomeFooter: FC = () => {
 
       <div style={{ display: 'flex', justifyContent: 'center', marginTop: 20 }}>
         <NavLink
-          href="https://github.com/Breta01"
+          href="https://github.com/FELToken"
           target="_blank"
           style={{ fontSize: 14 }}
         >
