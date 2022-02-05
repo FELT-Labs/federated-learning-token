@@ -5,11 +5,10 @@ import { hooks } from '../connectors/metaMask';
 import { loadContract } from '../utils/contracts';
 import Breadcrumbs from '../components/dapp/Breadcrumbs';
 import ProjectCard from '../components/project/ProjectCard';
-
-type ProjectType = [string, string, string, number];
+import { Project } from '../utils/contractTypes';
 
 const Projects: FC = () => {
-  const [projects, setProjects] = useState<Array<ProjectType>>([]);
+  const [projects, setProjects] = useState<Array<Project>>([]);
   const { useChainId, useProvider } = hooks;
 
   const provider = useProvider();
@@ -52,8 +51,15 @@ const Projects: FC = () => {
       </div>
 
       <Row className="px-3">
-        {projects.map(([address, name, description, time]) => (
-          <ProjectCard address={address} name={name} description={description} time={time} key={address} />
+        {chainId && projects.map(([address, name, description, time]) => (
+          <ProjectCard
+            chainId={chainId}
+            address={address}
+            name={name}
+            description={description}
+            time={time}
+            key={address}
+          />
         ))}
       </Row>
     </main>

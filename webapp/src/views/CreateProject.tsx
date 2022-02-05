@@ -176,7 +176,7 @@ const CreateProject: FC = () => {
               <br />
               <Link
                 className="alert-link"
-                to={`../project/${address}`}
+                to={`../project/${chainId}/${address}`}
                 style={{
                   color: '#374066',
                   borderBottom: '1px dotted rgb(0 0 0 / 50%)',
@@ -312,7 +312,7 @@ const CreateProject: FC = () => {
                   ) : (
                     <Link
                       className="alert-link"
-                      to={`../project/${address}`}
+                      to={`../project/${chainId}/${address}`}
                       style={{
                         color: '#374066',
                         borderBottom: '1px dotted rgb(0 0 0 / 50%)',

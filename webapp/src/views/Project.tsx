@@ -8,6 +8,7 @@ import ProjectDashboard from '../components/project/ProjectDashboard';
 import CreatePlan from './CreatePlan';
 
 const Project: FC = () => {
+  // TODO: Use chain to check if it is connected to correct network
   const { address } = useParams();
   const { useChainId, useProvider } = hooks;
   const chainId = useChainId();
