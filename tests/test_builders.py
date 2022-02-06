@@ -80,7 +80,7 @@ def test_request_join_builder(accounts, project):
     assert project.builderRequestsArray(0) == requestor
 
     request = project.builderRequests(requestor).dict()
-    assert request["_address"] == requestor
+    assert request["builderAddress"] == requestor
     assert request["parity"] == parity
     assert request["publicKey"].hex() == public_key.hex()
 

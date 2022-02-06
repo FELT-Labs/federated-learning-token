@@ -13,7 +13,7 @@ contract Builders {
     }
 
     struct BuilderJoinRequest {
-        address _address;
+        address builderAddress;
         bool parity;
         bytes32 publicKey;
     }
@@ -90,12 +90,12 @@ contract Builders {
             "Builder already exists"
         );
         require(
-            builderRequests[msg.sender]._address == address(0),
+            builderRequests[msg.sender].builderAddress == address(0),
             "Builder already requested join"
         );
 
         builderRequests[msg.sender] = BuilderJoinRequest({
-            _address: msg.sender,
+            builderAddress: msg.sender,
             parity: parity,
             publicKey: publicKey
         });
@@ -112,7 +112,7 @@ contract Builders {
         onlyBuilder
     {
         require(
-            builderRequests[newBuilderAddress]._address != address(0),
+            builderRequests[newBuilderAddress].builderAddress != address(0),
             "Address of new builder hasn't created request. Consider using addBuilder."
         );
 
@@ -132,7 +132,7 @@ contract Builders {
         onlyBuilder
     {
         require(
-            builderRequests[newBuilderAddress]._address != address(0),
+            builderRequests[newBuilderAddress].builderAddress != address(0),
             "Address of new builder hasn't created request. Consider using addBuilder."
         );
 
