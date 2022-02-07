@@ -30,6 +30,7 @@ contract ProjectContract is TrainingPlans {
             parity: parity,
             publicKey: publicKey
         });
+        buildersArray.push(msg.sender);
 
         nodeState[msg.sender] = 3;
         nodesArray.push(Node({
@@ -71,7 +72,6 @@ contract ProjectContract is TrainingPlans {
 
 
     /** TODO:
-     *    - Request join from builder
      *    - Sponsor projects
      *    - Request/Buy model
      *    - Validation
