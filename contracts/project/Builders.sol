@@ -16,6 +16,7 @@ contract Builders {
         address builderAddress;
         bool parity;
         bytes32 publicKey;
+        uint256 index;
     }
 
     mapping(address => Builder) public builders;
@@ -97,7 +98,8 @@ contract Builders {
         builderRequests[msg.sender] = BuilderJoinRequest({
             builderAddress: msg.sender,
             parity: parity,
-            publicKey: publicKey
+            publicKey: publicKey,
+            index: builderRequestsArray.length
         });
 
         builderRequestsArray.push(msg.sender);
@@ -139,19 +141,18 @@ contract Builders {
         _removeRequest(newBuilderAddress);
     }
 
-    function _removeRequest(address builderAddress) private onlyBuilder {
-        for (uint256 i = 0; i < builderRequestsArray.length; i++) {
-            if (builderRequestsArray[i] == builderAddress) {
-                builderRequestsArray[i] = builderRequestsArray[
-                    builderRequestsArray.length - 1
-                ];
-                builderRequestsArray.pop();
+    function _removeRequest(address requestAddress) private onlyBuilder {
+        uint256 indexToDelete = builderRequests[requestAddress].index;
+        delete builderRequestsArray[indexToDelete];
+        delete builderRequests[requestAddress];
 
-                delete builderRequests[builderAddress];
-
-                break;
-            }
-        }
+        // move last request in place of old
+        address lastRequestAddress = builderRequestsArray[
+            builderRequestsArray.length - 1
+        ];
+        builderRequests[lastRequestAddress].index = indexToDelete;
+        builderRequestsArray[indexToDelete] = lastRequestAddress;
+        builderRequestsArray.pop();
     }
 
     // TODO - add builder function ?
