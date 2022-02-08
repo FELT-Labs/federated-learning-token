@@ -116,6 +116,7 @@ const ProjectDashboard: FC<ProjectDashboardProps> = ({ contract }) => {
             isRunning={isRunning}
           />
           <ProjectPlans
+            contract={contract}
             isRunning={isRunning}
             currentRound={currentRound}
             numPlans={numPlans}

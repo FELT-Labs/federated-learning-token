@@ -10,6 +10,8 @@ export type TPlan = {
     totalReward: BigNumber;
     nodeReward: BigNumber;
     creator: string;
+    baseModelCID: string;
+    finalModelCID: string;
 };
 
 export type Node = {

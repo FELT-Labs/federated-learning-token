@@ -26,17 +26,15 @@ import isIPFS from 'is-ipfs';
 
 import Breadcrumbs from '../components/dapp/Breadcrumbs';
 import CircleIcon from '../components/CircleIcon';
-import { isKeyof } from '../utils/indexGuard';
 import { loadContract } from '../utils/contracts';
 import { hooks } from '../connectors/metaMask';
+import { predefinedModels } from '../utils/models';
 
 function isValidCID(cid: string): boolean {
   // TODO: Test if exists?
   // Check for validity
   return isIPFS.cid(cid);
 }
-
-const predefinedModels = { 'Linear Regression': 'bafkreicliqylyoblfo7clpzkmycwfqn567qbawnffduekcvawl3czoti2u' };
 
 interface ProjectDisplayProps {
   contract: Contract;
@@ -127,8 +125,8 @@ const CreatePlan: FC<ProjectDisplayProps> = ({ contract }) => {
     clearModal();
     setPlanSubmitted(true);
 
-    const cid = (isCustome) ? modelCID : (isKeyof(modelName, predefinedModels)) ? predefinedModels[modelName] : '';
-    if (positive && isValidCID(cid)) {
+    const cid = (isCustome) ? modelCID : predefinedModels.get(modelName);
+    if (positive && cid && isValidCID(cid)) {
       setShowModal(true);
       try {
         setProgress(2);
@@ -203,7 +201,7 @@ const CreatePlan: FC<ProjectDisplayProps> = ({ contract }) => {
                   invalid={isPlanSubmitted
                     && !isCustome
                     && !modelName.length
-                    && !isKeyof(modelName, predefinedModels)}
+                    && !predefinedModels.has(modelName)}
                   onChange={(e) => setModelName(e.target.value)}
                 >
                   <option value="">Select predefined model...</option>

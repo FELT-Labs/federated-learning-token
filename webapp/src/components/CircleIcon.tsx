@@ -7,13 +7,15 @@ type propTypes = {
   light?: boolean;
   color?: string;
   style?: CSSProperties;
+  size?: string;
 };
 
-const CircleIcon: FC<propTypes> = ({ icon, light = false, color = 'success', style = {} }) => (
+const CircleIcon: FC<propTypes> = ({ icon, light = false, color = 'success', style = {}, size = '' }) => (
   <Button
-    className="btn-icon-only rounded-circle ml-1 cursor-default"
+    className="btn-icon-only rounded-circle cursor-default"
     color={color}
     style={style}
+    size={size}
   >
     <span className={classNames('btn-inner--icon', { 'text-white': !light })}>
       {icon}
