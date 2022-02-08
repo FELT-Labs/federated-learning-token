@@ -106,7 +106,11 @@ const ProjectDashboard: FC<ProjectDashboardProps> = ({ contract }) => {
       { error === undefined && !loading && (
       <Row className="g-3">
         <Col md="4">
-          <ProjectRoles builder={builder} nodeState={nodeState} nodeActive={node?.activated} />
+          <ProjectRoles
+            builder={builder}
+            nodeState={nodeState}
+            nodeActive={node?.activated}
+          />
         </Col>
         <Col md="8">
           <ProjectSummary

@@ -20,43 +20,61 @@ const RoleBadge: FC<RoleBadgeProps> = ({ text }) => (
   </Button>
 );
 
-const BuilderDescription: FC = () => (
+interface BuilderDescriptionProps {
+  isBuilder: boolean;
+}
+
+const BuilderDescription: FC<BuilderDescriptionProps> = ({ isBuilder }) => (
   <>
     <p className="line-header fw-bold mb-1 mt-4"><span>Builder</span></p>
-    <p>You can create models (training plans) and train them on this project.</p>
-    <Button color="secondary" to="create-plan" tag={Link}>
-      Create Model
-    </Button>
+    {isBuilder ? (
+      <>
+        <p>You can create models (training plans) and train them on this project.</p>
+        <Button color="secondary" to="create-plan" tag={Link}>
+          Create Model
+        </Button>
+      </>
+    ) : (
+      <>
+        <p>Send request to become a builder and be able to train models on this project.</p>
+        <Button color="secondary" to="create-plan" tag={Link}>
+          Request Access
+        </Button>
+      </>
+    )}
   </>
 );
 
 interface DataProviderProps {
-  waiting?: boolean;
-  declined?: boolean;
+  nodeState: number;
   nodeActive?: boolean;
 }
 
-const DataProviderDescription: FC<DataProviderProps> = ({ waiting = false, declined = false, nodeActive = false }) => {
+const DataProviderDescription: FC<DataProviderProps> = ({ nodeState, nodeActive = false }) => {
   // TODO: Check if data provider is active
   const { chain, address } = useParams();
   const command = `felt-node-worker --chain ${chain} --contract ${address} --account main --data example_data.csv`;
 
-  const full = !waiting && !declined;
+  const noRequest = nodeState === 0;
+  const waiting = nodeState === 1;
+  const declined = nodeState === 2;
+  const accepted = nodeState >= 3;
 
   return (
     <>
       <p className="line-header fw-bold mb-1 mt-4">
         <span>
-          Provider
+          Data Provider
           {waiting && <Clock size={20} className="ms-2" />}
           {declined && <XCircle size={20} className="ms-2" />}
         </span>
       </p>
+      {noRequest && <p>Send request to become a data provider.</p>}
       {waiting && <p>You need to wait for your request to be processed.</p>}
       {declined && <p>Your request was declined. You can&apos;t participate in this project.</p>}
-      {full && <p>You can provide training data. Pause your participation if inactive.</p>}
+      {accepted && <p>You can provide training data. Pause your participation if inactive.</p>}
 
-      {(full || waiting) && (
+      {(accepted || waiting) && (
       <FormGroup>
         <InputGroup size="sm">
           <InputGroupText className="form-control user-select-all overflow-hidden">
@@ -76,9 +94,15 @@ const DataProviderDescription: FC<DataProviderProps> = ({ waiting = false, decli
       )}
 
       {/* Activation is done automatically using client script */}
-      {full && nodeActive && (
+      {accepted && nodeActive && (
         <Button color="secondary">
           Deactivate
+        </Button>
+      )}
+
+      {noRequest && (
+        <Button color="secondary">
+          Request Access
         </Button>
       )}
     </>
@@ -86,13 +110,21 @@ const DataProviderDescription: FC<DataProviderProps> = ({ waiting = false, decli
 };
 
 interface ProjectRolesProps {
-    builder: any
-    nodeState: number | undefined;
-    nodeActive: boolean | undefined;
+  builder: any;
+  nodeState: number | undefined;
+  nodeActive: boolean | undefined;
 }
 
 const ProjectRoles: FC<ProjectRolesProps> = ({ builder, nodeState, nodeActive }) => {
   if (builder === undefined || nodeState === undefined) {
+    <Card inverse body className="shadow" style={{ color: '#fff', backgroundColor: '#7386d5' }}>
+      <CardTitle tag="h3" style={{ color: '#fff' }}>
+        Role
+      </CardTitle>
+      <Row className="ps-1">
+        <RoleBadge text="Viewer" />
+      </Row>
+    </Card>;
     return null;
   }
 
@@ -111,8 +143,8 @@ const ProjectRoles: FC<ProjectRolesProps> = ({ builder, nodeState, nodeActive })
         {nodeState === 2 && <RoleBadge text={<><XCircle size={18} /><span> Data Provider</span></>} />}
         {nodeState >= 3 && <RoleBadge text="Data Provider" />}
       </Row>
-      {builder._address !== constants.AddressZero && <BuilderDescription />}
-      {nodeState >= 3 && <DataProviderDescription nodeActive={nodeActive} />}
+      <BuilderDescription isBuilder={builder._address !== constants.AddressZero} />
+      <DataProviderDescription nodeState={nodeState} nodeActive={nodeActive} />
     </Card>
   );
 };
