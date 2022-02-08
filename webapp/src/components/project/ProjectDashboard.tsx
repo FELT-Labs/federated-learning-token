@@ -1,21 +1,13 @@
 import { FC, useEffect, useState } from 'react';
-import { BigNumber, Contract } from 'ethers';
-import { Link } from 'react-router-dom';
-import { Button, Spinner } from 'reactstrap';
+import { Contract } from 'ethers';
+import { Col, Row, Spinner } from 'reactstrap';
 import ProjectSummary from './ProjectSummary';
 import ProjectPlans from './ProjectPlans';
 import Breadcrumbs from '../dapp/Breadcrumbs';
 import ErrorAlert from '../ErrorAlert';
 import { hooks } from '../../connectors/metaMask';
 import ProjectRoles from './ProjectRoles';
-
-export type IPlan = {
-  numRounds: number;
-  numNodes: BigNumber;
-  totalReward: BigNumber;
-  nodeReward: BigNumber;
-  creator: string;
-}
+import { TPlan, Node } from '../../utils/contractTypes';
 
 interface ProjectDashboardProps {
     contract: Contract;
@@ -38,14 +30,17 @@ const ProjectDashboard: FC<ProjectDashboardProps> = ({ contract }) => {
   const [numPlans, setNumPlans] = useState(-1);
   const [numNodes, setNumNodes] = useState(-1);
   const [numActiveNodes, setNumActiveNodes] = useState(-1);
+  const [currentRound, setCurrentRound] = useState(-1);
   const [isRunning, setIsRunning] = useState(false);
-  const [plan, setPlan] = useState<IPlan>();
+  const [plan, setPlan] = useState<TPlan>();
   const [builder, setBuilder] = useState<any>();
   const [nodeState, setNodeState] = useState<number>();
+  const [node, setNode] = useState<Node>();
 
   useEffect(() => {
     setBuilder(undefined);
     setNodeState(undefined);
+    setNode(undefined);
 
     const fetchRoles = async () => {
       try {
@@ -55,6 +50,10 @@ const ProjectDashboard: FC<ProjectDashboardProps> = ({ contract }) => {
         ]);
         setBuilder(b);
         setNodeState(n.toNumber());
+
+        if (n.toNumber() >= 3) {
+          setNode(await contract.nodesArray(n.toNumber() - 3));
+        }
       } catch (err) {
         setError(String(err));
       }
@@ -70,11 +69,12 @@ const ProjectDashboard: FC<ProjectDashboardProps> = ({ contract }) => {
       setError(undefined);
 
       try {
-        const [plans, nodes, activeNodes, planRunning] = await Promise.all([
+        const [plans, nodes, activeNodes, planRunning, round] = await Promise.all([
           contract.numPlans(),
           contract.getNodesLength(),
           contract.activeNodes(),
           contract.isPlanRunning(),
+          contract.currentRound(),
         ]);
         if (plans > 0) {
           const mostRecentPlan = await contract.plans(plans - 1);
@@ -84,6 +84,7 @@ const ProjectDashboard: FC<ProjectDashboardProps> = ({ contract }) => {
         setNumNodes(nodes.toNumber());
         setNumActiveNodes(activeNodes);
         setIsRunning(planRunning);
+        setCurrentRound(round);
 
         setLoading(false);
         setError(undefined);
@@ -97,31 +98,42 @@ const ProjectDashboard: FC<ProjectDashboardProps> = ({ contract }) => {
   }, [contract]);
 
   return (
-    <main>
+    <>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Breadcrumbs title="Project" links={breadcrumbLinks} />
-        <Button color="default" outline to="create-plan" tag={Link} style={{ marginRight: 40 }} disabled={error !== undefined}>
-          Create Training Plan
-        </Button>
       </div>
 
       { error === undefined && !loading && (
-        <>
-          <ProjectRoles builder={builder} nodeState={nodeState} />
+      <Row className="g-3">
+        <Col md="4">
+          <ProjectRoles
+            builder={builder}
+            nodeState={nodeState}
+            nodeActive={node?.activated}
+          />
+        </Col>
+        <Col md="8">
           <ProjectSummary
             numPlans={numPlans}
             numActiveNodes={numActiveNodes}
             numNodes={numNodes}
             isRunning={isRunning}
           />
-          <ProjectPlans numPlans={numPlans} plan={plan} />
-        </>
+          <ProjectPlans
+            contract={contract}
+            isRunning={isRunning}
+            currentRound={currentRound}
+            numPlans={numPlans}
+            plan={plan}
+          />
+        </Col>
+      </Row>
       )}
 
       {loading && <Spinner />}
 
       {error && <ErrorAlert isOpen>{error}</ErrorAlert>}
-    </main>
+    </>
   );
 };
 

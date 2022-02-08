@@ -52,7 +52,7 @@ const HomeNavbar: FC = () => {
           </NavLink>
         </NavbarText>
         <NavbarText className="pe-3">
-          <NavLink href="https://github.com/Breta01/federated-learning-token">
+          <NavLink href="https://github.com/FELToken/federated-learning-token">
             <GitHub />
           </NavLink>
         </NavbarText>

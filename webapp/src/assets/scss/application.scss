@@ -2,3 +2,35 @@
   z-index: 10;
   background-color: #e9ecef;
 }
+
+.project-card .card-title.light {
+  color: #fff;
+}
+
+/* headlines with lines */
+.line-header {
+  overflow: hidden;
+
+  & > span {
+    position: relative;
+    display: inline-block;
+  }
+
+  & > span:before,
+  & > span:after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    border-bottom: 2px solid;
+    width: 100vw;
+    margin: 0 20px;
+  }
+
+  & > span:before {
+    right: 100%;
+  }
+
+  & > span:after {
+    left: 100%;
+  }
+}

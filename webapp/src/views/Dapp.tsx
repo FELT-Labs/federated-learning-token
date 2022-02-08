@@ -11,11 +11,11 @@ import Project from './Project';
 const Dapp: FC = () => (
   <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
     <DappNavbar />
-    <Container>
+    <Container fluid="xl">
       <Routes>
         <Route index element={<Projects />} />
         <Route path="create-project" element={<CreateProject />} />
-        <Route path="project/:address/*" element={<Project />} />
+        <Route path="project/:chain/:address/*" element={<Project />} />
       </Routes>
     </Container>
     <HomeFooter />

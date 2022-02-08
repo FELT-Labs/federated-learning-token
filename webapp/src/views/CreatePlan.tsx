@@ -26,17 +26,15 @@ import isIPFS from 'is-ipfs';
 
 import Breadcrumbs from '../components/dapp/Breadcrumbs';
 import CircleIcon from '../components/CircleIcon';
-import { isKeyof } from '../utils/indexGuard';
 import { loadContract } from '../utils/contracts';
 import { hooks } from '../connectors/metaMask';
+import { predefinedModels } from '../utils/models';
 
 function isValidCID(cid: string): boolean {
   // TODO: Test if exists?
   // Check for validity
   return isIPFS.cid(cid);
 }
-
-const predefinedModels = { 'Linear Regression': 'bafkreicliqylyoblfo7clpzkmycwfqn567qbawnffduekcvawl3czoti2u' };
 
 interface ProjectDisplayProps {
   contract: Contract;
@@ -65,6 +63,7 @@ const CreatePlan: FC<ProjectDisplayProps> = ({ contract }) => {
   const [modelName, setModelName] = useState('');
   const [isCustome, setIsCustome] = useState(false);
   const [numRounds, setNumRounds] = useState(1);
+  const [numActiveNodes, setNumActiveNodes] = useState(0);
   const [reward, setReward] = useState(0);
 
   const [newAllowance, setNewAllowance] = useState(0);
@@ -90,10 +89,14 @@ const CreatePlan: FC<ProjectDisplayProps> = ({ contract }) => {
         );
 
         if (token && account && contract) {
-          const a = await token.allowance(account, contract.address);
+          const [allow, activeNodes] = await Promise.all([
+            token.allowance(account, contract.address),
+            contract.activeNodes(),
+          ]);
           if (!didCancel) {
             setTokenContract(token);
-            setAllowance(a);
+            setAllowance(allow);
+            setNumActiveNodes(activeNodes);
           }
         }
       }
@@ -106,7 +109,7 @@ const CreatePlan: FC<ProjectDisplayProps> = ({ contract }) => {
   }, [chainId, account, contract, provider]);
 
   // Values displayed in the table
-  const totalReward = reward * numRounds;
+  const totalReward = reward * numRounds * numActiveNodes;
   const totalRewardBN = utils.parseUnits(totalReward.toString(), 'gwei');
   const remAllowance = (allowance) ? utils.formatUnits(allowance.sub(totalRewardBN), 'gwei') : 'NaN';
   const positive = (allowance) ? allowance.gte(totalRewardBN) : undefined;
@@ -122,8 +125,8 @@ const CreatePlan: FC<ProjectDisplayProps> = ({ contract }) => {
     clearModal();
     setPlanSubmitted(true);
 
-    const cid = (isCustome) ? modelCID : (isKeyof(modelName, predefinedModels)) ? predefinedModels[modelName] : '';
-    if (positive && isValidCID(cid)) {
+    const cid = (isCustome) ? modelCID : predefinedModels.get(modelName);
+    if (positive && cid && isValidCID(cid)) {
       setShowModal(true);
       try {
         setProgress(2);
@@ -198,7 +201,7 @@ const CreatePlan: FC<ProjectDisplayProps> = ({ contract }) => {
                   invalid={isPlanSubmitted
                     && !isCustome
                     && !modelName.length
-                    && !isKeyof(modelName, predefinedModels)}
+                    && !predefinedModels.has(modelName)}
                   onChange={(e) => setModelName(e.target.value)}
                 >
                   <option value="">Select predefined model...</option>
@@ -272,8 +275,16 @@ const CreatePlan: FC<ProjectDisplayProps> = ({ contract }) => {
                 Reward calculation
               </Label>
               <Col md={6}>
-                <Table borderless size="sm">
+                <Table borderless size="sm" className="mt-2">
                   <tbody>
+                    <tr>
+                      <td>
+                        Active nodes
+                      </td>
+                      <td className="text-end">
+                        {numActiveNodes}
+                      </td>
+                    </tr>
                     <tr>
                       <td>
                         Rounds
@@ -295,7 +306,7 @@ const CreatePlan: FC<ProjectDisplayProps> = ({ contract }) => {
                         Total reward
                       </td>
                       <td className="text-end">
-                        {numRounds * reward}
+                        {numRounds * reward * numActiveNodes}
                       </td>
                     </tr>
                     <tr>
