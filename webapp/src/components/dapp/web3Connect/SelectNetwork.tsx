@@ -1,6 +1,8 @@
 import { FC } from 'react';
-import { hooks } from '../../../connectors/metaMask';
+import { hooks } from '../../../connectors/priorityConnector';
 import { CHAINS } from '../../../utils/chains';
+
+const { usePriorityIsActivating } = hooks;
 
 interface SelectNetworkProps {
     desiredChainId: number;
@@ -8,8 +10,7 @@ interface SelectNetworkProps {
 }
 
 const SelectNetwork: FC<SelectNetworkProps> = ({ desiredChainId, setChainId }) => {
-  const { useIsActivating } = hooks;
-  const isActivating = useIsActivating();
+  const isActivating = usePriorityIsActivating();
 
   return (
     <select

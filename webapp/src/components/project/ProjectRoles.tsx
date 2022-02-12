@@ -117,15 +117,17 @@ interface ProjectRolesProps {
 
 const ProjectRoles: FC<ProjectRolesProps> = ({ builder, nodeState, nodeActive }) => {
   if (builder === undefined || nodeState === undefined) {
-    <Card inverse body className="shadow" style={{ color: '#fff', backgroundColor: '#7386d5' }}>
-      <CardTitle tag="h3" style={{ color: '#fff' }}>
-        Role
-      </CardTitle>
-      <Row className="ps-1">
-        <RoleBadge text="Viewer" />
-      </Row>
-    </Card>;
-    return null;
+    return (
+      <Card inverse body className="shadow" style={{ color: '#fff', backgroundColor: '#7386d5' }}>
+        <CardTitle tag="h3" style={{ color: '#fff' }}>
+          Role
+        </CardTitle>
+        <Row className="ps-1">
+          <RoleBadge text="Viewer" />
+        </Row>
+        <p className="mb-1 mt-4">Connect to MetaMask in order to interact with the project.</p>
+      </Card>
+    );
   }
 
   return (

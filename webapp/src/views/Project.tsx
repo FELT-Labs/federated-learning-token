@@ -2,17 +2,30 @@ import { FC, useState, useEffect } from 'react';
 import { Contract } from 'ethers';
 import { Route, Routes, useParams } from 'react-router-dom';
 import { Spinner } from 'reactstrap';
+import { Network } from '@web3-react/network';
+
 import { getProjectContract } from '../utils/contracts';
-import { hooks } from '../connectors/metaMask';
+import { hooks } from '../connectors/priorityConnector';
 import ProjectDashboard from '../components/project/ProjectDashboard';
 import CreatePlan from './CreatePlan';
+import { getAddChainParameters } from '../utils/chains';
+
+const { usePriorityConnector, usePriorityChainId, usePriorityProvider } = hooks;
 
 const Project: FC = () => {
-  // TODO: Use chain to check if it is connected to correct network
-  const { address } = useParams();
-  const { useChainId, useProvider } = hooks;
-  const chainId = useChainId();
-  const provider = useProvider();
+  const { chain, address } = useParams();
+  const connector = usePriorityConnector();
+  const chainId = usePriorityChainId();
+  const provider = usePriorityProvider();
+
+  // Switch connector to same chain as the project in case of mismatch
+  if (chain && chainId && Number(chain) !== chainId) {
+    if (connector instanceof Network) {
+      connector.activate(Number(chain));
+    } else {
+      connector.activate(getAddChainParameters(Number(chain)));
+    }
+  }
 
   const [contract, setContract] = useState<Contract>();
 
@@ -21,7 +34,10 @@ const Project: FC = () => {
 
     async function getContract() {
       if (provider && address) {
-        const c = await getProjectContract(address, provider.getSigner());
+        const c = await getProjectContract(
+          address,
+          (connector instanceof Network) ? provider : provider.getSigner(),
+        );
 
         if (c && !didCancel) {
           setContract(c);
@@ -33,7 +49,7 @@ const Project: FC = () => {
     return () => {
       didCancel = true;
     };
-  }, [chainId, address, provider]);
+  }, [chainId, address, provider, connector]);
 
   if (contract === undefined) {
     return <Spinner className="m-3" />;
