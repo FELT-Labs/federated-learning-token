@@ -5,17 +5,18 @@ import ProjectSummary from './ProjectSummary';
 import ProjectPlans from './ProjectPlans';
 import Breadcrumbs from '../dapp/Breadcrumbs';
 import ErrorAlert from '../ErrorAlert';
-import { hooks } from '../../connectors/metaMask';
+import { hooks } from '../../connectors/priorityConnector';
 import ProjectRoles from './ProjectRoles';
 import { TPlan, Node } from '../../utils/contractTypes';
+
+const { usePriorityAccount } = hooks;
 
 interface ProjectDashboardProps {
     contract: Contract;
 }
 
 const ProjectDashboard: FC<ProjectDashboardProps> = ({ contract }) => {
-  const { useAccount } = hooks;
-  const account = useAccount();
+  const account = usePriorityAccount();
 
   const breadcrumbLinks = [
     {

@@ -1,4 +1,4 @@
-import type { AddEthereumChainParameter } from '@web3-react/metamask';
+import type { AddEthereumChainParameter } from '@web3-react/types';
 
 const MATIC: AddEthereumChainParameter['nativeCurrency'] = {
   name: 'Matic',
@@ -7,13 +7,13 @@ const MATIC: AddEthereumChainParameter['nativeCurrency'] = {
 };
 
 interface BasicChainInformation {
-    url: string
-    name: string
+  url: string
+  name: string
 }
 
 interface ExtendedChainInformation extends BasicChainInformation {
-    nativeCurrency: AddEthereumChainParameter['nativeCurrency']
-    blockExplorerUrls: AddEthereumChainParameter['blockExplorerUrls']
+  nativeCurrency: AddEthereumChainParameter['nativeCurrency']
+  blockExplorerUrls: AddEthereumChainParameter['blockExplorerUrls']
 }
 
 function isExtendedChainInformation(
@@ -37,14 +37,14 @@ export function getAddChainParameters(chainId: number): AddEthereumChainParamete
 }
 
 export const CHAINS: { [chainId: number]: BasicChainInformation | ExtendedChainInformation } = {
-  1337: {
-    url: process.env.REACT_APP_RPC_URL_1337 ?? '',
-    name: 'Localhost',
-  },
   80001: {
     url: process.env.REACT_APP_RPC_URL_80001 ?? '',
     name: 'Polygon Mumbai',
     nativeCurrency: MATIC,
     blockExplorerUrls: ['https://mumbai.polygonscan.com'],
+  },
+  1337: {
+    url: process.env.REACT_APP_RPC_URL_1337 ?? '',
+    name: 'Localhost',
   },
 };
