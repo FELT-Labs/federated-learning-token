@@ -3,11 +3,14 @@ import hashlib
 import json
 from pathlib import Path
 
-from coincurve import PrivateKey
-from coincurve.keys import PublicKey
-from ecies import decrypt, encrypt
+from brownie.network.account import LocalAccount
+
+# TODO: Replace the encryption functions with something else?
 from ecies.utils import aes_decrypt, aes_encrypt
+from eth_typing.evm import Address
+from nacl.public import Box, PrivateKey, PublicKey
 from web3 import Web3
+from web3.contract import Contract
 from web3.gas_strategies.time_based import medium_gas_price_strategy
 from web3.middleware import construct_sign_and_send_raw_middleware
 
@@ -19,7 +22,7 @@ CHAIN_ID_MAP = {
 }
 
 
-def get_web3(account, chain_id):
+def get_web3(account: LocalAccount, chain_id: int) -> Web3:
     """Get connection to web3."""
     w3 = Web3(Web3.HTTPProvider(CHAIN_ID_MAP[chain_id]))
     w3.eth.set_gas_price_strategy(medium_gas_price_strategy)
@@ -28,75 +31,72 @@ def get_web3(account, chain_id):
     return w3
 
 
-def get_project_contract(w3, address):
+def get_project_contract(w3: Web3, address: Address) -> Contract:
     """Load project contract on current chain from build folder."""
     contract = json.load((BUILD_FOLDER / f"contracts/ProjectContract.json").open())
     return w3.eth.contract(address=address, abi=contract["abi"])
 
 
-def export_public_key(private_key):
+def _hex_to_bytes(hex: str) -> bytes:
+    return bytes.fromhex(hex if hex[:2] == "0x" else hex)
+
+
+def export_public_key(private_key_hex: str) -> bytes:
     """Export public key for contract join request.
 
     Args:
-        private_key (string): hex string representing private key
+        private_key: hex string representing private key
 
     Returns:
-        tuple[bool, bytes]: representing parity and public key data
+        32 bytes representing public key
     """
-    public = PrivateKey.from_hex(private_key).public_key.format(True)
-    parity = bool(public[0] - 2)
-    return (parity, public[1:])
+    return bytes(PrivateKey(_hex_to_bytes(private_key_hex)).public_key)
 
 
-def encrypt_secret(secret, parity, public_key):
-    """Encrypt secret for public key defined in request (parity, public_key).
+def encrypt_nacl(public_key: bytes, data: bytes) -> bytes:
+    """Encryption function using NaCl box compatible with MetaMask
+    For implementation used in MetaMask look into: https://github.com/MetaMask/eth-sig-util
 
     Args:
-        secret (bytes): secret shared key
-        parity (bool): header byte, true represents 0x03, false represents 0x02
-        public_key (bytes): rest of the public key
+        public_key: public key of recipient
+        data: message data
 
     Returns:
+        encrypted data
     """
-    public_key_full = bytes([int(parity) + 2]) + public_key
-    ciphertext = encrypt(public_key_full, secret)
-    # Compress the empheral key
-    emph_key = PublicKey(ciphertext[:65]).format(True)
-    parity = bool(emph_key[0] - 2)
-
-    ciphertext = emph_key[1:] + ciphertext[65:]
-    # Split to 32 bytes blocks
-    ciphertext = [ciphertext[i : i + 32] for i in range(0, len(ciphertext), 32)]
-    return (parity, ciphertext)
+    emph_key = PrivateKey.generate()
+    enc_box = Box(emph_key, PublicKey(public_key))
+    ciphertext = enc_box.encrypt(data)
+    return bytes(emph_key.public_key) + ciphertext
 
 
-def decrypt_secret(ciphertext, parity, private_key):
-    """Decrypt encrypted secret using private key.
+def decrypt_nacl(private_key: bytes, data: bytes) -> bytes:
+    """Decryption function using NaCl box compatible with MetaMask
+    For implementation used in MetaMask look into: https://github.com/MetaMask/eth-sig-util
 
     Args:
-        ciphertext (bytes): bytes representing the encrypted secret
-        parity (bool): header byte, true represents 0x03, false represents 0x02
-        private_key (string): hex string representing the private key
+        private_key: private key to decrypt with
+        data: encrypted message data
 
     Returns:
-        bytes: decrypted shared secret
+        decrypted data
     """
-    emph_key = PublicKey(bytes([int(parity) + 2]) + ciphertext[:32]).format(False)
-    ciphertext_full = emph_key + ciphertext[32:]
-    return decrypt(private_key, ciphertext_full)
+    emph_key, ciphertext = data[:32], data[32:]
+    box = Box(PrivateKey(private_key), PublicKey(emph_key))
+    return box.decrypt(ciphertext)
 
 
-def encrypt_bytes(bytes, secret):
+def encrypt_bytes(bytes: bytes, secret: bytes) -> bytes:
     """Encrypt bytes (model) for storing in contract/IPFS."""
     return aes_encrypt(secret, bytes)
 
 
-def decrypt_bytes(ciphertext, secret):
+def decrypt_bytes(ciphertext: bytes, secret: bytes) -> bytes:
     """Decrypt bytes (model) stored in contract/IPFS."""
     return aes_decrypt(secret, ciphertext)
 
 
-def get_current_secret(secret, entry_key_turn, key_turn):
+def get_current_secret(secret: bytes, entry_key_turn: int, key_turn: int) -> bytes:
     """Calculate shared secret at current state."""
     for _ in range(entry_key_turn, key_turn):
         secret = hashlib.sha256(secret).digest()

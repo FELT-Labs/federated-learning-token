@@ -1,7 +1,7 @@
 """Module for deploying project contract."""
 from brownie import FELToken, ProjectContract, ProjectManager, accounts, config, network
 
-from felt.core.web3 import encrypt_secret, export_public_key, get_current_secret
+from felt.core.web3 import encrypt_nacl, get_current_secret
 
 
 def accept_node(owner):
@@ -17,10 +17,8 @@ def accept_node(owner):
     turn_secret = get_current_secret(secret, 0, project.keyTurn() + 1)
 
     request = project.nodeRequests(project.getNodeRequestsLength() - 1).dict()
-    parity, ciphertext = encrypt_secret(
-        turn_secret, request["parity"], request["publicKey"]
-    )
-    project.acceptNode(parity, *ciphertext, {"from": owner})
+    ciphertext = encrypt_nacl(request["publicKey"], turn_secret)
+    project.acceptNode(list(ciphertext), {"from": owner})
 
 
 def main():

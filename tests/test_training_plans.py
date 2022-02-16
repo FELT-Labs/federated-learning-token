@@ -1,8 +1,8 @@
 import brownie
-from coincurve import PrivateKey
+from nacl.public import PrivateKey
 from scripts.helpful_scripts import get_account
 
-from felt.core.web3 import encrypt_secret, export_public_key
+from felt.core.web3 import encrypt_nacl, export_public_key
 
 
 def test_get_round_model(accounts, project, token):
@@ -53,10 +53,10 @@ def test_finish_plan(accounts, project, token):
 
     # Act
     with brownie.reverts("All rounds must be completed"):
-        project.finishPlan(False, 0, 0, 0, "testCID3", {"from": owner})
+        project.finishPlan("testCID3", {"from": owner})
 
     project.submitModel("testCID3", {"from": owner})
-    project.finishPlan(False, 0, 0, 0, "testCID4", {"from": owner})
+    project.finishPlan("testCID4", {"from": owner})
     n_plans = project.numPlans()
     plan = project.plans(n_plans - 1).dict()
     is_plan_running = project.isPlanRunning()
@@ -83,12 +83,14 @@ def test_change_node_status(accounts, project):
     # Arrange
     owner = get_account()
     node_address = accounts[0]
-    test_key = PrivateKey()
-    parity, public_key = export_public_key(test_key.to_hex())
-    project.requestJoinNode(parity, public_key, {"from": node_address})
+
+    test_key = PrivateKey.generate()
+    public_key = export_public_key(bytes(test_key).hex())
+    project.requestJoinNode(public_key, {"from": node_address})
+
     secret = b"Test" * 8
-    parity, ciphertext = encrypt_secret(secret, parity, public_key)
-    project.acceptNode(parity, *ciphertext, {"from": owner})
+    ciphertext = encrypt_nacl(public_key, secret)
+    project.acceptNode(list(ciphertext), {"from": owner})
 
     # Act + Assert
     node = project.nodesArray(1).dict()

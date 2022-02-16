@@ -7,15 +7,11 @@ PI = {
     "randomSeed": 2,
     "baseModelCID": 3,
     "finalModelCID": 4,
-    "parity": 5,
-    "secret0": 6,
-    "secret1": 7,
-    "secret2": 8,
-    "numRounds": 9,
-    "numNodes": 10,
-    "totalReward": 11,
-    "nodeReward": 12,
-    "keyTurn": 13,
+    "numRounds": 5,
+    "numNodes": 6,
+    "totalReward": 7,
+    "nodeReward": 8,
+    "keyTurn": 9,
 }
 
 
@@ -23,18 +19,13 @@ PI = {
 NI = {
     "_address": 0,
     "activated": 1,
-    "parity": 2,
-    "secret0": 3,
-    "secret1": 4,
-    "secret2": 5,
-    "entryKeyTurn": 6,
+    "entryKeyTurn": 2,
 }
 
 # Mapping for Builder struct
 BI = {
     "_address": 0,
-    "parity": 1,
-    "publicKey": 2,
+    "publicKey": 1,
 }
 
 

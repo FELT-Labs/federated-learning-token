@@ -57,9 +57,9 @@ def project(ProjectContract, token):
     Yield a `Contract` object for the ProjectContract contract.
     """
     owner = get_account()
-    parity, public_key = export_public_key(owner.private_key[2:])
+    public_key = export_public_key(owner.private_key[2:])
 
-    project = ProjectContract.deploy(token, parity, public_key, {"from": get_account()})
+    project = ProjectContract.deploy(token, public_key, {"from": get_account()})
 
     yield project
 

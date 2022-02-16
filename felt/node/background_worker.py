@@ -13,11 +13,11 @@ from sklearn import datasets
 from felt.core.average import average_models
 from felt.core.contracts import to_dict
 from felt.core.data import load_data
-from felt.core.node import check_node_state, get_node_secret
+from felt.core.node import check_node_state, get_node, get_node_secret
 from felt.core.storage import ipfs_download_file, ipfs_upload_file
 from felt.core.web3 import (
     encrypt_bytes,
-    encrypt_secret,
+    encrypt_nacl,
     get_current_secret,
     get_project_contract,
     get_web3,
@@ -45,11 +45,37 @@ def get_plan(project_contract):
     return None
 
 
+def upload_final_model(model, model_path, builder_key):
+    """Encrypt and upload final model for builder to IPFS.
+
+    Args:
+        model: scikit-learn trained model
+        model_path: path to save final model
+        builder_key: public builder key to use for encryption
+
+    Returns:
+        (str): CID of uploaded file.
+    """
+    # TODO: Optimize this part, so we don't need to r/w, json.dump to memory?
+    joblib.dump(model, model_path)
+    with open(model_path, "rb") as f:
+        # TODO: Right now only builder will be able to decrypt model
+        #       Maybe upload extra finall model for nodes??
+        #       Or use secret such that all nodes can calculate it (emph key?)
+        encrypted_model = encrypt_nacl(builder_key, f.read())
+
+    # 4. Upload file to IPFS
+    res = ipfs_upload_file(BytesIO(encrypted_model))
+    return res.json()["cid"]
+
+
 def upload_encrypted_model(model, model_path, secret):
     """Encrypt and upload model to IPFS.
 
     Args:
-        ...
+        model: scikit-learn trained model
+        model_path: path to save final model
+        secret: secret key for encryption
 
     Returns:
         (str): CID of uploaded file.
@@ -130,13 +156,12 @@ def execute_rounds(X, y, model, plan, plan_dir, secret, account, project_contrac
 def watch_for_plan(project_contract):
     """Wait until new plan created."""
     # TODO: Use contract emiting events
+    print("Waiting for a plan.")
     while True:
         plan = get_plan(project_contract)
         if plan is not None:
             return plan
-
         time.sleep(3)
-        print("Waiting for a plan.")
 
 
 def task(key, chain_id, contract_address, X, y):
@@ -151,7 +176,8 @@ def task(key, chain_id, contract_address, X, y):
     print("Node is ready for training.")
 
     # Obtain secret from the contract
-    SECRET, node = get_node_secret(project_contract, account)
+    node = get_node(project_contract, account)
+    SECRET = get_node_secret(project_contract, account)
 
     while True:
         plan = watch_for_plan(project_contract)
@@ -183,20 +209,16 @@ def task(key, chain_id, contract_address, X, y):
             print("Node selected as a final one.")
             # Generate builder secret based on random seed and secret
             # So it is same for all nodes
-            bs = int.from_bytes(secret, "big") * plan["randomSeed"]
-            builder_secret = bs.to_bytes((bs.bit_length() + 7) // 8, "big")[-32:]
-
-            cid = upload_encrypted_model(final_model, final_model_path, builder_secret)
-
             builder = project_contract.functions.builders(plan["creator"]).call()
             builder = to_dict(builder, "Builder")
-            parity, ciphertext = encrypt_secret(
-                builder_secret, builder["parity"], builder["publicKey"]
+
+            cid = upload_encrypted_model(
+                final_model, final_model_path, builder["publicKey"]
             )
 
-            tx = project_contract.functions.finishPlan(
-                parity, *ciphertext, cid
-            ).transact({"from": account._acct.address, "gasPrice": w3.eth.gas_price})
+            tx = project_contract.functions.finishPlan(cid).transact(
+                {"from": account._acct.address, "gasPrice": w3.eth.gas_price}
+            )
             w3.eth.wait_for_transaction_receipt(tx)
             print("Final model uploaded and encrypted for a builder.")
 

@@ -1,5 +1,5 @@
 import brownie
-from coincurve import PrivateKey
+from nacl.public import PrivateKey
 from scripts.helpful_scripts import get_account
 
 from felt.core.web3 import export_public_key
@@ -22,18 +22,17 @@ def test_set_builder_public_key(accounts, project):
     non_builder = accounts[0]
 
     # Act
-    test_key = PrivateKey()
-    parity, public_key = export_public_key(test_key.to_hex())
-    project.setBuilderPublickey(parity, public_key, {"from": owner})
+    test_key = PrivateKey.generate()
+    public_key = export_public_key(bytes(test_key).hex())
+    project.setBuilderPublickey(public_key, {"from": owner})
     builder = project.builders(owner).dict()
 
     # Assert
-    assert builder["parity"] == parity
-    assert builder["publicKey"].hex() == public_key.hex()
+    assert builder["publicKey"].hex() == bytes(test_key.public_key).hex()
     assert builder["_address"] == owner
 
     with brownie.reverts("Sender is not builder"):
-        project.setBuilderPublickey(parity, public_key, {"from": non_builder})
+        project.setBuilderPublickey(public_key, {"from": non_builder})
 
 
 def test_add_builder(accounts, project):
@@ -42,9 +41,9 @@ def test_add_builder(accounts, project):
     new_builder_address = accounts[0]
 
     # Act
-    test_key = PrivateKey()
-    parity, public_key = export_public_key(test_key.to_hex())
-    project.addBuilder(new_builder_address, parity, public_key, {"from": owner})
+    test_key = PrivateKey.generate()
+    public_key = export_public_key(bytes(test_key).hex())
+    project.addBuilder(new_builder_address, public_key, {"from": owner})
 
     # Assert
     assert project.getBuildersLength() == 2
@@ -53,16 +52,13 @@ def test_add_builder(accounts, project):
 
     new_builder = project.builders(new_builder_address).dict()
     assert new_builder["_address"] == new_builder_address
-    assert new_builder["parity"] == parity
-    assert new_builder["publicKey"].hex() == public_key.hex()
+    assert new_builder["publicKey"].hex() == bytes(test_key.public_key).hex()
 
     with brownie.reverts("Builder already exists"):
-        project.addBuilder(new_builder_address, parity, public_key, {"from": owner})
+        project.addBuilder(new_builder_address, public_key, {"from": owner})
 
     with brownie.reverts("Only builders are allowed to execute this."):
-        project.addBuilder(
-            new_builder_address, parity, public_key, {"from": accounts[1]}
-        )
+        project.addBuilder(new_builder_address, public_key, {"from": accounts[1]})
 
 
 def test_request_join_builder(accounts, project):
@@ -71,9 +67,9 @@ def test_request_join_builder(accounts, project):
     requestor = accounts[0]
 
     # Act
-    test_key = PrivateKey()
-    parity, public_key = export_public_key(test_key.to_hex())
-    project.requestJoinBuilder(parity, public_key, {"from": requestor})
+    test_key = PrivateKey.generate()
+    public_key = export_public_key(bytes(test_key).hex())
+    project.requestJoinBuilder(public_key, {"from": requestor})
 
     # Assert
     assert project.getBuilderRequestsLength() == 1
@@ -81,15 +77,14 @@ def test_request_join_builder(accounts, project):
 
     request = project.builderRequests(requestor).dict()
     assert request["builderAddress"] == requestor
-    assert request["parity"] == parity
     assert request["publicKey"].hex() == public_key.hex()
     assert request["index"] == 0
 
     with brownie.reverts("Builder already requested join"):
-        project.requestJoinBuilder(parity, public_key, {"from": requestor})
+        project.requestJoinBuilder(public_key, {"from": requestor})
 
     with brownie.reverts("Builder already exists"):
-        project.requestJoinBuilder(parity, public_key, {"from": owner})
+        project.requestJoinBuilder(public_key, {"from": owner})
 
 
 def test_accept_request_join_builder(accounts, project):
@@ -98,9 +93,9 @@ def test_accept_request_join_builder(accounts, project):
     requestor = accounts[0]
 
     # Act
-    test_key = PrivateKey()
-    parity, public_key = export_public_key(test_key.to_hex())
-    project.requestJoinBuilder(parity, public_key, {"from": requestor})
+    test_key = PrivateKey.generate()
+    public_key = export_public_key(bytes(test_key).hex())
+    project.requestJoinBuilder(public_key, {"from": requestor})
     project.acceptBuilderJoinRequest(requestor, {"from": owner})
 
     # Assert
@@ -112,7 +107,6 @@ def test_accept_request_join_builder(accounts, project):
 
     new_builder = project.builders(requestor).dict()
     assert new_builder["_address"] == requestor
-    assert new_builder["parity"] == parity
     assert new_builder["publicKey"].hex() == public_key.hex()
 
     with brownie.reverts(
@@ -130,9 +124,9 @@ def test_decline_request_join_builder(accounts, project):
     requestor = accounts[0]
 
     # Act
-    test_key = PrivateKey()
-    parity, public_key = export_public_key(test_key.to_hex())
-    project.requestJoinBuilder(parity, public_key, {"from": requestor})
+    test_key = PrivateKey.generate()
+    public_key = export_public_key(bytes(test_key).hex())
+    project.requestJoinBuilder(public_key, {"from": requestor})
     project.declineBuilderJoinRequest(requestor, {"from": owner})
 
     # Assert
@@ -159,12 +153,12 @@ def test_removing_requests(accounts, project):
     requestor3 = accounts[3]
 
     # Act
-    test_key = PrivateKey()
-    parity, public_key = export_public_key(test_key.to_hex())
-    project.requestJoinBuilder(parity, public_key, {"from": requestor0})
-    project.requestJoinBuilder(parity, public_key, {"from": requestor1})
-    project.requestJoinBuilder(parity, public_key, {"from": requestor2})
-    project.requestJoinBuilder(parity, public_key, {"from": requestor3})
+    test_key = PrivateKey.generate()
+    public_key = export_public_key(bytes(test_key).hex())
+    project.requestJoinBuilder(public_key, {"from": requestor0})
+    project.requestJoinBuilder(public_key, {"from": requestor1})
+    project.requestJoinBuilder(public_key, {"from": requestor2})
+    project.requestJoinBuilder(public_key, {"from": requestor3})
 
     # Assert
     assert project.getBuilderRequestsLength() == 4
