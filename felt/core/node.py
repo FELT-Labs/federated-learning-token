@@ -2,7 +2,7 @@ import time
 
 from felt.core.contracts import to_dict
 from felt.core.prompts import yes_no_prompt
-from felt.core.web3 import decrypt_secret, export_public_key
+from felt.core.web3 import decrypt_nacl, export_public_key
 
 
 def get_node(project_contract, account):
@@ -18,9 +18,9 @@ def get_node(project_contract, account):
 
 def get_node_secret(project_contract, account):
     """Get shared secret for node represented by account."""
-    node = get_node(project_contract, account)
-    ct = node["secret0"] + node["secret1"] + node["secret2"]
-    return decrypt_secret(ct, node["parity"], account.private_key[2:]), node
+    secret = b"".join(project_contract.functions.getNodeSecret(account.address).call())
+    private_key = bytes.fromhex(account.private_key[2:])
+    return decrypt_nacl(private_key, secret)
 
 
 def check_node_isactive(w3, project_contract, account):
@@ -66,11 +66,8 @@ def check_node_state(w3, project_contract, account):
             # Request join as data provider
             print("You haven't requested access to project yet.")
             if yes_no_prompt("Do you want to join the project?", default=False):
-                parity, public_key = export_public_key(account.private_key[2:])
-                tx = project_contract.functions.requestJoinNode(
-                    parity,
-                    public_key,
-                ).transact(
+                public_key = export_public_key(account.private_key[2:])
+                tx = project_contract.functions.requestJoinNode(public_key).transact(
                     {"from": account._acct.address, "gasPrice": w3.eth.gas_price},
                 )
                 w3.eth.wait_for_transaction_receipt(tx)

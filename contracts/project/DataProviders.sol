@@ -9,19 +9,15 @@ contract DataProviders {
     struct Node {
         address _address;
         bool activated;
-        // Shared secret between nodes:
-        // TODO: maybe change to single array of 97 bytes
-        bool parity;
-        bytes32 secret0;
-        bytes32 secret1;
-        bytes32 secret2;
+        // Shared secret between nodes
+        // TODO: test if splitting into bytes32 is cheaper
+        bytes[112] secret;
         // Entry state represents at which iteration node joined
         uint entryKeyTurn;
     }
 
     struct NodeJoinRequest {
         address _address;
-        bool parity;
         bytes32 publicKey;
     }
 
@@ -71,33 +67,33 @@ contract DataProviders {
         return nodeRequests.length;
     }
 
+    function getNodeSecret(address _address) public view returns(bytes[112] memory) {
+        require(isNode(_address), "Address doesn't belong to node");
+        return nodesArray[nodeState[_address] - 3].secret;
+    }
+
     /**
      * @notice Node can request to join providing their public key.
-     * @param parity based on header value (0x02/0x03 - false/true)
      * @param publicKey compressed public key value
      */
-    function requestJoinNode(bool parity, bytes32 publicKey) public {
+    function requestJoinNode(bytes32 publicKey) public {
         require(nodeState[msg.sender] == 0, "Address already made request.");
         nodeState[msg.sender] = 1;
         nodeRequests.push(NodeJoinRequest({
             _address: msg.sender,
-            parity: parity,
             publicKey: publicKey
         }));
     }
 
     /**
      * @notice Accepting first request in the stack
-     * @param parity header type
-     * @param secret0 sharing encrypted common secret for nodes
-     * @param secret1 sharing encrypted common secret for nodes
-     * @param secret2 sharing encrypted common secret for nodes
+     * @param secret sharing encrypted common secret for nodes
 
         TODO: Secret should be updated as hash of previous secret
               So that the node doesn't have access to previous models
         TODO: Should not accept node when plan is running
     */
-    function acceptNode(bool parity, bytes32 secret0, bytes32 secret1, bytes32 secret2) public onlyNode {
+    function acceptNode(bytes[112] memory secret) public onlyNode {
         require(nodeRequests.length > 0, "No request to process.");
         nodeState[nodeRequests[nodeRequests.length - 1]._address] = nodesArray.length + 3;
 
@@ -105,10 +101,7 @@ contract DataProviders {
         nodesArray.push(Node({
             _address: nodeRequests[nodeRequests.length - 1]._address,
             activated: true,
-            parity: parity,
-            secret0: secret0,
-            secret1: secret1,
-            secret2: secret2,
+            secret: secret,
             entryKeyTurn: keyTurn
         }));
         activeNodes += 1;

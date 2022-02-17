@@ -8,13 +8,11 @@ contract Builders {
     // Plan designer entity (builder)
     struct Builder {
         address _address;
-        bool parity;
         bytes32 publicKey;
     }
 
     struct BuilderJoinRequest {
         address builderAddress;
-        bool parity;
         bytes32 publicKey;
         uint256 index;
     }
@@ -43,27 +41,23 @@ contract Builders {
 
     /**
      * @notice Builder can update his public key.
-     * @param parity based on header value (0x02/0x03 - false/true)
      * @param publicKey compressed public key value
      */
-    function setBuilderPublickey(bool parity, bytes32 publicKey) public {
+    function setBuilderPublickey(bytes32 publicKey) public {
         require(
             builders[msg.sender]._address == msg.sender,
             "Sender is not builder"
         );
-        builders[msg.sender].parity = parity;
         builders[msg.sender].publicKey = publicKey;
     }
 
     /**
      * @notice Already accepted builder can add new builder.
      * @param newBuilderAddress address of the new builder
-     * @param parity based on header value (0x02/0x03 - false/true)
      * @param publicKey compressed public key value
      */
     function addBuilder(
         address newBuilderAddress,
-        bool parity,
         bytes32 publicKey
     ) public onlyBuilder {
         require(
@@ -73,7 +67,6 @@ contract Builders {
 
         builders[newBuilderAddress] = Builder({
             _address: newBuilderAddress,
-            parity: parity,
             publicKey: publicKey
         });
 
@@ -82,10 +75,9 @@ contract Builders {
 
     /**
      * @notice Anyone can request to become a builder.
-     * @param parity based on header value (0x02/0x03 - false/true)
      * @param publicKey compressed public key value
      */
-    function requestJoinBuilder(bool parity, bytes32 publicKey) public {
+    function requestJoinBuilder(bytes32 publicKey) public {
         require(
             builders[msg.sender]._address == address(0),
             "Builder already exists"
@@ -97,7 +89,6 @@ contract Builders {
 
         builderRequests[msg.sender] = BuilderJoinRequest({
             builderAddress: msg.sender,
-            parity: parity,
             publicKey: publicKey,
             index: builderRequestsArray.length
         });
@@ -120,7 +111,7 @@ contract Builders {
 
         BuilderJoinRequest memory request = builderRequests[newBuilderAddress];
 
-        addBuilder(newBuilderAddress, request.parity, request.publicKey);
+        addBuilder(newBuilderAddress, request.publicKey);
 
         _removeRequest(newBuilderAddress);
     }
@@ -154,6 +145,4 @@ contract Builders {
         builderRequestsArray[indexToDelete] = lastRequestAddress;
         builderRequestsArray.pop();
     }
-
-    // TODO - add builder function ?
 }

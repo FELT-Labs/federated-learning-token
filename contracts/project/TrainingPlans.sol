@@ -27,14 +27,8 @@ contract TrainingPlans is Builders, DataProviders {
         // Base model uploaded by builder
         string baseModelCID;
         // Final model uploaded by finalNode
+        // Final model is encrypted using builder public key
         string finalModelCID;
-
-        // Secret for sharing with builder
-        // TODO: maybe change to single array of 97 bytes
-        bool parity;
-        bytes32 secret0;
-        bytes32 secret1;
-        bytes32 secret2;
 
         // Training params
         uint32 numRounds;
@@ -130,10 +124,6 @@ contract TrainingPlans is Builders, DataProviders {
     // IMPORTANT: Use combination of seed and secret to generate builder secret
     // TODO add verification by other nodes
     function finishPlan(
-        bool parity,
-        bytes32 secret0,
-        bytes32 secret1,
-        bytes32 secret2,
         string memory modelCID
     ) public onlyNode {
         TrainingPlan storage plan = plans[numPlans - 1];
@@ -141,11 +131,6 @@ contract TrainingPlans is Builders, DataProviders {
         require(currentRound >= plan.numRounds, "All rounds must be completed");
 
         plan.finalModelCID = modelCID;
-
-        plan.parity = parity;
-        plan.secret0 = secret0;
-        plan.secret1 = secret1;
-        plan.secret2 = secret2;
 
         isPlanRunning = false;
     }

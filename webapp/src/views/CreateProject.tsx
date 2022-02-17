@@ -24,18 +24,15 @@ import { Link } from 'react-router-dom';
 import { getContractFactory, getContractAddress, loadContract } from '../utils/contracts';
 import Breadcrumbs from '../components/dapp/Breadcrumbs';
 import CircleIcon from '../components/CircleIcon';
-import { getPublicKey, PublicKeyType } from '../utils/web3helpers';
-import { hooks } from '../connectors/metaMask';
+import { encryptSecret, generateRandomSecret, getPublicKey } from '../utils/cryptography';
+import { metaMask, hooks } from '../connectors/metaMask';
 
 async function deployContract(
-  publicKey: PublicKeyType,
+  publicKey: Buffer,
   contractName: string,
   chainId: number,
   signer: Signer,
 ): Promise<Contract> {
-  // if (!(chainId in ChainlinkConfig)) {
-  //   throw Error('Invalid chain id, change connected blockchain');
-  // }
   const tokenAddress = getContractAddress(chainId, 'FELToken');
   const factory = await getContractFactory(contractName, signer);
 
@@ -45,17 +42,14 @@ async function deployContract(
     );
   }
 
+  const key = generateRandomSecret();
+  const ciphertext = encryptSecret(publicKey, key);
+
   const deployArgs = [
     tokenAddress,
     // Builder setup
-    publicKey.parity,
-    publicKey.key,
-    // Chainlink setup
-    // ChainlinkConfig[chainId].keyhash,
-    // ChainlinkConfig[chainId].vrfCoordinator,
-    // ChainlinkConfig[chainId].linkToken,
-    // Chainlink fee:
-    // ChainlinkConfig[chainId].fee,
+    publicKey,
+    ciphertext,
   ];
   return factory.deploy(...deployArgs);
 }
@@ -82,11 +76,12 @@ const breadcrumbLinks = [
 ];
 
 const CreateProject: FC = () => {
-  const { useChainId, useProvider, useIsActive } = hooks;
+  const { useChainId, useProvider, useAccount, useIsActive } = hooks;
 
   const chainId = useChainId();
   const provider = useProvider();
   const isActive = useIsActive();
+  const account = useAccount();
 
   const [name, setName] = useState('');
   const [projectType, setProjectType] = useState('ProjectContract');
@@ -100,7 +95,7 @@ const CreateProject: FC = () => {
   const [error, setError] = useState('');
 
   const deploy = async () => {
-    if (!provider) {
+    if (!provider || !metaMask.provider || !account) {
       return;
     }
     setSubmitted(true);
@@ -117,7 +112,7 @@ const CreateProject: FC = () => {
     setProgress(2);
     let publicKey;
     try {
-      publicKey = await getPublicKey(provider.getSigner());
+      publicKey = await getPublicKey(metaMask.provider, account);
     } catch (e: any) {
       setError(e && e.message ? e.message : 'Unknown error');
       return;

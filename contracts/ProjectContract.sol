@@ -19,15 +19,14 @@ contract ProjectContract is TrainingPlans {
     /**
      * @dev Initializes the project. Creator becomes both builder and data provider, might be changed in future
      * @param _token address of the FELToken
-     * @param parity - Builder setup
      * @param publicKey - Builder setup
+     * @param secret - Encrypted secret for the owner (owner encrypts for himself)
      */
-    constructor(FELToken _token, bool parity, bytes32 publicKey) {
+    constructor(FELToken _token, bytes32 publicKey, bytes[112] memory secret) {
         token = _token;
 
         builders[msg.sender] = Builder({
             _address: msg.sender,
-            parity: parity,
             publicKey: publicKey
         });
         buildersArray.push(msg.sender);
@@ -36,10 +35,7 @@ contract ProjectContract is TrainingPlans {
         nodesArray.push(Node({
             _address: msg.sender,
             activated: false,
-            parity: false,
-            secret0: 0,
-            secret1: 0,
-            secret2: 0,
+            secret: secret,
             entryKeyTurn: 0
         }));
     }

@@ -1,11 +1,11 @@
-from coincurve import PrivateKey
+from nacl.public import PrivateKey
 from scripts.helpful_scripts import get_account
 
 from felt.core.web3 import (
     decrypt_bytes,
-    decrypt_secret,
+    decrypt_nacl,
     encrypt_bytes,
-    encrypt_secret,
+    encrypt_nacl,
     export_public_key,
 )
 
@@ -37,11 +37,11 @@ def test_project_creation(accounts, project, token):
 def test_encryption_mechanism(accounts, project):
     onwner = get_account()
 
-    test_key = PrivateKey()
-    parity, public_key = export_public_key(test_key.to_hex())
+    test_key = PrivateKey.generate()
+    public_key = export_public_key(bytes(test_key).hex())
 
     # Fake request
-    project.requestJoinNode(parity, public_key, {"from": accounts[1]})
+    project.requestJoinNode(public_key, {"from": accounts[1]})
     length = project.getNodeRequestsLength()
     assert length == 1
 
@@ -49,11 +49,11 @@ def test_encryption_mechanism(accounts, project):
     secret = b"Test" * 8
     assert len(secret) == 32
 
-    parity, ciphertext = encrypt_secret(secret, request["parity"], request["publicKey"])
-    assert len(ciphertext) == 3 and all(len(ciphertext[i]) == 32 for i in range(3))
+    ciphertext = encrypt_nacl(request["publicKey"], secret)
+    assert len(ciphertext) == 112
 
     # Accpet must be done by node or builder
-    project.acceptNode(parity, *ciphertext, {"from": onwner})
+    project.acceptNode(list(ciphertext), {"from": onwner})
 
     # Decryption process:
     #  1. Node gets index by address
@@ -63,9 +63,9 @@ def test_encryption_mechanism(accounts, project):
     index = project.nodeState(request["_address"])
     assert index == 4
 
-    node = project.nodesArray(index - 3).dict()
-    ct = node["secret0"] + node["secret1"] + node["secret2"]
-    final_secret = decrypt_secret(ct, node["parity"], test_key.to_hex())
+    encrypted_secret = b"".join(project.getNodeSecret(request["_address"]))
+    private_key = bytes(test_key)
+    final_secret = decrypt_nacl(private_key, encrypted_secret)
     assert final_secret == secret
 
     # Node encrypts message (model) for others

@@ -16,11 +16,12 @@ def ipfs_upload_file(file):
     Returns:
         Response: httpx response object
     """
+    # TODO: Check for upload error
     return httpx.post(
         f"https://api.web3.storage/upload",
         headers={"Authorization": "Bearer " + os.environ["WEB3_STORAGE_TOKEN"]},
         files={"file": file},
-        timeout=10.0,
+        timeout=None,
     )
 
 
