@@ -8,7 +8,7 @@ from scripts.helpful_scripts import (
 )
 from web3 import Web3
 
-from felt.core.web3 import export_public_key
+from felt.core.web3 import encrypt_nacl, export_public_key
 
 
 @pytest.fixture(autouse=True)
@@ -59,7 +59,12 @@ def project(ProjectContract, token):
     owner = get_account()
     public_key = export_public_key(owner.private_key[2:])
 
-    project = ProjectContract.deploy(token, public_key, {"from": get_account()})
+    secret = b"Initial secret must be 32 bytes."
+    ciphertext = encrypt_nacl(public_key, secret)
+
+    project = ProjectContract.deploy(
+        token, public_key, list(ciphertext), {"from": get_account()}
+    )
 
     yield project
 

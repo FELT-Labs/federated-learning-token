@@ -50,7 +50,7 @@ def test_encryption_mechanism(accounts, project):
     assert len(secret) == 32
 
     ciphertext = encrypt_nacl(request["publicKey"], secret)
-    assert len(ciphertext) == 104
+    assert len(ciphertext) == 112
 
     # Accpet must be done by node or builder
     project.acceptNode(list(ciphertext), {"from": onwner})
@@ -63,7 +63,7 @@ def test_encryption_mechanism(accounts, project):
     index = project.nodeState(request["_address"])
     assert index == 4
 
-    encrypted_secret = b"".join(project.getNodeSecret(index - 3))
+    encrypted_secret = b"".join(project.getNodeSecret(request["_address"]))
     private_key = bytes(test_key)
     final_secret = decrypt_nacl(private_key, encrypted_secret)
     assert final_secret == secret

@@ -1,6 +1,7 @@
 """Module for managing connection to chain and contracts."""
 import hashlib
 import json
+from base64 import a85decode, a85encode
 from pathlib import Path
 
 from brownie.network.account import LocalAccount
@@ -66,6 +67,8 @@ def encrypt_nacl(public_key: bytes, data: bytes) -> bytes:
     """
     emph_key = PrivateKey.generate()
     enc_box = Box(emph_key, PublicKey(public_key))
+    # Encryption is required to work with MetaMask decryption (requires utf8)
+    data = a85encode(data)
     ciphertext = enc_box.encrypt(data)
     return bytes(emph_key.public_key) + ciphertext
 
@@ -83,7 +86,7 @@ def decrypt_nacl(private_key: bytes, data: bytes) -> bytes:
     """
     emph_key, ciphertext = data[:32], data[32:]
     box = Box(PrivateKey(private_key), PublicKey(emph_key))
-    return box.decrypt(ciphertext)
+    return a85decode(box.decrypt(ciphertext))
 
 
 def encrypt_bytes(bytes: bytes, secret: bytes) -> bytes:

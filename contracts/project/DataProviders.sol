@@ -11,7 +11,7 @@ contract DataProviders {
         bool activated;
         // Shared secret between nodes
         // TODO: test if splitting into bytes32 is cheaper
-        bytes[104] secret;
+        bytes[112] secret;
         // Entry state represents at which iteration node joined
         uint entryKeyTurn;
     }
@@ -67,8 +67,9 @@ contract DataProviders {
         return nodeRequests.length;
     }
 
-    function getNodeSecret(uint index) public view returns(bytes[104] memory) {
-        return nodesArray[index].secret;
+    function getNodeSecret(address _address) public view returns(bytes[112] memory) {
+        require(isNode(_address), "Address doesn't belong to node");
+        return nodesArray[nodeState[_address] - 3].secret;
     }
 
     /**
@@ -92,7 +93,7 @@ contract DataProviders {
               So that the node doesn't have access to previous models
         TODO: Should not accept node when plan is running
     */
-    function acceptNode(bytes[104] memory secret) public onlyNode {
+    function acceptNode(bytes[112] memory secret) public onlyNode {
         require(nodeRequests.length > 0, "No request to process.");
         nodeState[nodeRequests[nodeRequests.length - 1]._address] = nodesArray.length + 3;
 

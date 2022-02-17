@@ -179,6 +179,7 @@ def task(key, chain_id, contract_address, X, y):
     node = get_node(project_contract, account)
     SECRET = get_node_secret(project_contract, account)
 
+    print("SEcret", SECRET)
     while True:
         plan = watch_for_plan(project_contract)
         print("Executing a plan!")

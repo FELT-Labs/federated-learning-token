@@ -17,9 +17,5 @@ export type TPlan = {
 export type Node = {
     activated: boolean;
     entryKeyTurn: BigNumber;
-    parity: boolean;
-    secret0: string;
-    secret1: string;
-    secret2: string;
     _address: string;
 };

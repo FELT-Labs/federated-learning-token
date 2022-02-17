@@ -1,15 +1,27 @@
 """Module for deploying project contract."""
 from brownie import FELToken, ProjectContract, ProjectManager, accounts, config, network
 
-from felt.core.web3 import encrypt_nacl, export_public_key, get_current_secret
+from felt.core.web3 import (
+    decrypt_nacl,
+    encrypt_nacl,
+    export_public_key,
+    get_current_secret,
+)
 
 
 def deploy_project(owner):
     """Deploy project contract."""
     token = FELToken[-1]
 
+    # Using dummy test secret
+    secret = b"Initial secret must be 32 bytes."
+    assert len(secret) == 32
+
     public_key = export_public_key(owner.private_key[2:])
-    project = ProjectContract.deploy(token, public_key, {"from": owner})
+    ciphertext = encrypt_nacl(public_key, secret)
+    project = ProjectContract.deploy(
+        token, public_key, list(ciphertext), {"from": owner}
+    )
 
     manager = ProjectManager[-1]
     manager.activateProject(
@@ -20,9 +32,8 @@ def deploy_project(owner):
 
 
 def setup_test_project(project, owner):
-
-    secret = b"Initial secret must be 32 bytes."
-    assert len(secret) == 32
+    encrypted_secret = b"".join(project.getNodeSecret(owner))
+    secret = decrypt_nacl(bytes.fromhex(owner.private_key[2:]), encrypted_secret)
 
     # Add two node for testing:
     for i in [1, 2]:
@@ -40,4 +51,4 @@ def setup_test_project(project, owner):
 
 def main():
     owner = accounts.add(config["wallets"]["owner_key"])
-    project = deploy_project(owner)
+    deploy_project(owner)

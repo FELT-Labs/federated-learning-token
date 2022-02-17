@@ -18,8 +18,7 @@ def get_node(project_contract, account):
 
 def get_node_secret(project_contract, account):
     """Get shared secret for node represented by account."""
-    index = project_contract.functions.nodeState(account.address).call()
-    secret = b"".join(project_contract.functions.getNodeSecret(index - 3).call())
+    secret = b"".join(project_contract.functions.getNodeSecret(account.address).call())
     private_key = bytes.fromhex(account.private_key[2:])
     return decrypt_nacl(private_key, secret)
 
