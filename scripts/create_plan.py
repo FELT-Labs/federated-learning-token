@@ -11,7 +11,7 @@ def create_plan(project, builder):
 
     ### PROVIDE REWARDS AND UPLOAD PLAN ###
     FELToken[-1].increaseAllowance(project.address, 1000, {"from": builder})
-    project.createPlan(cid, 10, 10, {"from": builder})
+    project.createPlan(cid, 3, 10, {"from": builder})
 
 
 def main():

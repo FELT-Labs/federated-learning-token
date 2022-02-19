@@ -212,7 +212,7 @@ def task(key, chain_id, contract_address, X, y):
             builder = project_contract.functions.builders(plan["creator"]).call()
             builder = to_dict(builder, "Builder")
 
-            cid = upload_encrypted_model(
+            cid = upload_final_model(
                 final_model, final_model_path, builder["publicKey"]
             )
 
