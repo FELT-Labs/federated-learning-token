@@ -108,6 +108,7 @@ const ProjectDashboard: FC<ProjectDashboardProps> = ({ contract }) => {
       <Row className="g-3">
         <Col md="4">
           <ProjectRoles
+            contract={contract}
             builder={builder}
             nodeState={nodeState}
             nodeActive={node?.activated}
