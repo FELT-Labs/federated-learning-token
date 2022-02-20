@@ -1,11 +1,12 @@
 /* eslint-disable no-nested-ternary */
 /* eslint-disable no-underscore-dangle */
 import { Contract } from 'ethers';
+import { arrayify } from 'ethers/lib/utils';
 import { FC, useCallback, useEffect, useState } from 'react';
 import { Check, X, Send } from 'react-feather';
 import { Button, Card, CardBody, CardTitle, Col, Modal, ModalBody, ModalFooter, ModalHeader, Progress, Row, Table } from 'reactstrap';
 import { hooks, metaMask } from '../../connectors/metaMask';
-import { encryptSecret, getNodeCurrentSecret, getPublicKey } from '../../utils/cryptography';
+import { encryptSecret, getNodeCurrentSecret } from '../../utils/cryptography';
 import CircleIcon from '../CircleIcon';
 
 interface DataProviderRequestsProps {
@@ -40,7 +41,7 @@ const DataProviderRequests: FC<DataProviderRequestsProps> = ({ contract }) => {
     fetchRequests();
   }, [fetchRequests]);
 
-  const decideRequest = async (address: string, approve: boolean) => {
+  const decideRequest = async (publicKey: string, approve: boolean) => {
     if (!contract || !account || !provider) return;
 
     setShowModal(true);
@@ -51,8 +52,7 @@ const DataProviderRequests: FC<DataProviderRequestsProps> = ({ contract }) => {
       let tx;
       if (approve) {
         const secret = await getNodeCurrentSecret(provider, contract, account);
-        const publicKey = await getPublicKey(provider, account);
-        const ciphertext = encryptSecret(publicKey, secret);
+        const ciphertext = encryptSecret(Buffer.from(arrayify(publicKey)), secret);
         tx = await contract.acceptNode(ciphertext);
       } else {
         tx = await contract.declineNode();
@@ -102,8 +102,8 @@ const DataProviderRequests: FC<DataProviderRequestsProps> = ({ contract }) => {
                       <td className="text-center align-items-center">
                         {idx === 0 && (
                           <>
-                            <CircleIcon icon={<Check />} onClick={() => decideRequest(request._address, true)} />
-                            <CircleIcon color="danger" icon={<X />} onClick={() => decideRequest(request._address, false)} />
+                            <CircleIcon icon={<Check />} onClick={() => decideRequest(request.publicKey, true)} />
+                            <CircleIcon color="danger" icon={<X />} onClick={() => decideRequest(request.publicKey, false)} />
                           </>
                         )}
                       </td>
