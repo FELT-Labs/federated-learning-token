@@ -1,36 +1,39 @@
 /* eslint-disable no-nested-ternary */
+/* eslint-disable no-underscore-dangle */
 import { Contract } from 'ethers';
 import { FC, useCallback, useEffect, useState } from 'react';
 import { Check, X, Send } from 'react-feather';
 import { Button, Card, CardBody, CardTitle, Col, Modal, ModalBody, ModalFooter, ModalHeader, Progress, Row, Table } from 'reactstrap';
+import { hooks, metaMask } from '../../connectors/metaMask';
+import { encryptSecret, getNodeCurrentSecret, getPublicKey } from '../../utils/cryptography';
 import CircleIcon from '../CircleIcon';
 
-interface BuilderRequestsProps {
+interface DataProviderRequestsProps {
   contract: Contract;
 }
 
-interface BuilderRequest {
-  builderAddress: string,
+interface DataProviderJoinRequest {
+  _address: string;
+  publicKey: string;
 }
 
-const BuilderRequests: FC<BuilderRequestsProps> = ({ contract }) => {
-  const [requests, setRequests] = useState<BuilderRequest[]>([]);
+const DataProviderRequests: FC<DataProviderRequestsProps> = ({ contract }) => {
+  const [requests, setRequests] = useState<DataProviderJoinRequest[]>([]);
 
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState('');
   const [showModal, setShowModal] = useState(false);
 
+  const { useAccount } = hooks;
+  const account = useAccount();
+  const { provider } = metaMask;
+
   const fetchRequests = useCallback(async () => {
     if (!contract) return;
 
-    const numberOfRequests = (await contract.getBuilderRequestsLength())?.toNumber();
+    const numberOfRequests = (await contract.getNodeRequestsLength())?.toNumber();
 
-    const fetchRequest = async (i: number): Promise<BuilderRequest> => {
-      const requestAddress = await contract.builderRequestsArray(i);
-      return contract.builderRequests(requestAddress);
-    };
-
-    setRequests(await Promise.all(Array(numberOfRequests).fill(0).map((_, i) => fetchRequest(i))));
+    setRequests(await Promise.all(Array(numberOfRequests).fill(0).map((_, i) => contract.nodeRequests(i))));
   }, [contract]);
 
   useEffect(() => {
@@ -38,7 +41,7 @@ const BuilderRequests: FC<BuilderRequestsProps> = ({ contract }) => {
   }, [fetchRequests]);
 
   const decideRequest = async (address: string, approve: boolean) => {
-    if (!contract) return;
+    if (!contract || !account || !provider) return;
 
     setShowModal(true);
     setProgress(2);
@@ -46,8 +49,14 @@ const BuilderRequests: FC<BuilderRequestsProps> = ({ contract }) => {
 
     try {
       let tx;
-      if (approve) tx = await contract.acceptBuilderJoinRequest(address);
-      else tx = await contract.declineBuilderJoinRequest(address);
+      if (approve) {
+        const secret = await getNodeCurrentSecret(provider, contract, account);
+        const publicKey = await getPublicKey(provider, account);
+        const ciphertext = encryptSecret(publicKey, secret);
+        tx = await contract.acceptNode(ciphertext);
+      } else {
+        tx = await contract.declineNode();
+      }
 
       setProgress(3);
 
@@ -68,7 +77,7 @@ const BuilderRequests: FC<BuilderRequestsProps> = ({ contract }) => {
           <Card className="shadow">
             <CardBody>
               <CardTitle tag="h3">
-                Builder Access Requests
+                Data Provider Access Requests
               </CardTitle>
               {!requests.length && (
                 <h5 className="text-muted">
@@ -77,27 +86,31 @@ const BuilderRequests: FC<BuilderRequestsProps> = ({ contract }) => {
               )}
             </CardBody>
             {!!requests.length && (
-            <Table hover responsive>
-              <thead>
-                <tr>
-                  <th className="ps-5">#</th>
-                  <th className="text-center">Address</th>
-                  <th className="text-center">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {requests.map((request, idx) => (
-                  <tr key={request.builderAddress}>
-                    <th className="ps-5 align-middle">{idx}</th>
-                    <td className="text-center align-middle">{request.builderAddress}</td>
-                    <td className="text-center align-items-center">
-                      <CircleIcon icon={<Check />} onClick={() => decideRequest(request.builderAddress, true)} />
-                      <CircleIcon color="danger" icon={<X />} onClick={() => decideRequest(request.builderAddress, false)} />
-                    </td>
+              <Table hover responsive>
+                <thead>
+                  <tr>
+                    <th className="ps-5">#</th>
+                    <th className="text-center">Address</th>
+                    <th className="text-center">Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </Table>
+                </thead>
+                <tbody>
+                  {requests.map((request, idx) => (
+                    <tr key={request._address}>
+                      <th className="ps-5 align-middle">{idx}</th>
+                      <td className="text-center align-middle">{request._address}</td>
+                      <td className="text-center align-items-center">
+                        {idx === 0 && (
+                          <>
+                            <CircleIcon icon={<Check />} onClick={() => decideRequest(request._address, true)} />
+                            <CircleIcon color="danger" icon={<X />} onClick={() => decideRequest(request._address, false)} />
+                          </>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
             )}
           </Card>
         </Col>
@@ -173,4 +186,4 @@ const BuilderRequests: FC<BuilderRequestsProps> = ({ contract }) => {
   );
 };
 
-export default BuilderRequests;
+export default DataProviderRequests;

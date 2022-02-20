@@ -10,6 +10,7 @@ import { hooks } from '../../connectors/priorityConnector';
 import ProjectRoles from './ProjectRoles';
 import { TPlan, Node } from '../../utils/contractTypes';
 import BuilderRequests from './BuilderRequests';
+import DataProviderRequests from './DataProviderRequests';
 
 const { usePriorityAccount } = hooks;
 
@@ -132,6 +133,11 @@ const ProjectDashboard: FC<ProjectDashboardProps> = ({ contract }) => {
           />
           {builder && builder._address !== constants.AddressZero && (
             <BuilderRequests
+              contract={contract}
+            />
+          )}
+          {builder && builder._address !== constants.AddressZero && (
+            <DataProviderRequests
               contract={contract}
             />
           )}

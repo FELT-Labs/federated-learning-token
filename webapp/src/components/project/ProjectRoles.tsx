@@ -189,19 +189,59 @@ const BuilderDescription: FC<BuilderDescriptionProps> = ({ contract, isBuilder }
 };
 
 interface DataProviderProps {
+  contract: Contract;
   nodeState: number;
   nodeActive?: boolean;
 }
 
-const DataProviderDescription: FC<DataProviderProps> = ({ nodeState, nodeActive = false }) => {
+const DataProviderDescription: FC<DataProviderProps> = ({ contract, nodeState, nodeActive = false }) => {
   // TODO: Check if data provider is active
   const { chain, address } = useParams();
   const command = `felt-node-worker --chain ${chain} --contract ${address} --account main --data example_data.csv`;
 
-  const noRequest = nodeState === 0;
+  const [showModal, setShowModal] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [error, setError] = useState('');
+
+  const { useChainId, useProvider, useAccount } = hooks;
+  const chainId = useChainId();
+  const provider = useProvider();
+  const account = useAccount();
+
+  const [noRequest, setNoRequest] = useState(nodeState === 0);
   const waiting = nodeState === 1;
   const declined = nodeState === 2;
   const accepted = nodeState >= 3;
+
+  const requestAccess = async () => {
+    setProgress(0);
+    setError('');
+
+    if (noRequest && provider && metaMask.provider && chainId && account) {
+      setShowModal(true);
+      setProgress(2);
+
+      let publicKey;
+      try {
+        publicKey = await getPublicKey(metaMask.provider, account);
+      } catch (e: any) {
+        setError(e && (e.message || 'Unknown error'));
+        return;
+      }
+
+      setProgress(4);
+
+      try {
+        const tx = await contract.requestJoinNode(publicKey);
+        await tx.wait();
+      } catch (e: any) {
+        setError(e && (e.message || 'Unknown error'));
+        return;
+      }
+      setProgress(7);
+      setNoRequest(false);
+    }
+  };
 
   return (
     <>
@@ -243,11 +283,93 @@ const DataProviderDescription: FC<DataProviderProps> = ({ nodeState, nodeActive 
         </Button>
       )}
 
-      {noRequest && (
-        <Button color="secondary">
+      {!accepted && (
+        <Button color="secondary" onClick={requestAccess} disabled={!noRequest}>
           Request Access
         </Button>
       )}
+
+      <Modal centered isOpen={showModal}>
+        <ModalHeader>
+          Deployment {progress < 7 ? 'in Progress' : 'Finished'}
+        </ModalHeader>
+        <ModalBody>Don&apos;t close this browser tab while running!</ModalBody>
+        <div className="d-flex align-items-center m-4 position-relative">
+          <Progress
+            className="w-100 m-0"
+            animated={!error && progress < 5}
+            color={error ? 'danger' : 'success'}
+            value={progress}
+            max={6}
+          />
+          <CircleIcon
+            icon={<Key />}
+            color={
+              error && progress === 2
+                ? 'danger'
+                : progress < 3
+                  ? 'secondary'
+                  : 'success'
+            }
+            light={progress < 3 && !(error && progress === 2)}
+            style={{
+              position: 'absolute',
+              left: 0,
+              right: '33.33%',
+              margin: '0 auto',
+            }}
+          />
+          <CircleIcon
+            icon={<Upload />}
+            color={
+              error && progress === 4
+                ? 'danger'
+                : progress < 5
+                  ? 'secondary'
+                  : 'success'
+            }
+            light={progress < 5 && !(error && progress === 4)}
+            style={{
+              position: 'absolute',
+              left: '33.33%',
+              right: 0,
+              margin: '0 auto',
+            }}
+          />
+          <CircleIcon
+            icon={<Check />}
+            color={
+              error && progress === 6
+                ? 'danger'
+                : progress < 7
+                  ? 'secondary'
+                  : 'success'
+            }
+            light={progress < 7 && !(error && progress === 7)}
+            style={{ position: 'absolute', right: 0 }}
+          />
+        </div>
+        <div>
+          <ModalBody className="text-danger">
+            {error && (
+              <>
+                <span className="fw-bold">Error: </span>
+                {error}
+              </>
+            )}
+          </ModalBody>
+        </div>
+        <ModalFooter>
+          <Button
+            disabled={progress < 7}
+            color="primary"
+            onClick={() => setShowModal(false)}
+          >
+            Finish
+          </Button>{' '}
+          <Button onClick={() => setShowModal(false)}>Cancel</Button>
+        </ModalFooter>
+      </Modal>
     </>
   );
 };
@@ -290,7 +412,7 @@ const ProjectRoles: FC<ProjectRolesProps> = ({ contract, builder, nodeState, nod
         {nodeState >= 3 && <RoleBadge text="Data Provider" />}
       </Row>
       <BuilderDescription contract={contract} isBuilder={builder._address !== constants.AddressZero} />
-      <DataProviderDescription nodeState={nodeState} nodeActive={nodeActive} />
+      <DataProviderDescription contract={contract} nodeState={nodeState} nodeActive={nodeActive} />
     </Card>
   );
 };
