@@ -1,12 +1,13 @@
 import { FC, ReactNode, useEffect, useState } from 'react';
-import { X, AlertTriangle } from 'react-feather';
+import { X, AlertTriangle, Info } from 'react-feather';
 
 interface AlertProps {
     isOpen: boolean;
     children: ReactNode;
+    error?: boolean;
 }
 
-const ErrorAlert: FC<AlertProps> = ({ isOpen, children }) => {
+const Alert: FC<AlertProps> = ({ isOpen, children, error = true }) => {
   const [open, setOpen] = useState(isOpen);
 
   useEffect(() => {
@@ -25,21 +26,21 @@ const ErrorAlert: FC<AlertProps> = ({ isOpen, children }) => {
       top: 40,
       left: '50%',
       transform: 'translateX(-50%)',
-      backgroundColor: '#F8D7DA',
+      backgroundColor: (error ? '#F8D7DA' : '#d7ecf8'),
       margin: 'auto',
       padding: '16px 12px 16px 20px',
       zIndex: 10,
-      borderRadius: 12,
+      borderRadius: '0.25rem',
       display: 'flex',
       alignItems: 'center',
-      color: '#842029',
+      color: (error ? '#842029' : '#204084'),
     }}
     >
-      <AlertTriangle style={{ marginRight: 8 }} />
+      {error ? <AlertTriangle style={{ marginRight: 8 }} /> : <Info style={{ marginRight: 8 }} />}
       {children}
       <X style={{ marginLeft: 20, cursor: 'pointer' }} onClick={() => setOpen(false)} />
     </div>
   );
 };
 
-export default ErrorAlert;
+export default Alert;

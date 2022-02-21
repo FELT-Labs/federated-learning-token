@@ -7,42 +7,20 @@ import { TPlan } from '../../utils/contractTypes';
 import { getNameOfCID } from '../../utils/models';
 import { metaMask } from '../../connectors/metaMask';
 import { downloadModel } from '../../utils/ipfs';
+import ErrorAlert from '../Alert';
+
+const { provider } = metaMask;
 
 const formatAddress = (a: string) => `${a.substring(0, 6)}...${a.substring(a.length - 4)}`;
 
-interface PlanStatusProps {
-  account: string | undefined;
-  plan: TPlan
-}
-
-const PlanStatus: FC<PlanStatusProps> = ({ account, plan }) => {
-  const { provider } = metaMask;
-  if (provider && plan.finalModelCID && account && account === plan.creator) {
-    return (
-      <Button
-        className="btn-icon-only rounded-circle"
-        color="primary"
-        size="sm"
-        style={{ width: '1.8rem', height: '1.8rem' }}
-        onClick={() => downloadModel(provider, account, plan.finalModelCID)}
-      >
-        <Download size={19} />
-      </Button>
-    );
-  }
-
-  return (plan.finalModelCID ? (
-    <CheckCircle size={20} />
-  ) : <RefreshCw size={20} />);
-};
-
 interface AllPlansProps {
+  download: (a: string) => void;
   account: string | undefined;
   contract: Contract;
   numPlans: number;
 }
 
-const AllPlans: FC<AllPlansProps> = ({ account, contract, numPlans }) => {
+const AllPlans: FC<AllPlansProps> = ({ download, account, contract, numPlans }) => {
   const [plans, setPlans] = useState<TPlan[]>([]);
   // TODO: Pagination of plans or something like that
   //       Right now it loads only 10 latest plans
@@ -107,7 +85,19 @@ const AllPlans: FC<AllPlansProps> = ({ account, contract, numPlans }) => {
                     {plan.numRounds}
                   </td>
                   <td className="text-center align-middle pe-5">
-                    <PlanStatus account={account} plan={plan} />
+                    {/* eslint-disable-next-line no-nested-ternary */}
+                    {(provider && plan.finalModelCID && account === plan.creator)
+                      ? (
+                        <Button
+                          className="btn-icon-only rounded-circle"
+                          color="primary"
+                          size="sm"
+                          style={{ width: '1.8rem', height: '1.8rem' }}
+                          onClick={async () => download(plan.finalModelCID)}
+                        >
+                          <Download size={19} />
+                        </Button>
+                      ) : (plan.finalModelCID ? <CheckCircle size={20} /> : <RefreshCw size={20} />)}
                   </td>
                 </tr>
               ))}
@@ -129,6 +119,25 @@ interface ProjectPlansProps {
 }
 
 const ProjectPlans: FC<ProjectPlansProps> = ({ account, contract, isRunning, currentRound, numPlans, plan }) => {
+  const [alertMessage, setAlertMessage] = useState('');
+  const [alertIsError, setAlertIsError] = useState(false);
+
+  const download = async (cid: string) => {
+    if (provider !== undefined && account) {
+      try {
+        await downloadModel(provider, account, cid);
+        setAlertIsError(false);
+        setAlertMessage("You downloaded model file 'model.joblib' read documentation for more details.");
+      } catch (err) {
+        setAlertIsError(true);
+        setAlertMessage(String(err));
+      }
+    } else {
+      setAlertIsError(true);
+      setAlertMessage('Provider is undefined. Make sure you are connected to MetaMask.');
+    }
+  };
+
   if (plan === undefined) {
     return (
       <Row className="gt-2 mt-3">
@@ -145,8 +154,6 @@ const ProjectPlans: FC<ProjectPlansProps> = ({ account, contract, isRunning, cur
       </Row>
     );
   }
-
-  const { provider } = metaMask;
 
   return (
     <>
@@ -170,7 +177,7 @@ const ProjectPlans: FC<ProjectPlansProps> = ({ account, contract, isRunning, cur
                   className="w-100"
                   color="primary"
                   size="sm"
-                  onClick={() => downloadModel(provider, account, plan.finalModelCID)}
+                  onClick={async () => download(plan.finalModelCID)}
                 >
                   Download
                 </Button>
@@ -206,7 +213,8 @@ const ProjectPlans: FC<ProjectPlansProps> = ({ account, contract, isRunning, cur
           </Card>
         </Col>
       </Row>
-      <AllPlans account={account} contract={contract} numPlans={numPlans} />
+      {alertMessage && <ErrorAlert isOpen error={alertIsError}>{alertMessage}</ErrorAlert>}
+      <AllPlans download={download} account={account} contract={contract} numPlans={numPlans} />
     </>
   );
 };

@@ -4,7 +4,7 @@ import { Col, Row, Spinner } from 'reactstrap';
 import ProjectSummary from './ProjectSummary';
 import ProjectPlans from './ProjectPlans';
 import Breadcrumbs from '../dapp/Breadcrumbs';
-import ErrorAlert from '../ErrorAlert';
+import ErrorAlert from '../Alert';
 import { hooks } from '../../connectors/priorityConnector';
 import ProjectRoles from './ProjectRoles';
 import { TPlan, Node } from '../../utils/contractTypes';
