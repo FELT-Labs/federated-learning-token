@@ -67,7 +67,7 @@ const AllPlans: FC<AllPlansProps> = ({ contract, numPlans }) => {
             </thead>
             <tbody>
               {plans.map((plan, idx) => (
-                <tr>
+                <tr key={plan.baseModelCID}>
                   <th className="ps-5 align-middle" scope="row">
                     {start - idx}
                   </th>

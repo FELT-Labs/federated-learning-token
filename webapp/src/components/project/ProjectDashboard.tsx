@@ -1,5 +1,6 @@
+/* eslint-disable no-underscore-dangle */
 import { FC, useEffect, useState } from 'react';
-import { Contract } from 'ethers';
+import { constants, Contract } from 'ethers';
 import { Col, Row, Spinner } from 'reactstrap';
 import ProjectSummary from './ProjectSummary';
 import ProjectPlans from './ProjectPlans';
@@ -8,6 +9,8 @@ import ErrorAlert from '../ErrorAlert';
 import { hooks } from '../../connectors/priorityConnector';
 import ProjectRoles from './ProjectRoles';
 import { TPlan, Node } from '../../utils/contractTypes';
+import BuilderRequests from './BuilderRequests';
+import DataProviderRequests from './DataProviderRequests';
 
 const { usePriorityAccount } = hooks;
 
@@ -108,6 +111,7 @@ const ProjectDashboard: FC<ProjectDashboardProps> = ({ contract }) => {
       <Row className="g-3">
         <Col md="4">
           <ProjectRoles
+            contract={contract}
             builder={builder}
             nodeState={nodeState}
             nodeActive={node?.activated}
@@ -127,6 +131,16 @@ const ProjectDashboard: FC<ProjectDashboardProps> = ({ contract }) => {
             numPlans={numPlans}
             plan={plan}
           />
+          {builder && builder._address !== constants.AddressZero && (
+            <BuilderRequests
+              contract={contract}
+            />
+          )}
+          {builder && builder._address !== constants.AddressZero && (
+            <DataProviderRequests
+              contract={contract}
+            />
+          )}
         </Col>
       </Row>
       )}
