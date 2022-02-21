@@ -7,7 +7,7 @@ import { TPlan } from '../../utils/contractTypes';
 import { getNameOfCID } from '../../utils/models';
 import { metaMask } from '../../connectors/metaMask';
 import { downloadModel } from '../../utils/ipfs';
-import ErrorAlert from '../Alert';
+import Alert from '../Alert';
 
 const { provider } = metaMask;
 
@@ -213,7 +213,7 @@ const ProjectPlans: FC<ProjectPlansProps> = ({ account, contract, isRunning, cur
           </Card>
         </Col>
       </Row>
-      {alertMessage && <ErrorAlert isOpen error={alertIsError}>{alertMessage}</ErrorAlert>}
+      {alertMessage && <Alert isOpen error={alertIsError}>{alertMessage}</Alert>}
       <AllPlans download={download} account={account} contract={contract} numPlans={numPlans} />
     </>
   );
