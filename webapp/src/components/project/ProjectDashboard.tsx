@@ -5,7 +5,7 @@ import { Col, Row, Spinner } from 'reactstrap';
 import ProjectSummary from './ProjectSummary';
 import ProjectPlans from './ProjectPlans';
 import Breadcrumbs from '../dapp/Breadcrumbs';
-import ErrorAlert from '../ErrorAlert';
+import Alert from '../Alert';
 import { hooks } from '../../connectors/priorityConnector';
 import ProjectRoles from './ProjectRoles';
 import { TPlan, Node } from '../../utils/contractTypes';
@@ -125,6 +125,7 @@ const ProjectDashboard: FC<ProjectDashboardProps> = ({ contract }) => {
             isRunning={isRunning}
           />
           <ProjectPlans
+            account={account}
             contract={contract}
             isRunning={isRunning}
             currentRound={currentRound}
@@ -147,7 +148,7 @@ const ProjectDashboard: FC<ProjectDashboardProps> = ({ contract }) => {
 
       {loading && <Spinner />}
 
-      {error && <ErrorAlert isOpen>{error}</ErrorAlert>}
+      {error && <Alert isOpen>{error}</Alert>}
     </>
   );
 };

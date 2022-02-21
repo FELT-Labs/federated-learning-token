@@ -1,19 +1,26 @@
 import { Contract } from 'ethers';
 import { FC, useEffect, useState } from 'react';
-import { Download, RefreshCw } from 'react-feather';
+import { CheckCircle, Download, RefreshCw } from 'react-feather';
 import { Button, Card, CardBody, CardTitle, Col, Progress, Row, Table } from 'reactstrap';
 
 import { TPlan } from '../../utils/contractTypes';
 import { getNameOfCID } from '../../utils/models';
+import { metaMask } from '../../connectors/metaMask';
+import { downloadModel } from '../../utils/ipfs';
+import Alert from '../Alert';
+
+const { provider } = metaMask;
 
 const formatAddress = (a: string) => `${a.substring(0, 6)}...${a.substring(a.length - 4)}`;
 
 interface AllPlansProps {
+  download: (a: string) => void;
+  account: string | undefined;
   contract: Contract;
   numPlans: number;
 }
 
-const AllPlans: FC<AllPlansProps> = ({ contract, numPlans }) => {
+const AllPlans: FC<AllPlansProps> = ({ download, account, contract, numPlans }) => {
   const [plans, setPlans] = useState<TPlan[]>([]);
   // TODO: Pagination of plans or something like that
   //       Right now it loads only 10 latest plans
@@ -67,7 +74,7 @@ const AllPlans: FC<AllPlansProps> = ({ contract, numPlans }) => {
             </thead>
             <tbody>
               {plans.map((plan, idx) => (
-                <tr key={plan.baseModelCID}>
+                <tr key={plan.finalModelCID}>
                   <th className="ps-5 align-middle" scope="row">
                     {start - idx}
                   </th>
@@ -78,18 +85,19 @@ const AllPlans: FC<AllPlansProps> = ({ contract, numPlans }) => {
                     {plan.numRounds}
                   </td>
                   <td className="text-center align-middle pe-5">
-                    {plan.finalModelCID ? (
-                      <a href={`https://ipfs.io/ipfs/${plan.finalModelCID}`}>
+                    {/* eslint-disable-next-line no-nested-ternary */}
+                    {(provider && plan.finalModelCID && account === plan.creator)
+                      ? (
                         <Button
                           className="btn-icon-only rounded-circle"
                           color="primary"
                           size="sm"
                           style={{ width: '1.8rem', height: '1.8rem' }}
+                          onClick={async () => download(plan.finalModelCID)}
                         >
                           <Download size={19} />
                         </Button>
-                      </a>
-                    ) : <RefreshCw size={20} /> }
+                      ) : (plan.finalModelCID ? <CheckCircle size={20} /> : <RefreshCw size={20} />)}
                   </td>
                 </tr>
               ))}
@@ -102,6 +110,7 @@ const AllPlans: FC<AllPlansProps> = ({ contract, numPlans }) => {
 };
 
 interface ProjectPlansProps {
+  account: string | undefined;
   contract: Contract;
   isRunning: boolean;
   currentRound: number;
@@ -109,9 +118,26 @@ interface ProjectPlansProps {
   plan: TPlan | undefined
 }
 
-// TODO: Add link to final model + decryption mechanism
-//       Download link is: `https://ipfs.io/ipfs/${plan.finalModelCID}`, but it requires decryption
-const ProjectPlans: FC<ProjectPlansProps> = ({ contract, isRunning, currentRound, numPlans, plan }) => {
+const ProjectPlans: FC<ProjectPlansProps> = ({ account, contract, isRunning, currentRound, numPlans, plan }) => {
+  const [alertMessage, setAlertMessage] = useState('');
+  const [alertIsError, setAlertIsError] = useState(false);
+
+  const download = async (cid: string) => {
+    if (provider !== undefined && account) {
+      try {
+        await downloadModel(provider, account, cid);
+        setAlertIsError(false);
+        setAlertMessage("You downloaded model file 'model.joblib' read documentation for more details.");
+      } catch (err) {
+        setAlertIsError(true);
+        setAlertMessage(String(err));
+      }
+    } else {
+      setAlertIsError(true);
+      setAlertMessage('Provider is undefined. Make sure you are connected to MetaMask.');
+    }
+  };
+
   if (plan === undefined) {
     return (
       <Row className="gt-2 mt-3">
@@ -140,10 +166,23 @@ const ProjectPlans: FC<ProjectPlansProps> = ({ contract, isRunning, currentRound
                   Plan {numPlans - 1}
                 </h3>
                 <p className="mb-0 text-muted">
-                  <small>Creator: {formatAddress(plan.creator)}</small> <br />
+                  <small>Creator: {formatAddress(plan.creator)} {account === plan.creator && '(You)'}</small> <br />
                 </p>
               </CardTitle>
-              <h3 className="text-primary">{isRunning ? 'Running' : 'Finished'}</h3>
+              <div>
+                <h3 className="text-primary">{isRunning ? 'Running' : 'Finished'}</h3>
+                { (provider && account && account === plan.creator)
+                && (
+                <Button
+                  className="w-100"
+                  color="primary"
+                  size="sm"
+                  onClick={async () => download(plan.finalModelCID)}
+                >
+                  Download
+                </Button>
+                )}
+              </div>
             </div>
 
             <div className="d-flex justify-content-between align-items-center">
@@ -167,14 +206,15 @@ const ProjectPlans: FC<ProjectPlansProps> = ({ contract, isRunning, currentRound
             </div>
             <Progress
               color="default"
-              animated
+              animated={isRunning}
               value={isRunning ? currentRound : plan.numRounds}
               max={plan.numRounds}
             />
           </Card>
         </Col>
       </Row>
-      <AllPlans contract={contract} numPlans={numPlans} />
+      {alertMessage && <Alert isOpen error={alertIsError}>{alertMessage}</Alert>}
+      <AllPlans download={download} account={account} contract={contract} numPlans={numPlans} />
     </>
   );
 };

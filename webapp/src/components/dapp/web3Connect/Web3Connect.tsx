@@ -4,7 +4,7 @@ import MetaMaskConnect from './MetaMaskConnect';
 
 import { CHAINS, getAddChainParameters } from '../../../utils/chains';
 import { hooks } from '../../../connectors/priorityConnector';
-import ErrorAlert from '../../ErrorAlert';
+import Alert from '../../Alert';
 import SelectNetwork from './SelectNetwork';
 import Account from './Account';
 
@@ -54,9 +54,9 @@ const Web3Connect: FC = () => {
       )}
 
       {error && (
-        <ErrorAlert isOpen>
+        <Alert isOpen>
           {error.name ?? 'Error'}: {error.message}
-        </ErrorAlert>
+        </Alert>
       )}
 
     </div>
