@@ -172,7 +172,7 @@ const ProjectPlans: FC<ProjectPlansProps> = ({ account, contract, isRunning, cur
               </CardTitle>
               <div>
                 <h3 className="text-primary">{isRunning ? 'Running' : 'Finished'}</h3>
-                { (provider && account && account === plan.creator)
+                { (provider && account && account === plan.creator && plan.finalModelCID)
                 && (
                 <Button
                   className="w-100"
