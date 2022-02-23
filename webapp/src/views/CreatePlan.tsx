@@ -205,7 +205,7 @@ const CreatePlan: FC<ProjectDisplayProps> = ({ contract }) => {
                   onChange={(e) => setModelName(e.target.value)}
                 >
                   <option value="">Select predefined model...</option>
-                  {Object.keys(predefinedModels).map((name) => (
+                  {Array.from(predefinedModels.keys()).map((name) => (
                     <option key={name} value={name}>{name}</option>
                   ))}
                 </Input>

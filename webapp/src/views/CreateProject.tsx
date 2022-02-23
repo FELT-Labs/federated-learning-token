@@ -237,7 +237,7 @@ const CreateProject: FC = () => {
         <div className="d-flex align-items-center m-4 position-relative">
           <Progress
             className="w-100 m-0"
-            animated={!error && progress < 5}
+            animated={!error && progress < 7}
             color={error ? 'danger' : 'success'}
             value={progress}
             max={6}
@@ -290,7 +290,7 @@ const CreateProject: FC = () => {
           />
         </div>
         <div>
-          <ModalBody className="text-danger">
+          <ModalBody className="text-danger text-break">
             {error && (
               <>
                 <span className="fw-bold">Error: </span>
