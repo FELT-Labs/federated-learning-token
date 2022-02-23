@@ -9,8 +9,6 @@ import { metaMask } from '../../connectors/metaMask';
 import { downloadModel } from '../../utils/ipfs';
 import Alert from '../Alert';
 
-const { provider } = metaMask;
-
 const formatAddress = (a: string) => `${a.substring(0, 6)}...${a.substring(a.length - 4)}`;
 
 interface AllPlansProps {
@@ -22,6 +20,8 @@ interface AllPlansProps {
 
 const AllPlans: FC<AllPlansProps> = ({ download, account, contract, numPlans }) => {
   const [plans, setPlans] = useState<TPlan[]>([]);
+  const { provider } = metaMask;
+
   // TODO: Pagination of plans or something like that
   //       Right now it loads only 10 latest plans
   // TODO: Plan details
@@ -121,6 +121,7 @@ interface ProjectPlansProps {
 const ProjectPlans: FC<ProjectPlansProps> = ({ account, contract, isRunning, currentRound, numPlans, plan }) => {
   const [alertMessage, setAlertMessage] = useState('');
   const [alertIsError, setAlertIsError] = useState(false);
+  const { provider } = metaMask;
 
   const download = async (cid: string) => {
     if (provider !== undefined && account) {
