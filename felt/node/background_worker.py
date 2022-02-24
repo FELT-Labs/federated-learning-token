@@ -1,6 +1,7 @@
 import argparse
 import os
 import time
+from getpass import getpass
 from io import BytesIO
 from pathlib import Path
 
@@ -30,9 +31,9 @@ load_dotenv()
 LOGS = Path(__file__).parent / "logs" / f"{time.time()}"
 
 KEYS = {
-    "main": os.environ["PRIVATE_KEY"],
-    "node1": os.environ["NODE1_PRIVATE_KEY"],
-    "node2": os.environ["NODE2_PRIVATE_KEY"],
+    "main": os.getenv("PRIVATE_KEY"),
+    "node1": os.getenv("NODE1_PRIVATE_KEY"),
+    "node2": os.getenv("NODE2_PRIVATE_KEY"),
 }
 
 
@@ -290,6 +291,15 @@ def main(args_str=None):
         except Exception as e:
             print(f"Unable to load {args.data}\n{e}")
             return
+
+    # Check for valid key and valid web3 token
+    if not key:
+        key = getpass("Please provide your private key (exported from MetaMask):")
+
+    if "WEB3_STORAGE_TOKEN" not in os.environ or not os.getenv("WEB3_STORAGE_TOKEN"):
+        os.environ["WEB3_STORAGE_TOKEN"] = getpass(
+            "Please input your web3.storage API token:"
+        )
 
     task(key, args.chain, args.contract, X, y)
 
