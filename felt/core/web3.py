@@ -15,7 +15,7 @@ from web3.contract import Contract
 from web3.gas_strategies.time_based import medium_gas_price_strategy
 from web3.middleware import construct_sign_and_send_raw_middleware
 
-BUILD_FOLDER = Path(__file__).parent.parent.parent / "build"
+BUILD_FOLDER = Path(__file__).parent.parent / "artifacts"
 
 CHAIN_ID_MAP = {
     1337: "http://127.0.0.1:8545",

@@ -1,5 +1,3 @@
-from shutil import copytree, rmtree
-
 from brownie import FELToken, ProjectManager, accounts, config, network
 from scripts.deploy_project import deploy_project, setup_test_project
 
@@ -38,9 +36,3 @@ def main():
         # add these accounts to metamask by importing private key
         feltoken = FELToken.deploy(INITIAL_SUPPLY, {"from": owner}, publish_source=True)
         ProjectManager.deploy(feltoken, {"from": owner}, publish_source=True)
-
-    # Copy build dir for application
-    rmtree("webapp/src/artifacts", ignore_errors=True)
-    copytree("build", "webapp/src/artifacts")
-    # Remove unused files
-    rmtree("webapp/src/artifacts/contracts/dependencies")

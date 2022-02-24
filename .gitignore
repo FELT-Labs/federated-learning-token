@@ -8,7 +8,7 @@ __pycache__/
 
 # Distribution / packaging
 .Python
-build/
+# build/
 develop-eggs/
 dist/
 downloads/
@@ -231,4 +231,8 @@ __pycache__
 reports/
 
 # Custome, minimize code
-src/artifacts/contracts/dependencies
+build/*
+!build/deployments
+!build/contracts
+build/contracts/dependencies
+artifacts
