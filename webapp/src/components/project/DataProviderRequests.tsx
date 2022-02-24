@@ -34,7 +34,11 @@ const DataProviderRequests: FC<DataProviderRequestsProps> = ({ contract }) => {
 
     const numberOfRequests = (await contract.getNodeRequestsLength())?.toNumber();
 
-    setRequests(await Promise.all(Array(numberOfRequests).fill(0).map((_, i) => contract.nodeRequests(i))));
+    setRequests(
+      await Promise.all(
+        Array(numberOfRequests).fill(0).map((_, i) => contract.nodeRequests(i)),
+      ),
+    );
   }, [contract]);
 
   useEffect(() => {
@@ -95,7 +99,7 @@ const DataProviderRequests: FC<DataProviderRequestsProps> = ({ contract }) => {
                   </tr>
                 </thead>
                 <tbody>
-                  {requests.map((request, idx) => (
+                  {requests.slice().reverse().map((request, idx) => (
                     <tr key={request._address}>
                       <th className="ps-5 align-middle">{idx}</th>
                       <td className="text-center align-middle">{request._address}</td>
