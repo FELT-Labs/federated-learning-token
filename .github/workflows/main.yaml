@@ -48,4 +48,6 @@ jobs:
       run: touch .env
 
     - name: Run Tests
-      run: brownie test
+      run: |
+        rm -rf build
+        brownie test
