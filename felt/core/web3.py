@@ -39,7 +39,7 @@ def get_project_contract(w3: Web3, address: Address) -> Contract:
 
 
 def _hex_to_bytes(hex: str) -> bytes:
-    return bytes.fromhex(hex if hex[:2] == "0x" else hex)
+    return bytes.fromhex(hex[2:] if hex[:2] == "0x" else hex)
 
 
 def export_public_key(private_key_hex: str) -> bytes:
