@@ -15,7 +15,7 @@ type propTypes = {
 const Breadcrumbs: FC<propTypes> = ({ title, links = [] }) => {
   const allLinks = [
     {
-      link: '/app',
+      link: '/',
       name: 'Application',
     },
   ].concat(links);

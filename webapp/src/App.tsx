@@ -5,7 +5,6 @@ import { HashRouter as Router, Route, Routes } from 'react-router-dom';
 
 import './assets/scss/custome.scss';
 
-import Home from './views/Home';
 import DApp from './views/Dapp';
 
 const App: FC = () => (
@@ -24,11 +23,7 @@ const App: FC = () => (
     </Helmet>
     <Router>
       <Routes>
-        <Route path="/">
-          <Route index element={<Home />} />
-          <Route path="app/*" element={<DApp />} />
-          <Route path="*" element={<Home />} />
-        </Route>
+        <Route path="/*" element={<DApp />} />
       </Routes>
     </Router>
   </>

@@ -51,7 +51,7 @@ const Projects: FC = () => {
     <>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Breadcrumbs title="All Projects" />
-        <Button color="default" outline to="/app/create-project" tag={Link} style={{ marginRight: 40 }}>
+        <Button color="default" outline to="/create-project" tag={Link} style={{ marginRight: 40 }}>
           Create Project
         </Button>
       </div>

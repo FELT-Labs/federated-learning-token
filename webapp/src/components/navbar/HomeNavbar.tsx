@@ -27,7 +27,7 @@ const HomeNavbar: FC = () => {
       <Collapse navbar isOpen={isOpen}>
         <Nav className="me-auto" navbar>
           <NavItem>
-            <NavLink href="#">FAQ</NavLink>
+            <NavLink href="https://docs.feltoken.ai/extras/faq">FAQ</NavLink>
           </NavItem>
 
           <NavItem>
@@ -35,7 +35,7 @@ const HomeNavbar: FC = () => {
           </NavItem>
 
           <NavItem>
-            <NavLink tag={RouterNavLink} to="/app">
+            <NavLink tag={RouterNavLink} to="/">
               App
             </NavLink>
           </NavItem>

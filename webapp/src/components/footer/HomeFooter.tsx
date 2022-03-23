@@ -102,7 +102,7 @@ const HomeFooter: FC = () => {
           target="_blank"
           style={{ fontSize: 14 }}
         >
-          © {new Date().getFullYear()} Breta
+          © {new Date().getFullYear()} FELToken
         </NavLink>
 
         <NavLink href={licenceUrl} target="_blank" style={{ fontSize: 14 }}>
