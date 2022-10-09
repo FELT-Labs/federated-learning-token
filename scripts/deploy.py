@@ -16,10 +16,10 @@ def main():
         node2 = accounts.add(config["wallets"]["node2_key"])
 
         # Provide initial supply
-        accounts[0].transfer(owner, "30 ether")
-        accounts[0].transfer(node1, "30 ether")
-        accounts[0].transfer(node2, "30 ether")
-
+        accounts[0].transfer(owner, "3 ether")
+        accounts[0].transfer(node1, "3 ether")
+        accounts[0].transfer(node2, "3 ether")
+        #
         # add these accounts to metamask by importing private key
         feltoken = FELToken.deploy(INITIAL_SUPPLY, {"from": owner})
         ProjectManager.deploy(feltoken, {"from": owner})

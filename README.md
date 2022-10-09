@@ -57,7 +57,8 @@ This repository contains 3 main components:
     ```bash
     brownie run deploy -I
     ```
-    This will start a fresh [Ganache](https://www.trufflesuite.com/ganache) instance in the background and open interactive console. Once the console is running you can create new plan by typing into console:
+    This will start a fresh [Ganache](https://www.trufflesuite.com/ganache) instance in the background and open interactive console.   
+    Once the console is running you can create new plan by typing into console:
     ```bash
     run("create_plan")
     ```
@@ -65,11 +66,17 @@ This repository contains 3 main components:
 
     Keep the console running while testing the contracts.
 
-7. Finally you need to run the nodes with the data. The current deployment (for local testing) registers 2 nodes based on the private keys you have in `.env`. For running a new node open a new terminal (run the `source venv/bin/activate` if neede) and execute:
+    **Using web application:** once you run `brownie run deploy -I` you can start the web application use it to create projects and plans.
+
+7. Finally you need to run the nodes with the data. The current deployment (for local testing) registers 2 nodes based on the private keys you have in `.env`. The instructions for running a node were printed during previous step `brownie run deploy -I`. The command for running node should look something like this:
     ```bash
-    felt-node-worker node1
+    felt-node-worker --chain 1337 --contract 0x48066c61E640bF4FaA8a7F81ab55FCA59bE4C752 --account node1 --data test
+    ```
+    For running a new node open a new terminal (run the `source venv/bin/activate` if neede) and execute command above:
+    ```bash
+    felt-node-worker --chain 1337 --contract 0x48066c61E640bF4FaA8a7F81ab55FCA59bE4C752 --account node1 --data test
     # or
-    felt-node-worker node2
+    felt-node-worker --chain 1337 --contract 0x48066c61E640bF4FaA8a7F81ab55FCA59bE4C752 --account node2 --data test
     ```
     **You need to open 2 terminals and run both nodes in order to coplete the training plan.** In other case one node would wait for other forever.
 

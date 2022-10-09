@@ -37,8 +37,9 @@ def setup_test_project(project, owner):
 
     # Add two node for testing:
     for i in [1, 2]:
-        node = accounts.add(config["wallets"][f"node{i}_key"])
-        public_key = export_public_key(node.private_key[2:])
+        private_key = config["wallets"][f"node{i}_key"]
+        node = accounts.add(private_key)
+        public_key = export_public_key(private_key[2:])
         project.requestJoinNode(public_key, {"from": node})
 
         # Accept the request (share secret encrypted by one more than current keyTurn)
