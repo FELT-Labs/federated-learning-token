@@ -1,4 +1,6 @@
-# FELT - Federeted Learning Token
+# FELT - Federeted Learning Token (archived)
+> This is the first version of FELT. It's using our own code for smart contracts and data providers to run federated learning. This repository doesn't correspond to the latest version of [app.feltlabs.ai](https://app.feltlabs.ai)  
+
 Federated learning on blockchain.
 
 It is a set of contracts that support federated learning projects. Allowing anonymous participation of data providers and preventing malicious activities. Data providers get rewards for sharing their data and resulting models can be further sold.
